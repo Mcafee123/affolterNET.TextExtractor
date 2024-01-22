@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "affolterNET.TextExtractor.Core", "backend\affolterNET.TextExtractor.Core\affolterNET.TextExtractor.Core.csproj", "{F5758567-4716-4021-9A6A-DC44A42BF1B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "affolterNET.TextExtractor.Terminal", "backend\affolterNET.TextExtractor.Terminal\affolterNET.TextExtractor.Terminal.csproj", "{660FB5AE-F4DE-4868-9594-003A9AEACC9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "api", "api\api\api.csproj", "{2AAD6B93-4F95-4715-BA61-ECA79E591CE7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F5758567-4716-4021-9A6A-DC44A42BF1B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5758567-4716-4021-9A6A-DC44A42BF1B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5758567-4716-4021-9A6A-DC44A42BF1B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5758567-4716-4021-9A6A-DC44A42BF1B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{660FB5AE-F4DE-4868-9594-003A9AEACC9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{660FB5AE-F4DE-4868-9594-003A9AEACC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{660FB5AE-F4DE-4868-9594-003A9AEACC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{660FB5AE-F4DE-4868-9594-003A9AEACC9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AAD6B93-4F95-4715-BA61-ECA79E591CE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AAD6B93-4F95-4715-BA61-ECA79E591CE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AAD6B93-4F95-4715-BA61-ECA79E591CE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AAD6B93-4F95-4715-BA61-ECA79E591CE7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
