@@ -4,7 +4,7 @@
 
 # application insights: az extension add -n application-insights
 # brew tap azure/functions
-# brew install azure-functions-core-tools@3
+# brew install azure-functions-core-tools@4
 
 # DEPLOY INFRASTRUCTURE FOR TICKET APP
 set -e
@@ -12,9 +12,6 @@ set -e
 env=${1:-prod}
 
 . _config.sh $env
-
-# bexio settings
-source_file "__${env}_oidc.sh"
 
 # az_login
 set_subscription
@@ -51,22 +48,22 @@ echo "create __${env}_law.sh"
 echo "export LOG_ANALYTICS_WORKSPACE_KEY=\"$loganalyticsworkspacekey\"" > __${env}_law.sh
 echo
 
-# create an app insights instance
-appInsightsName="$basename-insights"
-instrumentationKey=$(az monitor app-insights component create \
-  --app "$appInsightsName" \
-  --location "$location" \
-  -g "$resourceGroup" \
-  --workspace "$logAnalyticsWorkspace" \
-  --kind web \
-  --application-type web \
-  --query instrumentationKey \
-  -o tsv)
+# # create an app insights instance
+# appInsightsName="$basename-insights"
+# instrumentationKey=$(az monitor app-insights component create \
+#   --app "$appInsightsName" \
+#   --location "$location" \
+#   -g "$resourceGroup" \
+#   --workspace "$logAnalyticsWorkspace" \
+#   --kind web \
+#   --application-type web \
+#   --query instrumentationKey \
+#   -o tsv)
 
-echo
-echo "create __${env}_insights.sh"
-echo "export APPINSIGHTS_INSTRUMENTATIONKEY=\"$instrumentationKey\"" > __${env}_insights.sh
-echo
+# echo
+# echo "create __${env}_insights.sh"
+# echo "export APPINSIGHTS_INSTRUMENTATIONKEY=\"$instrumentationKey\"" > __${env}_insights.sh
+# echo
 
 # swa
 url="$(az staticwebapp create \
@@ -83,29 +80,13 @@ echo "url: $url"
 echo "echo \"create CNAME entry '$application_url' for $url\"" > __url.sh
 
 # add settings
-insights="APPINSIGHTS_INSTRUMENTATIONKEY=$instrumentationKey"
-insightsConn="APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=$instrumentationKey"
-stor="BEXIOSTOR=DefaultEndpointsProtocol=https;AccountName=$storageAccountName;AccountKey=$storageAccountKey;EndpointSuffix=core.windows.net"
-auth="Authority=https://idp.bexio.com"
-scps="Scopes=openid profile email project_show offline_access monitoring_show"
-customDomain="SpaUrl=https://bexio.affolter.net"
-api="ApiUrl=https://api.bexio.com"
-apiVer="ApiVersion=2.0"
-oidcCli="OidcClientId=$OidcClientId"
-oidcSec="OidcClientSecret=$OidcClientSecret"
-oidcRedir="RedirectUri=$RedirectUri"
+# insights="APPINSIGHTS_INSTRUMENTATIONKEY=$instrumentationKey"
+# insightsConn="APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=$instrumentationKey"
+stor="EXTSTOR=DefaultEndpointsProtocol=https;AccountName=$storageAccountName;AccountKey=$storageAccountKey;EndpointSuffix=core.windows.net"
+customDomain="SpaUrl=https://ext.affolter.net"
 
 az staticwebapp appsettings set \
   -n "$swaAppName" \
   --setting-names \
-    "$insights" \
-    "$insightsConn" \
     "$stor" \
-    "$auth" \
-    "$scps" \
-    "$customDomain" \
-    "$api" \
-    "$apiVer" \
-    "$oidcCli" \
-    "$oidcSec" \
-    "$oidcRedir"
+    "$customDomain"
