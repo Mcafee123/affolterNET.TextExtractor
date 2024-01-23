@@ -11,7 +11,11 @@ public static class JsonSerializerExtensions
 
     static JsonSerializerExtensions()
     {
-        _options = new JsonSerializerOptions();
+        _options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
         _options.Converters.Add(new PdfRectangleConverter());
     }
 
@@ -21,12 +25,10 @@ public static class JsonSerializerExtensions
         var obj = JsonSerializer.Deserialize<T>(json, _options);
         return obj!;
     }
-
-    public static void Serialize(this PdfLines lines, string path)
+    
+    public static void Serialize(this IPdfDoc pdfDoc, string path)
     {
-        lines.SelectMany(l => l).ToList().ForEach(w => w.Line = null);
-        lines.ToList().ForEach(l => l.Lines = null);
-        var toSerialize = new LawLinesJson(lines);
+        var toSerialize = new PdfDocJson(pdfDoc);
         toSerialize.Serialize(path);
     }
     
@@ -47,10 +49,10 @@ public static class JsonSerializerExtensions
 
 public class PdfRectangleConverter : JsonConverter<PdfRectangle>
 {
-    private const string BottomLeftX = "BottomLeftX";
-    private const string BottomLeftY = "BottomLeftY";
-    private const string TopRightX = "TopRightX";
-    private const string TopRightY = "TopRightY";
+    private const string BottomLeftX = "bottomLeftX";
+    private const string BottomLeftY = "bottomLeftY";
+    private const string TopRightX = "topRightX";
+    private const string TopRightY = "topRightY";
     public override PdfRectangle Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
@@ -106,40 +108,86 @@ public class PdfRectangleConverter : JsonConverter<PdfRectangle>
     }
 }
 
-
-public class LawLinesJson
+public class PdfDocJson
 {
-    public LawLinesJson()
+    public PdfDocJson()
     {
         
     }
-    
-    public LawLinesJson(PdfLines lines)
+
+    public PdfDocJson(IPdfDoc pdfDoc)
     {
-        foreach (var line in lines)
+        Filename = pdfDoc.Filename;
+        foreach (var page in pdfDoc.Pages)
         {
-            Lines.Add(new LawLineJson(line));
+            Pages.Add(new PdfPageJson(page));
         }
     }
 
-    public List<LawLineJson> Lines { get; set; } = new();
+    public string Filename { get; set; } = null!;
+    public List<PdfPageJson> Pages { get; set; } = new();
 }
 
-public class LawLineJson
+public class PdfPageJson
 {
-    public LawLineJson()
+    public PdfPageJson()
+    {
+        
+    }
+
+    public PdfPageJson(IPdfPage page)
+    {
+        Nr = page.Nr;
+        BoundingBox = page.BoundingBox;
+        foreach (var block in page.Blocks)
+        {
+            Blocks.Add(new PdfBlockJson(block));
+        }
+    }
+
+    public int Nr { get; set; }
+    public PdfRectangle BoundingBox { get; set; }
+    public List<PdfBlockJson> Blocks { get; set; } = new();
+}
+
+public class PdfBlockJson
+{
+    public PdfBlockJson()
+    {
+        
+    }
+
+    public PdfBlockJson(IPdfTextBlock block)
+    {
+        BoundingBox = block.BoundingBox;
+        foreach (var line in block.Lines)
+        {
+            Lines.Add(new PdfLineJson(line));
+        }
+    }
+
+    public PdfRectangle BoundingBox { get; set; }
+    public List<PdfLineJson> Lines { get; set; } = new();
+}
+
+public class PdfLineJson
+{
+    public PdfLineJson()
     {
         
     }
     
-    public LawLineJson(LineOnPage line)
+    public PdfLineJson(LineOnPage line)
     {
         foreach (var word in line)
         {
             Words.Add(new WordOnPageJson(word));
         }
+
+        BoundingBox = line.BoundingBox;
     }
 
+    public PdfRectangle BoundingBox { get; set; }
     public List<WordOnPageJson> Words { get; set; } = new();
 }
 

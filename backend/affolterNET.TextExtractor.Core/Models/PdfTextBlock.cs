@@ -43,11 +43,6 @@ public class PdfTextBlock: IPdfTextBlock
     {
         return _lines.ToString();
     }
-    
-    public void ToJson(string path)
-    {
-        _lines.Serialize(path);
-    }
 }
 
 public interface IPdfTextBlock

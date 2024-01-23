@@ -1,85 +1,48 @@
 <script setup lang="ts">
+
+import { ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import pdfdata from './assets/Verfuegung_Nr_23-24_24846_3.json'
+import type { Document } from './types/document'
+import type { Block } from './types/block'
+import type { Line } from './types/line'
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const pdf = ref<Document>(pdfdata)
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getBlockStyle = (block: Block) => {
+    return `left: ${block.boundingBox.topRightY}px`
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getLineStyle = (line: Line) => {
+    return `left: ${line.boundingBox.topRightY}px`
+}
+
+/*
+            <!-- .line(v-for="line in block.lines" :style="getLineStyle(line)")
+                .word(v-for="word in line.words") {{ word.text }}&nbsp; -->
+
+                */
 </script>
 
-<template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+<template lang="pug">
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+.main
+    .page(v-for="page in pdf.pages")
+        .block(v-for="block in page.blocks" :style="getBlockStyle(block)")
+            .line(v-for="line in block.lines" :style="getLineStyle(line)")
+                .word(v-for="word in line.words") {{ word.text }}
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<style lang="scss" scoped>
+.main {
+    min-height: 800px;
+    background: lightgray;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.block {
+    position: absolute;
+    border: 1px solid gray;
 }
 </style>

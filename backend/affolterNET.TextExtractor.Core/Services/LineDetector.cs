@@ -1,4 +1,5 @@
 using affolterNET.TextExtractor.Core.Extensions;
+using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;

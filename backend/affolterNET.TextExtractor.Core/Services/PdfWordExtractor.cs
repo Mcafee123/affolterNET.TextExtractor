@@ -1,3 +1,4 @@
+using affolterNET.TextExtractor.Core.Helpers;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.WordExtractor;
 using UglyToad.PdfPig.Util;

@@ -18,7 +18,7 @@ public class PipelineContext: IPipelineContext
 
     public void SetDocument(PdfDocument document)
     {
-        Document = new PdfDoc(document);
+        Document = new PdfDoc(Filename, document);
     }
 
     public override string ToString()
