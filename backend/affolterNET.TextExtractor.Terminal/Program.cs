@@ -1,4 +1,8 @@
 ﻿using System.Reflection;
+using affolterNET.TextExtractor.Core;
+using affolterNET.TextExtractor.Core.Extensions;
+using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Terminal;
 using affolterNET.TextExtractor.Terminal.Commands;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,13 +40,6 @@ try
         })
         .ConfigureServices((ctx, services) =>
         {
-            var connString = ctx.Configuration.GetAndCheckValue("POSTGRES_CONNSTRING");
-            var fedlexSparqlEndpoint = ctx.Configuration.GetAndCheckValue("FedlexSparqlEndpoint");
-            var awsRegion = ctx.Configuration.GetAndCheckValue("AWS_REGION");
-            var awsBucket = ctx.Configuration.GetAndCheckValue("AWS_REGION");
-            var awsKey = ctx.Configuration.GetAndCheckValue("AWS_KEY");
-            var awsSecret = ctx.Configuration.GetAndCheckValue("AWS_SECRET");
-            var awsSqsUrl = ctx.Configuration.GetAndCheckValue("AWS_SQSURL");
             var logLevel = ctx.Configuration.GetAndCheckValue("LogLevel");
             EnumLogLevel enmLogLevel = EnumLogLevel.Info;
             var vals = Enum.GetValues<EnumLogLevel>();
@@ -60,41 +57,22 @@ try
                     break;
                 }
             }
-            // services.AddSingleton(new FedlexLawsInForceCommand.Settings(connString, fedlexSparqlEndpoint));
-            // services.AddSingleton(new FedlexDownloadFilesCommand.Settings(connString, awsRegion, awsBucket, awsKey, awsSecret, awsSqsUrl));
-            // services.AddSingleton(new FedlexParsePdfCommand.Settings());
-            // services.ConfigureDb(connString);
-            // services.AddTransient<AnsiConsoleWrapper>(_ => new AnsiConsoleWrapper(enmLogLevel));
-            // services.AddTransient<IOutput, AnsiConsoleOutputter>();
-            //
-            // services.AddCoreServices(ctx.Configuration);
-            // services.AddPdfServices();
+            services.AddTransient<AnsiConsoleWrapper>(_ => new AnsiConsoleWrapper(enmLogLevel));
+            services.AddTransient<IOutput, AnsiConsoleOutputter>();
+            services.AddCoreServices(ctx.Configuration);
+            services.AddTransient<DetectTextCommand>();
         })
         .UseConsoleLifetime()
         .UseSpectreConsole<DetectTextCommand>(config =>
         {
             config.PropagateExceptions();
 
-            const string lawsAlias = "laws";
-            config.AddCommand<FedlexLawsInForceCommand>("fedlex-laws")
+            const string lawsAlias = "parse";
+            config.AddCommand<DetectTextCommand>("parse-pdf")
                 .WithAlias(lawsAlias)
-                .WithDescription("Get laws in force from SPARQL-Endpoint and save them to the DB")
+                .WithDescription("get text and textblocks from pdf files")
                 .WithExample($"dotnet {Assembly.GetExecutingAssembly().GetName().Name}.dll", lawsAlias,
-                    "[-c|--connectionstring <POSTGRES-CONNSTRING>]", "[-e|--endpoint <SPARQL-ENDPOINT>]");
-            
-            const string dwnldAlias = "download";
-            config.AddCommand<FedlexDownloadFilesCommand>("fedlex-download")
-                .WithAlias(dwnldAlias)
-                .WithDescription("download files and put them on S3 and into the DB")
-                .WithExample($"dotnet {Assembly.GetExecutingAssembly().GetName().Name}.dll", dwnldAlias,
-                    "[-c|--connectionstring <POSTGRES-CONNSTRING>]");
-            
-            const string pdfAlias = "pdf";
-            config.AddCommand<FedlexParsePdfCommand>("fedlex-pdf")
-                .WithAlias(pdfAlias)
-                .WithDescription("parse pdf-files")
-                .WithExample($"dotnet {Assembly.GetExecutingAssembly().GetName().Name}.dll", pdfAlias,
-                    "[-c|--connectionstring <POSTGRES-CONNSTRING>]");
+                    "[-f|--file <FILE-PATH>]");
         })
         .RunConsoleAsync();
     return Environment.ExitCode;
