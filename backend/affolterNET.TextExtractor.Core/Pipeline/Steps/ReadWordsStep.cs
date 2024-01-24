@@ -32,7 +32,16 @@ public class ReadWordsStep: IPipelineStep
 
     private void Open(IPipelineContext context)
     {
-        var document = PdfDocument.Open(context.Filename);
+        PdfDocument document;
+        if (context.PdfStream != null)
+        {
+            context.PdfStream.Seek(0, SeekOrigin.Begin);
+            document = PdfDocument.Open(context.PdfStream);
+        }
+        else
+        {
+            document = PdfDocument.Open(context.Filename);
+        }
         context.SetDocument(document);
     }
 

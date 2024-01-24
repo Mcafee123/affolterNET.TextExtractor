@@ -1,10 +1,13 @@
 <template lang="pug">
 h5
     RouterLink(to="/") Übersicht
-h3 {{ filename }}
 
-.pdfview
-  .pageview(v-if="pdfdata")
+.upload
+  h3 Upload PDF
+  input(id="pdf_upload" type="file" name="pdf-upload" @change="uploadFile($event)" accept="application/pdf")
+
+.pdfview(v-if="pdfdata")
+  .pageview
     PdfPage(v-for="page in pdfdata.pages" :page="page")
   .settingscol
     PdfViewSettings
@@ -18,9 +21,7 @@ h3 {{ filename }}
 
 <script lang="ts" setup>
 
-import { onMounted, ref } from 'vue'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useRoute, RouterLink } from 'vue-router'
+import { ref } from 'vue'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PdfPage from '@/components/PdfPage.vue'
@@ -37,21 +38,28 @@ import PdfLetterJson from '@/components/settings/PdfLetterJson.vue'
 
 import type { PdfDocument } from '@/types/pdfDocument'
 
-const route = useRoute()
-const filename = ref<string>('')
-
-onMounted(async () => {
-  filename.value = route.params.filename as string || ''
-  console.log(filename.value)
-  await getData()
-})
-
 const pdfdata = ref<PdfDocument | null>(null)
 
-const getData = async () => {
-  const response = await fetch(`/${filename.value}`)
-  const data = await response.json()
-  pdfdata.value = data as PdfDocument
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const uploadFile = async ($event: Event) => {
+  console.log('upload')
+  const target = $event.target as HTMLInputElement
+  if (!target || !target.files) {
+    return
+  }
+  const pdf = target.files[0]
+  if (!pdf.name.endsWith('.pdf')) {
+    console.error(`"${pdf.name}" is not a pdf file`)
+    return
+  }
+  const formData = new FormData()
+  formData.append('file', pdf)
+  const options = {
+    method: 'POST',
+    body: formData,
+  }
+  const response = await (await fetch('/api/upload', options)).json()
+  pdfdata.value = response as PdfDocument
 }
 
 </script>
@@ -59,19 +67,15 @@ const getData = async () => {
 <style lang="scss" scoped>
 .pdfview {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  .pageview {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
 
   .settingscol {
     background: #052;
     padding: 5px;
-    max-width: 200px;
+    max-width: 250px;
+    overflow-y: scroll
   }
 }
-
+ * {
+  box-sizing: unset;
+ }
 </style>

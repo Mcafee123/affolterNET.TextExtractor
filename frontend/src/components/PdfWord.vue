@@ -71,7 +71,8 @@ const select = (evt: MouseEvent) => {
 <style lang="scss" scoped>
 
 .word {
-    position: absolute;
+  position: absolute;
+  box-sizing: unset;
 }
 
 .wordborder {

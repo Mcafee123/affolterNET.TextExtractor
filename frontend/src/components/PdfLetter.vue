@@ -99,6 +99,7 @@ const select = (evt: MouseEvent) => {
   position: absolute;
   cursor: pointer;
   transition: all 0.1s ease-in-out;
+  box-sizing: unset;
 }
 
 .letterborder {

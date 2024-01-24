@@ -1,9 +1,15 @@
+using affolterNET.TextExtractor.Core.Extensions;
+using affolterNET.TextExtractor.Core.Helpers;
+using api.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults()
-    .ConfigureServices(services =>
+    .ConfigureFunctionsWebApplication()
+    .ConfigureServices((ctx, services) =>
     {
+        services.AddTransient<IOutput, FunctionsLogger>();
+        services.AddCoreServices(ctx.Configuration);
         // services.AddApplicationInsightsTelemetryWorkerService();
         // services.ConfigureFunctionsApplicationInsights();
         // services.AddSingleton<IHttpResponderService, DefaultHttpResponderService>();

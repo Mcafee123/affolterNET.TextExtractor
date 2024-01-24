@@ -28,9 +28,6 @@ const props = defineProps({
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { showBlockBorders, blockJson } = useViewSettings()
 
-watch(showBlockBorders, (value) => {
-  console.log('changed', value)
-})
 const boundingBox = props.block.boundingBox;
 const width = boundingBox.topRightX - boundingBox.bottomLeftX
 const height = boundingBox.topRightY - boundingBox.bottomLeftY
@@ -58,6 +55,7 @@ const select = (evt: MouseEvent) => {
 
 .block {
   position: absolute;
+  box-sizing: unset;
 }
 
 .blockborder {

@@ -10,7 +10,7 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: '/pdf/:filename',
+      path: '/pdf',
       name: 'pdf',
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route

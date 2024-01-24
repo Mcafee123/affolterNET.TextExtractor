@@ -58,6 +58,7 @@ const select = (evt: MouseEvent) => {
 
 .line {
   position: absolute;
+  box-sizing: unset;
 }
 
 .lineborder {

@@ -10,4 +10,5 @@ public interface IPipelineContext: IDisposable
     List<Word> OriginalWords { get; }
     IPdfDoc? Document { get; }
     void SetDocument(PdfDocument document);
+    Stream? PdfStream { get; }
 }

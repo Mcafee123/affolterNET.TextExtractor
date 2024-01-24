@@ -1,8 +1,7 @@
-using System.Collections.Generic;
 using System.Dynamic;
-using System.Net;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
 namespace api.HttpTriggers;
@@ -17,19 +16,11 @@ public class Info
     }
 
     [Function("Info")]
-    public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req,
+    public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req,
         FunctionContext executionContext)
     {
-        _logger.LogInformation("C# HTTP trigger function processed a request.");
-
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        // response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-
         dynamic obj = new ExpandoObject();
-        obj.text = "Welcome to Azure Functions!";
-        await response.WriteAsJsonAsync(obj as object);
-
-        return response;
-        
+        obj.text = "Functions App is up and running!";
+        return new JsonResult(obj);
     }
 }

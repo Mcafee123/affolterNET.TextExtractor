@@ -34,12 +34,11 @@ public static class JsonSerializerExtensions
         toSerialize.Serialize(path);
     }
     
-    public static void Serialize(this List<IWordOnPage> words, string path)
+    public static string Serialize(this IPdfDoc pdfDoc)
     {
-        words.ForEach(w => w.Line = null);
-        var toSerialize = new List<WordOnPageJson>();
-        toSerialize.AddRange(words.Select(w => new WordOnPageJson(w)));
-        toSerialize.Serialize(path);
+        var toSerialize = new PdfDocJson(pdfDoc);
+        var json = JsonSerializer.Serialize(toSerialize, _options);
+        return json;
     }
     
     private static void Serialize(this object obj, string path)

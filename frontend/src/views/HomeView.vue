@@ -1,7 +1,8 @@
 <template lang="pug">
-h1 Extract Text from PDF: {{ msg }}
-ul
-    li(@click="goToPdf('Verfuegung_Nr_23-24_24846_3.json')") Verfügung Yanik Zürcher
+.container
+  h1 Extract Text from PDF: {{ msg }}
+  h3 Go to: 
+      RouterLink(to="/pdf") Pdf-Text-Extractor
 </template>
 
 <script lang="ts" setup>
@@ -22,13 +23,13 @@ onMounted(async () => {
   const { text } = await( await fetch(`/api/info`)).json();
   msg.value = text
 })
+
 </script>
 
 <style lang="scss" scoped>
-li {
-    list-style-type: none;
-    cursor: pointer;
-    color: blue;
-    text-decoration: underline;
+
+.container {
+  padding: 20px;
 }
+
 </style>

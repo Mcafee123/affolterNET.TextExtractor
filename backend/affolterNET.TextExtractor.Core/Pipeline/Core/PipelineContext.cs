@@ -11,6 +11,11 @@ public class PipelineContext: IPipelineContext
     {
         Filename = filename;
     }
+    
+    public PipelineContext(Stream pdfStream, string filename): this(filename)
+    {
+        PdfStream = pdfStream;
+    }
 
     public string Filename { get; }
     public List<Word> OriginalWords { get; } = new();
@@ -20,6 +25,8 @@ public class PipelineContext: IPipelineContext
     {
         Document = new PdfDoc(Filename, document);
     }
+
+    public Stream? PdfStream { get; } = null;
 
     public override string ToString()
     {
