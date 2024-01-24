@@ -264,7 +264,7 @@ public class WordOnPageJson
     public PdfRectangle BoundingBox { get; set; }
     public string Text { get; set; } = null!;
     public int PageNr { get; set; }
-    public string FontName { get; set; }
+    public string FontName { get; set; } = null!;
     public List<LetterJson> Letters { get; set; } = new();
 }
 
@@ -295,6 +295,6 @@ public class LetterJson
     public bool IsBold { get; set; }
 
     public PdfRectangle GlyphRectangle { get; set; }
-    public string Text { get; set; }
+    public string Text { get; set; } = null!;
     public double FontSize { get; set; }
 }

@@ -4,11 +4,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "affolterNET.TextExtractor.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "affolterNET.TextExtractor.Terminal", "backend\affolterNET.TextExtractor.Terminal\affolterNET.TextExtractor.Terminal.csproj", "{660FB5AE-F4DE-4868-9594-003A9AEACC9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "api", "api\api\api.csproj", "{2AAD6B93-4F95-4715-BA61-ECA79E591CE7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E1D584FE-9724-4D2E-9E28-9D90CB0F1F7E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "affolterNET.TextExtractor.Core.Test", "tests\affolterNET.TextExtractor.Core.Test\affolterNET.TextExtractor.Core.Test.csproj", "{FA7C4B0C-2330-41EC-A5AF-9D838831B2CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "api", "api\api.csproj", "{4E84A3B3-AEB8-4565-AF46-4EDDAC1ED6F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,14 +24,14 @@ Global
 		{660FB5AE-F4DE-4868-9594-003A9AEACC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{660FB5AE-F4DE-4868-9594-003A9AEACC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{660FB5AE-F4DE-4868-9594-003A9AEACC9D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2AAD6B93-4F95-4715-BA61-ECA79E591CE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2AAD6B93-4F95-4715-BA61-ECA79E591CE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2AAD6B93-4F95-4715-BA61-ECA79E591CE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2AAD6B93-4F95-4715-BA61-ECA79E591CE7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FA7C4B0C-2330-41EC-A5AF-9D838831B2CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FA7C4B0C-2330-41EC-A5AF-9D838831B2CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA7C4B0C-2330-41EC-A5AF-9D838831B2CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA7C4B0C-2330-41EC-A5AF-9D838831B2CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E84A3B3-AEB8-4565-AF46-4EDDAC1ED6F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E84A3B3-AEB8-4565-AF46-4EDDAC1ED6F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E84A3B3-AEB8-4565-AF46-4EDDAC1ED6F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E84A3B3-AEB8-4565-AF46-4EDDAC1ED6F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FA7C4B0C-2330-41EC-A5AF-9D838831B2CC} = {E1D584FE-9724-4D2E-9E28-9D90CB0F1F7E}
