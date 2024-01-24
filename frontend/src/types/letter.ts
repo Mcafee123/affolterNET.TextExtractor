@@ -1,5 +1,5 @@
 import type { Box } from "./boundingBox"
-import type { Point } from "./point";
+import type { Point } from "./point"
 
 export interface Letter {
     glyphRectangle: Box,
@@ -11,5 +11,4 @@ export interface Letter {
     isBold: boolean,
 }
 
-export type letterProp = keyof Letter
-export type letterType = { prop: letterProp, val: Letter[letterProp] }
+export type letterType = { [Property in keyof Partial<Letter>]: number | string | Box | Point }

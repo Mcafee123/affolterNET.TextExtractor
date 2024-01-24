@@ -7,5 +7,4 @@ export interface Line {
     words: Word[]
 }
 
-export type lineProp = keyof Line
-export type lineType = { prop: lineProp, val: Line[lineProp] }
+export type lineType = { [Property in keyof Partial<Line>]: number | string | Box }

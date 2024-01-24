@@ -8,7 +8,7 @@ import type { Block } from './types/block'
 import type { Line } from './types/line'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const pdf = ref<PdfDocument>(pdfdata)
+const pdf = ref<PdfDocument>(pdfdata as PdfDocument)
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

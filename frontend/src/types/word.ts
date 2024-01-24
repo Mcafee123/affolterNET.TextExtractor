@@ -9,5 +9,4 @@ export interface Word {
     letters: Letter[],
 }
 
-export type wordProp = keyof Word
-export type wordType = { prop: wordProp, val: Word[wordProp] }
+export type wordType = { [Property in keyof Partial<Word>]: number | string | Box }

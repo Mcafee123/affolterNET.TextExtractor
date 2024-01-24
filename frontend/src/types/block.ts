@@ -3,8 +3,8 @@ import type { Line } from "./line";
 
 export interface Block {
     boundingBox: Box,
+    text: string,
     lines: Line[]
 }
 
-export type blockProp = keyof Block
-export type blockType = { prop: blockProp, val: Block[blockProp] }
+export type blockType = { [Property in keyof Partial<Block>]: string | Box }
