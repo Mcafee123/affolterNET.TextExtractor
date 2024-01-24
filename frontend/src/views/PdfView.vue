@@ -35,7 +35,6 @@ import PdfWordJson from '@/components/settings/PdfWordJson.vue'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PdfLetterJson from '@/components/settings/PdfLetterJson.vue'
 
-import pdfDemoData from '@/assets/Verfuegung_Nr_23-24_24846_3.json'
 import type { PdfDocument } from '@/types/pdfDocument'
 
 const route = useRoute()
@@ -50,9 +49,9 @@ onMounted(async () => {
 const pdfdata = ref<PdfDocument | null>(null)
 
 const getData = async () => {
-//   const response = await fetch(`/assets/${filename.value}`)
-//   const data = await response.json()
-  pdfdata.value = pdfDemoData as PdfDocument
+  const response = await fetch(`/${filename.value}`)
+  const data = await response.json()
+  pdfdata.value = data as PdfDocument
 }
 
 </script>
@@ -69,7 +68,7 @@ const getData = async () => {
   }
 
   .settingscol {
-    background: rgb(52, 52, 228);
+    background: #052;
     padding: 5px;
     max-width: 200px;
   }
