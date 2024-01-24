@@ -13,20 +13,24 @@ public class WordOnPage: IWordOnPage
         _word = word;
         // check for GlyphRectangle-error
         // where top and bottom are the same
-        var lettersNoSpaces = word.Letters
-            .Where(l => !string.IsNullOrWhiteSpace(l.Value))
-            .ToList();
-        if (lettersNoSpaces.Count > 0 && lettersNoSpaces.All(l => Math.Abs(l.GlyphRectangle.Top - l.GlyphRectangle.Bottom) < 0.1))
-        {
-            // make boundingbox 2/3 of the text-pointsize
-            var boxHeight = word.Letters.Average(l => l.PointSize) / 3 * 2;
-            var topRight = new PdfPoint(word.BoundingBox.Right, word.BoundingBox.Bottom + boxHeight);
-            BoundingBox = new PdfRectangle(word.BoundingBox.BottomLeft, topRight);
-        }
-        else
-        {
-            BoundingBox = word.BoundingBox;
-        }
+        // var lettersNoSpaces = word.Letters
+        //     .Where(l => !string.IsNullOrWhiteSpace(l.Value))
+        //     .ToList();
+        // if (lettersNoSpaces.Count > 0 && lettersNoSpaces.All(l => Math.Abs(l.GlyphRectangle.Top - l.GlyphRectangle.Bottom) < 0.1))
+        // {
+        //     // make boundingbox 2/3 of the text-pointsize
+        //     var boxHeight = word.Letters.Average(l => l.PointSize) / 3 * 2;
+        //     var topRight = new PdfPoint(word.BoundingBox.Right, word.BoundingBox.Bottom + boxHeight);
+        //     BoundingBox = new PdfRectangle(word.BoundingBox.BottomLeft, topRight);
+        // }
+        // else
+        // {
+        //     BoundingBox = word.BoundingBox;
+        // }
+        var bottomLeft = new PdfPoint(word.Letters.Min(l => l.StartBaseLine.X), word.Letters.Min(l => l.StartBaseLine.Y));
+        var topRight = new PdfPoint(word.Letters.Max(l => l.EndBaseLine.X),
+            bottomLeft.Y + word.Letters.Max(l => l.FontSize));
+        BoundingBox = new PdfRectangle(bottomLeft, topRight);
     }
 
     public WordOnPage Clone()
@@ -65,7 +69,7 @@ public class WordOnPage: IWordOnPage
     /// The name of the font for the word.
     /// </summary>
     public string FontName => _word.FontName;
-
+    
     /// <summary>
     /// The letters contained in the word.
     /// </summary>

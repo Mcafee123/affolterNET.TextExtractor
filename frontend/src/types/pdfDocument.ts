@@ -1,6 +1,6 @@
 import type { Page } from "./page";
 
-export interface Document {
+export interface PdfDocument {
     filename: string,
     pages: Page[],
 }

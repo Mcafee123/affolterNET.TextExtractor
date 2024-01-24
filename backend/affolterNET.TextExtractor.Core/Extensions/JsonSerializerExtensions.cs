@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using affolterNET.TextExtractor.Core.Models;
+using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Extensions;
@@ -16,6 +17,7 @@ public static class JsonSerializerExtensions
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
+        _options.Converters.Add(new PdfPointConverter());
         _options.Converters.Add(new PdfRectangleConverter());
     }
 
@@ -44,6 +46,56 @@ public static class JsonSerializerExtensions
     {
         var json = JsonSerializer.Serialize(obj, _options);
         File.WriteAllTextAsync(path, json).GetAwaiter().GetResult();
+    }
+}
+
+public class PdfPointConverter : JsonConverter<PdfPoint>
+{
+    private const string X = "X";
+    private const string Y = "Y";
+    
+    public override PdfPoint Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            throw new JsonException();
+        }
+
+        double X = default;
+        double Y = default;
+
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndObject)
+            {
+                return new PdfPoint(X, Y);
+            }
+
+            if (reader.TokenType == JsonTokenType.PropertyName)
+            {
+                var propertyName = reader.GetString();
+                reader.Read();
+                switch (propertyName)
+                {
+                    case nameof(X):
+                        X = reader.GetDouble();
+                        break;
+                    case nameof(Y):
+                        Y = reader.GetDouble();
+                        break;
+                }
+            }
+        }
+
+        throw new JsonException();
+    }
+
+    public override void Write(Utf8JsonWriter writer, PdfPoint value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+        writer.WriteNumber(X, value.X);
+        writer.WriteNumber(Y, value.Y);
+        writer.WriteEndObject();
     }
 }
 
@@ -202,9 +254,47 @@ public class WordOnPageJson
     {
         BoundingBox = word.BoundingBox;
         Text = word.Text;
+        FontName = word.FontName;
+        foreach (var letter in word.Letters)
+        {
+            Letters.Add(new LetterJson(letter));
+        }
     }
 
     public PdfRectangle BoundingBox { get; set; }
     public string Text { get; set; } = null!;
     public int PageNr { get; set; }
+    public string FontName { get; set; }
+    public List<LetterJson> Letters { get; set; } = new();
+}
+
+public class LetterJson
+{
+    public LetterJson()
+    {
+        
+    }
+
+    public LetterJson(Letter letter)
+    {
+        GlyphRectangle = letter.GlyphRectangle;
+        StartBaseLine = letter.StartBaseLine;
+        EndBaseLine = letter.EndBaseLine;
+        Text = letter.Value;
+        FontSize = letter.FontSize;
+        IsBold = letter.Font.IsBold;
+        IsItalic = letter.Font.IsItalic;
+    }
+
+    public PdfPoint EndBaseLine { get; set; }
+
+    public PdfPoint StartBaseLine { get; set; }
+
+    public bool IsItalic { get; set; }
+
+    public bool IsBold { get; set; }
+
+    public PdfRectangle GlyphRectangle { get; set; }
+    public string Text { get; set; }
+    public double FontSize { get; set; }
 }
