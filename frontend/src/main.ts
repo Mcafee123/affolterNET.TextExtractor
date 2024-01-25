@@ -1,3 +1,5 @@
+import "beercss"
+import "material-dynamic-colors"
 import '@/assets/styles.scss'
 
 import { createApp } from 'vue'

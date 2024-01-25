@@ -19,9 +19,6 @@ const { blockJson } = useViewSettings()
 
 <style lang="scss" scoped>
 
-h3 {
-  color: white;
-}
 .contents {
   background: white;
 }

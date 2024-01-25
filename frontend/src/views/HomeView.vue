@@ -1,8 +1,10 @@
 <template lang="pug">
-.container
-  h1 Extract Text from PDF: {{ msg }}
-  h3 Go to: 
-      RouterLink(to="/pdf") Pdf-Text-Extractor
+.grid
+  .s12.m12.l6
+    h3 Extract Text from PDF
+  .s12.m12.l6
+    h3 {{ msg }}
+
 </template>
 
 <script lang="ts" setup>

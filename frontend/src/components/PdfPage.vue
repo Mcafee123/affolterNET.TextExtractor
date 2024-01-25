@@ -1,6 +1,6 @@
 <template lang="pug">
-.page(:style="getStyle()")
-    PdfBlock(v-for="block in page.blocks" :block="block" :pageheight="height")
+.pdfpage(:style="getStyle()")
+  PdfBlock(v-for="block in page.blocks" :block="block" :pageheight="height")
 
 </template>
 
@@ -30,8 +30,8 @@ const getStyle = () => {
 </script>
 
 <style lang="scss" scoped>
-.page {
-    position: relative;
-    background: lightgray;
+.pdfpage {
+  position: relative;
+  background: lightgray;
 }
 </style>

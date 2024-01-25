@@ -4,7 +4,21 @@
 
 <template lang="pug">
 
-RouterView
+nav.left
+  RouterLink(to="/")
+    i home
+    div Home
+  RouterLink(to="/pdf")
+    i picture_as_pdf 
+    div PDF
+  a
+    i search
+    div Search
+  a
+    i share
+    div share
+main.responsive
+  RouterView
 
 </template>
 

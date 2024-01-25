@@ -18,6 +18,8 @@
     "debug": "swa start http://localhost:5173/ --run \"npm run dev\" --api-location \"http://localhost:7071\""
   },
   "dependencies": {
+    "beercss": "^3.4.13",
+    "material-dynamic-colors": "^1.1.0",
     "pinia": "^2.1.7",
     "vue": "^3.3.11",
     "vue-router": "^4.2.5"

@@ -1,6 +1,6 @@
 <template lang="pug">
 .viewsettings
-  h3 Anzeigeeinstellungen
+  h3 Anzeigen
   .contents
     .cb
       input(type="checkbox" v-model="showBlockBorders")
@@ -28,9 +28,6 @@ const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders } 
 
 <style lang="scss" scoped>
 .viewsettings {
-  h3 {
-    color: white;
-  }
   display: flex;
   flex-direction: column;
   .contents {
