@@ -27,7 +27,7 @@ const props = defineProps({
 
 const clearCanvas = (mode?: 'letter' | 'boxes') => {
   if (!letterCanvas.value || !boxesCanvas.value || !letterCtx.value || !boxesCtx.value) {
-    console.error('no canvas or no wrapper')
+    console.error('no canvas or no contexts')
     return
   }
   if (mode === 'letter' || mode == undefined) {
@@ -101,6 +101,7 @@ const resize = () => {
   letterCanvas.value.height = wrapper.value.clientWidth / pageWidth * pageHeight
   boxesCanvas.value.width = letterCanvas.value.width
   boxesCanvas.value.height = letterCanvas.value.height
+  wrapper.value.style.height = `${letterCanvas.value.height}px`
   scale = letterCanvas.value.width / pageWidth
   renderPage()
 }

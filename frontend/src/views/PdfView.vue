@@ -10,8 +10,8 @@ header.fill
   .s9.m9.l9
     PdfUpload(class="center upload" v-if="!page" @uploadFile="uploadFile")
     .pdfview(v-if="page")
-      .backcol
-        button.circle.transparent.left(v-show="hasLeft()" @click="goLeft")
+      .backcol(v-show="hasLeft()" @click="goLeft")
+        button.circle.transparent.left
           img.responsive(src="@/assets/arrow_left_icon.png")
       .pageview.responsive
         .center.current
@@ -20,8 +20,8 @@ header.fill
           .field.border.round.small
             input(type="number" v-model="pdfdata.pages.length" disabled)
         PdfPageCanvas(:page="page")
-      .nextcol
-        button.circle.transparent.right(v-show="hasRight()" @click="goRight")
+      .nextcol(v-show="hasRight()" @click="goRight")
+        button.circle.transparent.right
           img.responsive(src="@/assets/arrow_right_icon.png")
   .s3.m3.l3
     .settingscol(v-if="page")
@@ -152,18 +152,15 @@ const goRight = () => {
   }
 
   .backcol, .nextcol {
-    .right, .left {
-      padding-top: 1px;
-      padding-left: 5px;
-      padding-right: 5px;
-    }
     cursor: pointer;
     min-height: 100%;
-    background: rgb(239, 235, 218);
-    transition: background-color 0.2s ease-in-out;
+    background: var(--primary);
+    opacity: 0.5;
+    transition: opacity 0.2s ease-in-out;
     &:hover {
-      background: rgb(240, 189, 135);
+      opacity: 0.8;
     }
+    padding-top: 50%;
   }
 }
  
