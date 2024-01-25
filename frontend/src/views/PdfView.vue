@@ -1,16 +1,9 @@
 <template lang="pug">
-header.fill
-  nav
-    button.circle.transparent
-      i menu
-    h5(class="max center-align") Extract Pdf Text
-    button(class="circle transparent")
-      img.responsive(src="/favicon-32x32.png")
 .grid
   .s9.m9.l9
     PdfUpload(class="center upload" v-if="!page" @uploadFile="uploadFile")
     .pdfview(v-if="page")
-      .backcol(v-show="hasLeft()" @click="goLeft")
+      .backcol(:class="{ invisible: !hasLeft() }" @click="goLeft")
         button.circle.transparent.left
           img.responsive(src="@/assets/arrow_left_icon.png")
       .pageview.responsive
@@ -20,7 +13,7 @@ header.fill
           .field.border.round.small
             input(type="number" v-model="pdfdata.pages.length" disabled)
         PdfPageCanvas(:page="page")
-      .nextcol(v-show="hasRight()" @click="goRight")
+      .nextcol(:class="{ invisible: !hasRight() }" @click="goRight")
         button.circle.transparent.right
           img.responsive(src="@/assets/arrow_right_icon.png")
   .s3.m3.l3
@@ -155,7 +148,7 @@ const goRight = () => {
     cursor: pointer;
     min-height: 100%;
     background: var(--primary);
-    opacity: 0.5;
+    opacity: 0.3;
     transition: opacity 0.2s ease-in-out;
     &:hover {
       opacity: 0.8;

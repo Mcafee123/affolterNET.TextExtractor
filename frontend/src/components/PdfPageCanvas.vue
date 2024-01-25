@@ -1,6 +1,6 @@
 <template lang="pug">
 .wrapper(ref="wrapper")
-  canvas(ref="letterCanvas" @mousemove="highlight($event)" @click="select($event)")
+  canvas(id="letterCanvas" ref="letterCanvas" @mousemove="highlight($event)" @click="select($event)")
   canvas(ref="boxesCanvas")
 </template>
 
@@ -205,6 +205,9 @@ const select = (evt: MouseEvent) => {
     position: absolute;
     top: 0;
     left: 0;
+  }
+  #letterCanvas {
+    background-color: white;
   }
 }
 

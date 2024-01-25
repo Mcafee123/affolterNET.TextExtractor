@@ -1,32 +1,37 @@
-<script setup lang="ts">
-
-</script>
-
 <template lang="pug">
+header.fill
+  nav
+    RouterLink(to="/")
+      i home
+      div Home
+    RouterLink(to="/pdf")
+      i picture_as_pdf 
+      div PDF
+    h5(class="max center-align") ...
+    button(class="circle transparent")
+      img.responsive(src="/favicon-32x32.png")
 
-nav.left
-  RouterLink(to="/")
-    i home
-    div Home
-  RouterLink(to="/pdf")
-    i picture_as_pdf 
-    div PDF
-  a
-    i search
-    div Search
-  a
-    i share
-    div share
 main.responsive.max
   RouterView
 
 </template>
 
+<script setup lang="ts">
+import { onMounted } from 'vue';
+
+
+onMounted(async () => {
+  document.body.classList.add('dark')
+  await ui('theme', '/favicon-32x32.png')
+})
+
+</script>
+
 <style lang="scss" scoped>
 .main.responsive.max {
     min-height: 800px;
     background: lightgray;
-    padding: 0;
+    padding: 0 !important;
 }
 
 .block {
