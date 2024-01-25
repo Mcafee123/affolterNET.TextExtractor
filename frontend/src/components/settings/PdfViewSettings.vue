@@ -2,17 +2,29 @@
 .viewsettings
   h3 Anzeigen
   .contents
-    .cb
+    label.checkbox.icon
       input(type="checkbox" v-model="showBlockBorders")
+      span
+        i close 
+        i done
       span Blockgrenzen
-    .cb
+    label.checkbox.icon
       input(type="checkbox" v-model="showLineBorders")
+      span
+        i close 
+        i done
       span Zeilengrenzen
-    .cb
+    label.checkbox.icon
       input(type="checkbox" v-model="showWordBorders")
+      span
+        i close 
+        i done  
       span Wortgrenzen
-    .cb
+    label.checkbox.icon
       input(type="checkbox" v-model="showLetterBorders")
+      span
+        i close 
+        i done
       span Buchstabengrenzen
 
 </template>
@@ -30,8 +42,5 @@ const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders } 
 .viewsettings {
   display: flex;
   flex-direction: column;
-  .contents {
-    background: white;
-  }
 }
 </style>

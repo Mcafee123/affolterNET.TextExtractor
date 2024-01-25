@@ -17,15 +17,16 @@ nav.left
   a
     i share
     div share
-main.responsive
+main.responsive.max
   RouterView
 
 </template>
 
 <style lang="scss" scoped>
-.main {
+.main.responsive.max {
     min-height: 800px;
     background: lightgray;
+    padding: 0;
 }
 
 .block {

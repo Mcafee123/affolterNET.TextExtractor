@@ -7,21 +7,23 @@ header.fill
     button(class="circle transparent")
       img.responsive(src="/favicon-32x32.png")
 .grid
-  .s12.m12.l8
+  .s9.m9.l9
     PdfUpload(class="center upload" v-if="!page" @uploadFile="uploadFile")
     .pdfview(v-if="page")
       .backcol
-        button(class="circle transparent left" @click="goLeft")
+        button.circle.transparent.left(@click="goLeft")
           img.responsive(src="@/assets/arrow_left_icon.png")
-      .pageview
+      .pageview.responsive
         .center.current
           .field.border.round.small
             input(type="number" v-model="currentPage")
-        PdfPage(:page="page")
+          .field.border.round.small
+            input(type="number" v-model="pdfdata.pages.length" readonly)
+        PdfPageCanvas(:page="page")
       .nextcol
-        button(class="circle transparent right" @click="goRight")
+        button.circle.transparent.right(@click="goRight")
           img.responsive(src="@/assets/arrow_right_icon.png")
-  .s12.m12.l4
+  .s3.m3.l3
     .settingscol(v-if="page")
       PdfUpload(@uploadFile="uploadFile")
       PdfViewSettings
@@ -38,6 +40,8 @@ import { ref, watch } from 'vue'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PdfPage from '@/components/PdfPage.vue'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import PdfPageCanvas from '@/components/PdfPageCanvas.vue'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PdfUpload from '@/components/settings/PdfUpload.vue'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -69,6 +73,7 @@ const uploadFile = async (pdf: File) => {
   const response = await (await fetch('/api/upload', options)).json()
   pdfdata.value = response as PdfDocument
   currentPage.value = 1
+  setPage(0)
 }
 
 watch(currentPage, (index) => {
@@ -85,7 +90,6 @@ const setPage = (index: number) => {
     return
   }
   page.value = pdfdata.value.pages[index]
-  console.log('page:', index + 1)
 }
 
 const hasLeft = () => {
@@ -100,12 +104,14 @@ const hasRight = () => {
   return currentPage.value  < pdfdata.value.pages.length
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const goLeft = () => {
   if (hasLeft()) {
     currentPage.value--
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const goRight = () => {
   if (hasRight()) {
     currentPage.value++
@@ -116,27 +122,34 @@ const goRight = () => {
 
 <style lang="scss" scoped>
 
+.grid {
+  margin-top: 0;
+  min-width: 700px;
+}
+
 .upload {
-  margin-top: 20%;
+  margin-top: 5%;
 }
 
 .pdfview {
   display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
 
   .pageview {
-    background: rgb(239, 235, 218);
     padding-top: 2px;
     .field {
+      margin-block-start: 0;
       margin-block-end: 2px;
     }
     .current {
-      max-width: 90px;
+      display: flex;
+      max-width: 180px;
     }
   }
   .settingscol {
     background: #052;
     padding: 5px;
-    max-width: 250px;
     overflow-y: scroll
   }
 
