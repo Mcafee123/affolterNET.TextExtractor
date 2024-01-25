@@ -1,7 +1,7 @@
 <template lang="pug">
 .wrapper(ref="wrapper")
-  canvas(id="letters" ref="letterCanvas")
-  canvas(id="borders" ref="boxesCanvas")
+  canvas(ref="letterCanvas" @mousemove="highlight($event)" @click="select($event)")
+  canvas(ref="boxesCanvas")
 </template>
 
 <script lang="ts" setup>
@@ -9,7 +9,7 @@
 import { useViewSettings } from '@/composables/useViewSettings';
 import type { Box } from '@/types/boundingBox';
 import type { Page } from '@/types/page';
-import { onMounted, ref, type PropType, type Ref, onUnmounted, watch, withCtx } from 'vue'
+import { onMounted, ref, type PropType, type Ref, onUnmounted, watch } from 'vue'
 
 const wrapper: Ref<HTMLDivElement | undefined> = ref()
 const letterCanvas: Ref<HTMLCanvasElement | undefined> = ref()
@@ -43,13 +43,19 @@ const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders } 
 
 let pageWidth = props.page.boundingBox.topRightX
 let pageHeight = props.page.boundingBox.topRightY
+let scale = 1
 
 watch(() => props.page, () => {
+  if (!letterCanvas.value) {
+    console.error('no letterCanvas')
+    return
+  }
   // if page changes, clear the canvas elements and redraw
   pageWidth = props.page.boundingBox.topRightX
   pageHeight = props.page.boundingBox.topRightY
+  scale = letterCanvas.value.width / pageWidth
   clearCanvas()
-  renderPage()
+  resize()
 })
 
 watch(() => showBlockBorders.value, () => {
@@ -95,6 +101,7 @@ const resize = () => {
   letterCanvas.value.height = wrapper.value.clientWidth / pageWidth * pageHeight
   boxesCanvas.value.width = letterCanvas.value.width
   boxesCanvas.value.height = letterCanvas.value.height
+  scale = letterCanvas.value.width / pageWidth
   renderPage()
 }
 
@@ -133,7 +140,6 @@ const renderPage = (boxesOnly: boolean = false) => {
   if (!letterCanvas.value || !boxesCanvas.value || !letterCtx.value || !boxesCtx.value) {
     return
   }
-  const scale = letterCanvas.value.width / pageWidth
   for (var b = 0; b < props.page.blocks.length; b++) {
     const block = props.page.blocks[b]
     // box around each block
@@ -176,6 +182,14 @@ const renderPage = (boxesOnly: boolean = false) => {
       }
     }
   }
+}
+
+const highlight = (evt: MouseEvent) => {
+
+}
+
+const select = (evt: MouseEvent) => {
+
 }
 
 </script>

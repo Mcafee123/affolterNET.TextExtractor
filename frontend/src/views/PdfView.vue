@@ -11,17 +11,17 @@ header.fill
     PdfUpload(class="center upload" v-if="!page" @uploadFile="uploadFile")
     .pdfview(v-if="page")
       .backcol
-        button.circle.transparent.left(@click="goLeft")
+        button.circle.transparent.left(v-show="hasLeft()" @click="goLeft")
           img.responsive(src="@/assets/arrow_left_icon.png")
       .pageview.responsive
         .center.current
           .field.border.round.small
             input(type="number" v-model="currentPage")
           .field.border.round.small
-            input(type="number" v-model="pdfdata.pages.length" readonly)
+            input(type="number" v-model="pdfdata.pages.length" disabled)
         PdfPageCanvas(:page="page")
       .nextcol
-        button.circle.transparent.right(@click="goRight")
+        button.circle.transparent.right(v-show="hasRight()" @click="goRight")
           img.responsive(src="@/assets/arrow_right_icon.png")
   .s3.m3.l3
     .settingscol(v-if="page")
@@ -38,8 +38,6 @@ header.fill
 
 import { ref, watch } from 'vue'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PdfPage from '@/components/PdfPage.vue'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PdfPageCanvas from '@/components/PdfPageCanvas.vue'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
