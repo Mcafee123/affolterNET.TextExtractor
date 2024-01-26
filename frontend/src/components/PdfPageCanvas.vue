@@ -2,13 +2,14 @@
 .wrapper(ref="wrapper")
   canvas(id="letterCanvas" ref="letterCanvas")
   canvas(id="boxesCanvas" ref="boxesCanvas")
-  canvas(id="selectionCanvas" ref="selectionCanvas" @mousemove="highlight" @click="select($event)")
+  canvas(id="selectionCanvas" ref="selectionCanvas" @mousemove="highlight" @click="select")
 </template>
 
 <script lang="ts" setup>
 
 import { useViewSettings } from '@/composables/useViewSettings';
 import type { Box } from '@/types/boundingBox';
+import type { Letter } from '@/types/letter';
 import type { Page } from '@/types/page';
 import { onMounted, ref, type PropType, type Ref, onUnmounted, watch } from 'vue'
 
@@ -42,7 +43,7 @@ const clearCanvas = (mode?: 'letter' | 'boxes') => {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, hexToRgb } = useViewSettings()
+const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, blockJson, lineJson, wordJson, letterJson, hexToRgb } = useViewSettings()
 const prim = hexToRgb('--primary')
 let color = 'rgba(134, 217, 146, 0.5)'
 if (prim) {
@@ -127,6 +128,16 @@ const makeRect = (ctx: CanvasRenderingContext2D, boundingBox: Box, heightscale: 
   ctx.rect(x, y, width, height)
 }
 
+const makeLetterRect = (ctx: CanvasRenderingContext2D, letter: Letter) => {
+  const x = letter.startBaseLine.X * scale
+  const y = (getY(letter.startBaseLine.Y) - letter.fontSize) * scale
+  const width = (letter.endBaseLine.X - letter.startBaseLine.X) * scale
+  const height = letter.fontSize * scale
+  ctx.beginPath()
+  ctx.rect(x, y, width, height)
+  return width
+}
+
 const drawBox = (ctx: CanvasRenderingContext2D, boundingBox: Box, color: string, lineWidth: number) => {
   ctx.beginPath()
   ctx.lineWidth = lineWidth
@@ -177,22 +188,18 @@ const renderPage = (boxesOnly: boolean = false) => {
         }
         for (var le = 0; le < word.letters.length; le++) {
           const letter = word.letters[le]
+          boxesCtx.value.beginPath()
+          boxesCtx.value.lineWidth = 0.3
+          boxesCtx.value.strokeStyle = 'violet'
+          const width = makeLetterRect(boxesCtx.value, letter)
           // box around each letter
-          const x = letter.startBaseLine.X * scale
-          const y = (getY(letter.startBaseLine.Y) - letter.fontSize) * scale
-          const width = (letter.endBaseLine.X - letter.startBaseLine.X) * scale
-          const height = letter.fontSize * scale
           if (showLetterBorders.value) {
-            boxesCtx.value.beginPath()
-            boxesCtx.value.lineWidth = 0.3
-            boxesCtx.value.strokeStyle = 'violet'
-            boxesCtx.value.rect(x, y, width, height)
             boxesCtx.value.stroke()
           }
           // letter
           if (!boxesOnly) {
             letterCtx.value.font = getFont(fontName, letter.fontSize)
-            letterCtx.value.fillText(letter.text, letter.startBaseLine.X * scale, getY(letter.startBaseLine.Y) * scale)
+            letterCtx.value.fillText(letter.text, letter.startBaseLine.X * scale, getY(letter.startBaseLine.Y) * scale, width)
           }
         }
       }
@@ -237,8 +244,37 @@ const highlight = ($event: MouseEvent) => {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const select = (evt: MouseEvent) => {
+const select = ($event: MouseEvent) => {
+  const cvs = selectionCanvas.value
+  const ctx = selectionCtx.value
+  if (!cvs || !ctx) {
+    return
+  }
 
+  // important: correct mouse position:
+  const rect = ctx.canvas.getBoundingClientRect()
+  const x = $event.clientX - rect.left
+  const y = $event.clientY - rect.top
+
+  for (var b = 0; b < props.page.blocks.length; b++) {
+    const block = props.page.blocks[b]
+    for (var l = 0; l < block.lines.length; l++) {
+      const line = block.lines[l]
+      for (var w = 0; w < line.words.length; w++) {
+        const word = line.words[w]
+        for (var le = 0; le < word.letters.length; le++) {
+          const letter = word.letters[le]
+          ctx.beginPath()
+          makeLetterRect(ctx, letter)
+          if (ctx.isPointInPath(x, y)) {
+            letterJson.value = letter
+            console.log('selected letter:', letter.text)
+            return
+          }
+        }
+      }
+    }
+  }
 }
 </script>
 
