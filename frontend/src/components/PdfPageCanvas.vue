@@ -2,7 +2,8 @@
 .wrapper(ref="wrapper")
   canvas(id="letterCanvas" ref="letterCanvas")
   canvas(id="boxesCanvas" ref="boxesCanvas")
-  canvas(id="selectionCanvas" ref="selectionCanvas" @mousemove="highlight" @click="select")
+  canvas(id="selectionCanvas" ref="selectionCanvas")
+  canvas(id="hoveringCanvas" ref="hoveringCanvas" @mousemove="highlight" @click="select")
 </template>
 
 <script lang="ts" setup>
@@ -16,9 +17,11 @@ import { onMounted, ref, type PropType, type Ref, onUnmounted, watch } from 'vue
 const wrapper: Ref<HTMLDivElement | undefined> = ref()
 const letterCanvas: Ref<HTMLCanvasElement | undefined> = ref()
 const boxesCanvas: Ref<HTMLCanvasElement | undefined> = ref()
+const hoveringCanvas: Ref<HTMLCanvasElement | undefined> = ref()
 const selectionCanvas: Ref<HTMLCanvasElement | undefined> = ref()
 const letterCtx = ref<CanvasRenderingContext2D>()
 const boxesCtx = ref<CanvasRenderingContext2D>()
+const hoveringCtx = ref<CanvasRenderingContext2D>()
 const selectionCtx = ref<CanvasRenderingContext2D>()
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -45,10 +48,15 @@ const clearCanvas = (mode?: 'letter' | 'boxes') => {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, blockJson, lineJson, wordJson, letterJson, hexToRgb } = useViewSettings()
 const prim = hexToRgb('--primary')
-let color = 'rgba(134, 217, 146, 0.5)'
+let primarycoloralpha = 'rgba(134, 217, 146, 0.5)'
 if (prim) {
-  color = `rgba(${prim.r}, ${prim.g}, ${prim.b}, 0.5)`
-} 
+  primarycoloralpha = `rgba(${prim.r}, ${prim.g}, ${prim.b}, 0.5)`
+}
+const onprim = hexToRgb('--on-primary')
+let onprimarycolor = 'rgba(134, 217, 146, 1)'
+if (onprim) {
+  onprimarycolor = `rgba(${onprim.r}, ${onprim.g}, ${onprim.b}, 1)`
+}
 let pageWidth = props.page.boundingBox.topRightX
 let pageHeight = props.page.boundingBox.topRightY
 let scale = 1
@@ -90,6 +98,7 @@ onMounted(() => {
   window.addEventListener('resize', resize)
   letterCtx.value = letterCanvas.value?.getContext('2d') as CanvasRenderingContext2D
   boxesCtx.value = boxesCanvas.value?.getContext('2d') as CanvasRenderingContext2D
+  hoveringCtx.value = hoveringCanvas.value?.getContext('2d') as CanvasRenderingContext2D
   selectionCtx.value = selectionCanvas.value?.getContext('2d') as CanvasRenderingContext2D
   resize()
 })
@@ -98,11 +107,11 @@ onUnmounted(() => {
   window.removeEventListener('resize', resize)
   letterCtx.value = undefined
   boxesCtx.value = undefined
-  selectionCtx.value = undefined
+  hoveringCtx.value = undefined
 })
 
 const resize = () => {
-  if (!letterCanvas.value || !boxesCanvas.value || !selectionCanvas.value || !wrapper.value) {
+  if (!letterCanvas.value || !boxesCanvas.value || !hoveringCanvas.value || !selectionCanvas.value || !wrapper.value) {
     console.error('no canvas or no wrapper for resize')
     return
   }
@@ -111,6 +120,8 @@ const resize = () => {
   letterCanvas.value.height = wrapper.value.clientWidth / pageWidth * pageHeight
   boxesCanvas.value.width = letterCanvas.value.width
   boxesCanvas.value.height = letterCanvas.value.height
+  hoveringCanvas.value.width = letterCanvas.value.width
+  hoveringCanvas.value.height = letterCanvas.value.height
   selectionCanvas.value.width = letterCanvas.value.width
   selectionCanvas.value.height = letterCanvas.value.height
   wrapper.value.style.height = `${letterCanvas.value.height}px`
@@ -209,8 +220,8 @@ const renderPage = (boxesOnly: boolean = false) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const highlight = ($event: MouseEvent) => {
-  const cvs = selectionCanvas.value
-  const ctx = selectionCtx.value
+  const cvs = hoveringCanvas.value
+  const ctx = hoveringCtx.value
   if (!cvs || !ctx) {
     return
   }
@@ -232,7 +243,7 @@ const highlight = ($event: MouseEvent) => {
         makeRect(ctx, word.boundingBox, 1.3)
         if (ctx.isPointInPath(x, y)) {
           cvs.style.cursor = 'pointer'
-          ctx.fillStyle = color
+          ctx.fillStyle = primarycoloralpha
           ctx.fill()
           return
         } else {
@@ -271,7 +282,15 @@ const select = ($event: MouseEvent) => {
             wordJson.value = { boundingBox: word.boundingBox, text: word.text, fontName: word.fontName }
             lineJson.value = { boundingBox: line.boundingBox, text: line.words.map(w => w.text).join('') }
             blockJson.value = { boundingBox: block.boundingBox, text: block.lines.map(l => l.words.map(w => w.text).join('')).join('') }
-            console.log('selected letter:', letter.text)
+            
+            // make selection Rectangle
+            ctx.clearRect(0, 0, cvs.width, cvs.height)
+            ctx.beginPath()
+            makeRect(ctx, word.boundingBox)
+            ctx.fillStyle = primarycoloralpha
+            ctx.strokeStyle = onprimarycolor
+            ctx.fill()
+            ctx.stroke()
             return
           }
         }
