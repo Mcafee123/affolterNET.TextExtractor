@@ -1,0 +1,15 @@
+{
+  "routes": [
+    {
+      "route": "/pdf"
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/",
+    "exclude": [
+      "/img/*.{png,jpg,gif}",
+      "/css/*.css",
+      "/js/*.js"
+    ]
+  }
+}

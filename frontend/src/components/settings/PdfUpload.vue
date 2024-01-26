@@ -4,6 +4,7 @@ article
     i attach_file
     span Upload PDF
     input(id="pdf_upload" type="file" name="pdf-upload" @change="uploadFile($event)" accept="application/pdf")
+  p Je nach Grösse des PDF Dokuments kann das Verarbeiten einige Zeit dauern.
 </template>
 
 <script lang="ts" setup>
