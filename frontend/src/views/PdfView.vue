@@ -18,6 +18,9 @@
           img.responsive(src="@/assets/arrow_right_icon.png")
   .s3.m3.l3
     .settingscol(v-if="page")
+      article
+        h5 Filename
+        p {{ pdfdata.filename }}
       PdfUpload(@uploadFile="uploadFile")
       PdfViewSettings
       PdfBlockJson
