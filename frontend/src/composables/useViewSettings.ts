@@ -38,9 +38,14 @@ export function useViewSettings() {
     setToStorage('showBlockBorders', value ? 'true' : 'false')
   })
 
+  const getCssVar = (cssvar: string, element: HTMLElement = document.body) => {
+    const val = element.style.getPropertyValue(cssvar)
+    return val
+  }
+
   // rgb from hex color
   const hexToRgb = (cssvar: string) => {
-    const hex = document.body.style.getPropertyValue(cssvar)
+    const hex = getCssVar(cssvar)
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result ? {
       r: parseInt(result[1], 16),
@@ -49,5 +54,5 @@ export function useViewSettings() {
     } : null;
   }
 
-  return { showLetterBorders, showWordBorders, showLineBorders, showBlockBorders, blockJson, lineJson, wordJson, letterJson, hexToRgb }
+  return { showLetterBorders, showWordBorders, showLineBorders, showBlockBorders, blockJson, lineJson, wordJson, letterJson, hexToRgb, getCssVar }
 }

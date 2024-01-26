@@ -49,22 +49,30 @@ import PdfLetterJson from '@/components/settings/PdfLetterJson.vue'
 import type { PdfDocument } from '@/types/pdfDocument'
 import type { Page } from '@/types/page'
 
+import { loaderService } from 'affolternet-vue3-library'
+
 const pdfdata = ref<PdfDocument | null>(null)
 const page = ref<Page | null>(null)
 const currentPage = ref<number>(0)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const uploadFile = async (pdf: File) => {
-  const formData = new FormData()
-  formData.append('file', pdf)
-  const options = {
-    method: 'POST',
-    body: formData,
+  loaderService.showLoader()
+  try {
+    const formData = new FormData()
+    formData.append('file', pdf)
+    const options = {
+      method: 'POST',
+      body: formData,
+    }
+    const response = await (await fetch('/api/upload', options)).json()
+    pdfdata.value = response as PdfDocument
+    currentPage.value = 1
+    setPage(0)
   }
-  const response = await (await fetch('/api/upload', options)).json()
-  pdfdata.value = response as PdfDocument
-  currentPage.value = 1
-  setPage(0)
+  finally {
+    loaderService.hideLoader()
+  }
 }
 
 watch(currentPage, (index) => {
