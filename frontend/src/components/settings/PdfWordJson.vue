@@ -1,9 +1,12 @@
 <template lang="pug">
-h3 Word
-.contents(v-if="wordJson")
-  BoundingBox(v-if="wordJson.boundingBox" :block="wordJson.boundingBox")
-  b Text:
-  .text {{ wordJson.text }}
+article
+  h5 Word
+  .contents(v-if="wordJson")
+    BoundingBox(v-if="wordJson.boundingBox" :block="wordJson.boundingBox")
+    b Text:
+    .text {{ wordJson.text }}
+    b Font:
+    .font {{  wordJson.fontName }}
 </template>
 
 <script lang="ts" setup>
@@ -18,9 +21,5 @@ const { wordJson } = useViewSettings()
 </script>
 
 <style lang="scss" scoped>
-
-.contents {
-  background: white;
-}
 
 </style>

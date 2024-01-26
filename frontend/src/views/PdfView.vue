@@ -3,17 +3,17 @@
   .s9.m9.l9
     PdfUpload(class="center upload" v-if="!page" @uploadFile="uploadFile")
     .pdfview(v-if="page")
-      .backcol(:class="{ invisible: !hasLeft() }" @click="goLeft")
+      .backcol(v-if="pdfdata.pages.length > 1" :class="{ invisible: !hasLeft() }" @click="goLeft")
         button.circle.transparent.left
           img.responsive(src="@/assets/arrow_left_icon.png")
       .pageview.responsive
-        .center.current
+        .center.current(v-if="pdfdata.pages.length > 1")
           .field.border.round.small
             input(type="number" v-model="currentPage")
           .field.border.round.small
             input(type="number" v-model="pdfdata.pages.length" disabled)
         PdfPageCanvas(:page="page")
-      .nextcol(:class="{ invisible: !hasRight() }" @click="goRight")
+      .nextcol(v-if="pdfdata.pages.length > 1" :class="{ invisible: !hasRight() }" @click="goRight")
         button.circle.transparent.right
           img.responsive(src="@/assets/arrow_right_icon.png")
   .s3.m3.l3

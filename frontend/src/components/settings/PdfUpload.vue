@@ -1,8 +1,9 @@
 <template lang="pug">
-button
-  i attach_file
-  span Upload PDF
-  input(id="pdf_upload" type="file" name="pdf-upload" @change="uploadFile($event)" accept="application/pdf")
+article
+  button
+    i attach_file
+    span Upload PDF
+    input(id="pdf_upload" type="file" name="pdf-upload" @change="uploadFile($event)" accept="application/pdf")
 </template>
 
 <script lang="ts" setup>

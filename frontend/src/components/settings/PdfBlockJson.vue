@@ -1,9 +1,10 @@
 <template lang="pug">
-h3 Block
-.contents(v-if="blockJson")
-  BoundingBox(v-if="blockJson.boundingBox" :block="blockJson.boundingBox")
-  b Text:
-  .text {{ blockJson.text }}
+article
+  h5 Block
+  .contents(v-if="blockJson")
+    BoundingBox(v-if="blockJson.boundingBox" :block="blockJson.boundingBox")
+    b Text:
+    .text {{ blockJson.text }}
 </template>
 
 <script lang="ts" setup>
@@ -19,7 +20,4 @@ const { blockJson } = useViewSettings()
 
 <style lang="scss" scoped>
 
-.contents {
-  background: white;
-}
 </style>

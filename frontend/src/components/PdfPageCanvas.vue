@@ -138,11 +138,11 @@ const makeLetterRect = (ctx: CanvasRenderingContext2D, letter: Letter) => {
   return width
 }
 
-const drawBox = (ctx: CanvasRenderingContext2D, boundingBox: Box, color: string, lineWidth: number) => {
+const drawBox = (ctx: CanvasRenderingContext2D, boundingBox: Box, color: string, lineWidth: number, rectheightscale = 1) => {
   ctx.beginPath()
   ctx.lineWidth = lineWidth
   ctx.strokeStyle = color
-  makeRect(ctx, boundingBox)
+  makeRect(ctx, boundingBox, rectheightscale)
   ctx.stroke()
 }
 
@@ -171,13 +171,13 @@ const renderPage = (boxesOnly: boolean = false) => {
     const block = props.page.blocks[b]
     // box around each block
     if (showBlockBorders.value) {
-      drawBox(boxesCtx.value, block.boundingBox, 'red', 1.5)
+      drawBox(boxesCtx.value, block.boundingBox, 'red', 1.5, 1.05)
     }
     for (var l = 0; l < block.lines.length; l++) {
       const line = block.lines[l]
       // box around each line
       if (showLineBorders.value) {
-        drawBox(boxesCtx.value, line.boundingBox, 'blue', 1)
+        drawBox(boxesCtx.value, line.boundingBox, 'blue', 1, 1.1)
       }
       for (var w = 0; w < line.words.length; w++) {
         const word = line.words[w]
@@ -267,7 +267,10 @@ const select = ($event: MouseEvent) => {
           ctx.beginPath()
           makeLetterRect(ctx, letter)
           if (ctx.isPointInPath(x, y)) {
-            letterJson.value = letter
+            letterJson.value = { fontSize: letter.fontSize, text: letter.text, startBaseLine: letter.startBaseLine }
+            wordJson.value = { boundingBox: word.boundingBox, text: word.text, fontName: word.fontName }
+            lineJson.value = { boundingBox: line.boundingBox, text: line.words.map(w => w.text).join('') }
+            blockJson.value = { boundingBox: block.boundingBox, text: block.lines.map(l => l.words.map(w => w.text).join('')).join('') }
             console.log('selected letter:', letter.text)
             return
           }

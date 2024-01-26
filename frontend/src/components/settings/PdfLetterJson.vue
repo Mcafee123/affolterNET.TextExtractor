@@ -1,14 +1,15 @@
 <template lang="pug">
-h3 Letter
-.contents(v-if="letterJson")
-  b Font-Size: 
-  span {{ letterJson.fontSize }}
-  br
-  b Text:
-  span {{ letterJson.text }}
-  br
-  b Start-Base: 
-  div X: {{ letterJson.startBaseLine.X }}, Y: {{ letterJson.startBaseLine.Y }}
+article
+  h5 Letter
+  .contents(v-if="letterJson")
+    b Font-Size: 
+    span {{ letterJson.fontSize }}
+    br
+    b Text:
+    span {{ letterJson.text }}
+    br
+    b Start-Base: 
+    div X: {{ letterJson.startBaseLine.X }}, Y: {{ letterJson.startBaseLine.Y }}
 </template>
 
 <script lang="ts" setup>
@@ -21,9 +22,5 @@ const { letterJson } = useViewSettings()
 </script>
 
 <style lang="scss" scoped>
-
-.contents {
-  background: white;
-}
 
 </style>
