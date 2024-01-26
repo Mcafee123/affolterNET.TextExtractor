@@ -33,15 +33,17 @@ const props = defineProps({
 })
 
 const clearCanvas = (mode?: 'letter' | 'boxes') => {
-  if (!letterCanvas.value || !boxesCanvas.value || !letterCtx.value || !boxesCtx.value) {
+  if (!letterCanvas.value || !letterCtx.value || !boxesCtx.value || !hoveringCtx.value || !selectionCtx.value) {
     console.error('no canvas or no contexts')
     return
   }
   if (mode === 'letter' || mode == undefined) {
     letterCtx.value.clearRect(0, 0, letterCanvas.value.width, letterCanvas.value.height)
+    hoveringCtx.value.clearRect(0, 0, letterCanvas.value.width, letterCanvas.value.height)
+    selectionCtx.value.clearRect(0, 0, letterCanvas.value.width, letterCanvas.value.height)
   }
   if (mode === 'boxes' || mode == undefined) {
-    boxesCtx.value.clearRect(0, 0, boxesCanvas.value.width, boxesCanvas.value.height)
+    boxesCtx.value.clearRect(0, 0, letterCanvas.value.width, letterCanvas.value.height)
   }
 }
 
@@ -71,7 +73,13 @@ watch(() => props.page, () => {
   pageHeight = props.page.boundingBox.topRightY
   scale = letterCanvas.value.width / pageWidth
   clearCanvas()
-  resize()
+  blockJson.value = null
+  lineJson.value = null
+  wordJson.value = null
+  letterJson.value = null
+  setTimeout(() => {
+    resize()
+  }, 10)
 })
 
 watch(() => showBlockBorders.value, () => {
