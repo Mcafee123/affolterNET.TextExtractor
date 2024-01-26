@@ -1,7 +1,8 @@
 <template lang="pug">
 .wrapper(ref="wrapper")
-  canvas(id="letterCanvas" ref="letterCanvas" @mousemove="highlight($event)" @click="select($event)")
-  canvas(ref="boxesCanvas")
+  canvas(id="letterCanvas" ref="letterCanvas")
+  canvas(id="boxesCanvas" ref="boxesCanvas")
+  canvas(id="selectionCanvas" ref="selectionCanvas" @mousemove="highlight" @click="select($event)")
 </template>
 
 <script lang="ts" setup>
@@ -14,8 +15,10 @@ import { onMounted, ref, type PropType, type Ref, onUnmounted, watch } from 'vue
 const wrapper: Ref<HTMLDivElement | undefined> = ref()
 const letterCanvas: Ref<HTMLCanvasElement | undefined> = ref()
 const boxesCanvas: Ref<HTMLCanvasElement | undefined> = ref()
+const selectionCanvas: Ref<HTMLCanvasElement | undefined> = ref()
 const letterCtx = ref<CanvasRenderingContext2D>()
 const boxesCtx = ref<CanvasRenderingContext2D>()
+const selectionCtx = ref<CanvasRenderingContext2D>()
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
@@ -39,8 +42,12 @@ const clearCanvas = (mode?: 'letter' | 'boxes') => {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders } = useViewSettings()
-
+const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, hexToRgb } = useViewSettings()
+const prim = hexToRgb('--primary')
+let color = 'rgba(134, 217, 146, 0.5)'
+if (prim) {
+  color = `rgba(${prim.r}, ${prim.g}, ${prim.b}, 0.5)`
+} 
 let pageWidth = props.page.boundingBox.topRightX
 let pageHeight = props.page.boundingBox.topRightY
 let scale = 1
@@ -82,6 +89,7 @@ onMounted(() => {
   window.addEventListener('resize', resize)
   letterCtx.value = letterCanvas.value?.getContext('2d') as CanvasRenderingContext2D
   boxesCtx.value = boxesCanvas.value?.getContext('2d') as CanvasRenderingContext2D
+  selectionCtx.value = selectionCanvas.value?.getContext('2d') as CanvasRenderingContext2D
   resize()
 })
 
@@ -89,10 +97,11 @@ onUnmounted(() => {
   window.removeEventListener('resize', resize)
   letterCtx.value = undefined
   boxesCtx.value = undefined
+  selectionCtx.value = undefined
 })
 
 const resize = () => {
-  if (!letterCanvas.value || !boxesCanvas.value || !wrapper.value) {
+  if (!letterCanvas.value || !boxesCanvas.value || !selectionCanvas.value || !wrapper.value) {
     console.error('no canvas or no wrapper for resize')
     return
   }
@@ -101,6 +110,8 @@ const resize = () => {
   letterCanvas.value.height = wrapper.value.clientWidth / pageWidth * pageHeight
   boxesCanvas.value.width = letterCanvas.value.width
   boxesCanvas.value.height = letterCanvas.value.height
+  selectionCanvas.value.width = letterCanvas.value.width
+  selectionCanvas.value.height = letterCanvas.value.height
   wrapper.value.style.height = `${letterCanvas.value.height}px`
   scale = letterCanvas.value.width / pageWidth
   renderPage()
@@ -108,19 +119,23 @@ const resize = () => {
 
 const getY = (y: number) => pageHeight - y
 
-const drawBox = (ctx: CanvasRenderingContext2D, boundingBox: Box, scale: number, color: string, lineWidth: number) => {
-  ctx.beginPath()
-  ctx.lineWidth = lineWidth
-  ctx.strokeStyle = color
+const makeRect = (ctx: CanvasRenderingContext2D, boundingBox: Box, heightscale: number = 1.2) => {
   const x = boundingBox.bottomLeftX * scale
   const y = getY(boundingBox.topRightY) * scale
   const width = (boundingBox.topRightX - boundingBox.bottomLeftX) * scale
-  const height = (boundingBox.topRightY - boundingBox.bottomLeftY) * scale
+  const height = ((boundingBox.topRightY - boundingBox.bottomLeftY) * heightscale) * scale
   ctx.rect(x, y, width, height)
+}
+
+const drawBox = (ctx: CanvasRenderingContext2D, boundingBox: Box, color: string, lineWidth: number) => {
+  ctx.beginPath()
+  ctx.lineWidth = lineWidth
+  ctx.strokeStyle = color
+  makeRect(ctx, boundingBox)
   ctx.stroke()
 }
 
-const getFont = (fontName: string, fontSize: number, scale: number) => {
+const getFont = (fontName: string, fontSize: number) => {
   const parts: string[] = []
   if (fontName.indexOf('italic') > -1) {
     parts.push('italic')
@@ -145,20 +160,20 @@ const renderPage = (boxesOnly: boolean = false) => {
     const block = props.page.blocks[b]
     // box around each block
     if (showBlockBorders.value) {
-      drawBox(boxesCtx.value, block.boundingBox, scale, 'red', 1.5)
+      drawBox(boxesCtx.value, block.boundingBox, 'red', 1.5)
     }
     for (var l = 0; l < block.lines.length; l++) {
       const line = block.lines[l]
       // box around each line
       if (showLineBorders.value) {
-        drawBox(boxesCtx.value, line.boundingBox, scale, 'blue', 1)
+        drawBox(boxesCtx.value, line.boundingBox, 'blue', 1)
       }
       for (var w = 0; w < line.words.length; w++) {
         const word = line.words[w]
         const fontName = word.fontName
         // box around each word
         if (showWordBorders.value) {
-          drawBox(boxesCtx.value, word.boundingBox, scale, 'green', 0.6)
+          drawBox(boxesCtx.value, word.boundingBox, 'green', 0.6)
         }
         for (var le = 0; le < word.letters.length; le++) {
           const letter = word.letters[le]
@@ -176,7 +191,7 @@ const renderPage = (boxesOnly: boolean = false) => {
           }
           // letter
           if (!boxesOnly) {
-            letterCtx.value.font = getFont(fontName, letter.fontSize, scale)
+            letterCtx.value.font = getFont(fontName, letter.fontSize)
             letterCtx.value.fillText(letter.text, letter.startBaseLine.X * scale, getY(letter.startBaseLine.Y) * scale)
           }
         }
@@ -185,18 +200,49 @@ const renderPage = (boxesOnly: boolean = false) => {
   }
 }
 
-const highlight = (evt: MouseEvent) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const highlight = ($event: MouseEvent) => {
+  const cvs = selectionCanvas.value
+  const ctx = selectionCtx.value
+  if (!cvs || !ctx) {
+    return
+  }
 
+  // important: correct mouse position:
+  const rect = ctx.canvas.getBoundingClientRect()
+  const x = $event.clientX - rect.left
+  const y = $event.clientY - rect.top
+
+  // loop through objects
+  ctx.clearRect(0, 0, cvs.width, cvs.height)
+  for (var b = 0; b < props.page.blocks.length; b++) {
+    const block = props.page.blocks[b]
+    for (var l = 0; l < block.lines.length; l++) {
+      const line = block.lines[l]
+      for (var w = 0; w < line.words.length; w++) {
+        const word = line.words[w]
+        ctx.beginPath()
+        makeRect(ctx, word.boundingBox, 1.3)
+        if (ctx.isPointInPath(x, y)) {
+          cvs.style.cursor = 'pointer'
+          ctx.fillStyle = color
+          ctx.fill()
+          return
+        } else {
+          cvs.style.cursor = 'default'
+        }
+      }
+    }
+  }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const select = (evt: MouseEvent) => {
 
 }
-
 </script>
 
 <style lang="scss" scoped>
-
 .wrapper {
   position: relative;
   width: 100%;
@@ -210,5 +256,4 @@ const select = (evt: MouseEvent) => {
     background-color: white;
   }
 }
-
 </style>

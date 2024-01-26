@@ -28,10 +28,8 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.main.responsive.max {
-    min-height: 800px;
-    background: lightgray;
-    padding: 0 !important;
+main.responsive.max {
+    padding: 0;
 }
 
 .block {
