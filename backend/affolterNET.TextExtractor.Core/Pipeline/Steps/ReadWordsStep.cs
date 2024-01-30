@@ -28,7 +28,7 @@ public class ReadWordsStep: IPipelineStep
         context.Document!.GetPages();
         // read pages
         ReadPages(context);
-        _log.Write(EnumLogLevel.Debug, "[yellow]", $"Pages: {context.Document.Pages.Count}", "[/]");
+        _log.Write(EnumLogLevel.Debug, $"Pages: {context.Document.Pages.Count}");
         // add font-statistics
         GetStatistics(context);
     }
@@ -45,6 +45,7 @@ public class ReadWordsStep: IPipelineStep
         {
             document = PdfDocument.Open(context.Filename);
         }
+        
         context.SetDocument(document);
     }
 

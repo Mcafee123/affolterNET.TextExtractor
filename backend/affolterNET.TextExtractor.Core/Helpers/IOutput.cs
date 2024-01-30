@@ -1,3 +1,5 @@
+using affolterNET.TextExtractor.Core.Helpers;
+
 namespace affolterNET.TextExtractor.Core.Helpers;
 
 public interface IOutput

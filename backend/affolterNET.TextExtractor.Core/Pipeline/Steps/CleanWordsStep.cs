@@ -22,14 +22,17 @@ public class CleanWordsStep: IPipelineStep
         var settings = context.GetSettings<CleanWordsStepSettings>();
         
         // remove useless big spaces (Fedlex-Laws)
+        var removedTotal = 0;
         foreach (var page in context.Document!.Pages)
         {
             var removedWords = page.Words.RemoveAll(w =>
                 string.IsNullOrWhiteSpace(w.Text) && w.Letters.Count == 1 && w.Letters.Any(l => l.PointSize > settings.BigSpacesSize));
-            if (removedWords > 0)
-            {
-                _log.Write(EnumLogLevel.Debug, "[yellow]", $"Big spaces removed on page {page.Nr}: {removedWords}", "[/]");
-            }
+            removedTotal += removedWords;
+        }
+        
+        if (removedTotal > 0)
+        {
+            _log.Write(EnumLogLevel.Debug, $"Big spaces removed: {removedTotal}");
         }
     }
 }

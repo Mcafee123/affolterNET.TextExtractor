@@ -9,7 +9,7 @@ namespace affolterNET.TextExtractor.Core.Extensions;
 
 public static class ConfigureServicesExtension
 {
-    public static void AddCoreServices(this IServiceCollection services, IConfiguration config)
+    public static void AddTextExtractorCoreServices(this IServiceCollection services, IConfiguration config)
     {
         services.AddTransient<IWordExtractor, PdfWordExtractor>();
         services.AddTransient<ILineDetector, LineDetector>();
@@ -17,6 +17,7 @@ public static class ConfigureServicesExtension
         services.AddTransient<ReadWordsStep>();
         services.AddTransient<CleanWordsStep>();
         services.AddTransient<DetectLinesStep>();
+        services.AddTransient<DetectFootnotesStep>();
         services.AddTransient<DetectTextBlocksStep>();
         services.AddTransient<BasicPdfPipeline>();
     }

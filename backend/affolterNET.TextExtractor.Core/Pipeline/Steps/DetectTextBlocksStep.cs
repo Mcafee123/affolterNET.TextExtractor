@@ -48,7 +48,7 @@ public class DetectTextBlocksStep: IPipelineStep
             page.Blocks.AddRange(blocks.ToList());
             // find blocks by connecting lines
         }
-        _log.Write(EnumLogLevel.Debug, "[yellow]", $"Blocks: {blockCount}", "[/]");
-        _log.Write(EnumLogLevel.Debug, "[yellow]", $"Blocks (incl. horizontal): {blockCountWithHorizontal}", "[/]");
+        _log.Write(EnumLogLevel.Debug, $"Blocks: {blockCount}");
+        _log.Write(EnumLogLevel.Debug, $"Blocks (incl. horizontal): {blockCountWithHorizontal}");
     }
 }

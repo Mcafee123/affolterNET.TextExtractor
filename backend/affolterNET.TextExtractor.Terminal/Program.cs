@@ -59,7 +59,7 @@ try
             }
             services.AddTransient<AnsiConsoleWrapper>(_ => new AnsiConsoleWrapper(enmLogLevel));
             services.AddTransient<IOutput, AnsiConsoleOutputter>();
-            services.AddCoreServices(ctx.Configuration);
+            services.AddTextExtractorCoreServices(ctx.Configuration);
             services.AddTransient<DetectTextCommand>();
         })
         .UseConsoleLifetime()

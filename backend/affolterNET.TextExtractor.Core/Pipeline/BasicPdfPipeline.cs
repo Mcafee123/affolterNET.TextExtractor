@@ -5,38 +5,31 @@ using affolterNET.TextExtractor.Core.Pipeline.Steps;
 
 namespace affolterNET.TextExtractor.Core.Pipeline;
 
-public class BasicPdfPipeline
+public class BasicPdfPipeline: IBasicPdfPipeline
 {
-    private readonly ReadWordsStep _readWordsStep;
-    private readonly CleanWordsStep _cleanWordsStep;
-    private readonly DetectLinesStep _detectLinesStep;
-    private readonly DetectTextBlocksStep _detectBlocksStep;
     private readonly IOutput _log;
     private readonly ProcessingPipeline _pipeline;
 
     public BasicPdfPipeline(ReadWordsStep readWordsStep, CleanWordsStep cleanWordsStep, DetectLinesStep detectLinesStep,
-        DetectTextBlocksStep detectBlocksStep, IOutput log)
+        DetectTextBlocksStep detectBlocksStep, DetectFootnotesStep detectFootnotesStep, IOutput log)
     {
-        _readWordsStep = readWordsStep;
-        _cleanWordsStep = cleanWordsStep;
-        _detectLinesStep = detectLinesStep;
-        _detectBlocksStep = detectBlocksStep;
         _log = log;
         _pipeline = new ProcessingPipeline();
+        _pipeline.AddStep(readWordsStep);
+        _pipeline.AddStep(cleanWordsStep);
+        _pipeline.AddStep(detectLinesStep);
+        _pipeline.AddStep(detectBlocksStep);
+        _pipeline.AddStep(detectFootnotesStep);
     }
 
     public void Execute(IPipelineContext context)
     {
-        BuildPipeline();
         _pipeline.ExecutePipeline(context);
-        _log.Write(EnumLogLevel.Info, "[blue]", "Pipeline finished", "[/]");
+        _log.Write(EnumLogLevel.Warning, "[blue]", "Pipeline finished", "[/]");
     }
-
-    private void BuildPipeline()
+    
+    public void AddStep(IPipelineStep step)
     {
-        _pipeline.AddStep(_readWordsStep);
-        _pipeline.AddStep(_cleanWordsStep);
-        _pipeline.AddStep(_detectLinesStep);
-        _pipeline.AddStep(_detectBlocksStep);
+        _pipeline.AddStep(step);
     }
 }

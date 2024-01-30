@@ -1,4 +1,5 @@
 using affolterNET.TextExtractor.Core.Extensions;
+using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
 using Microsoft.AspNetCore.Http;

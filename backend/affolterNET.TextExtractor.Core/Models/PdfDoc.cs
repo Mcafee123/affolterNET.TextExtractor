@@ -18,6 +18,8 @@ public class PdfDoc : IPdfDoc
     public List<IPdfPage> Pages { get; set; } = new();
 
     public List<IWordOnPage> Words => Pages.SelectMany(p => p.Words).ToList();
+
+    public List<Footnote> Footnotes { get; set; } = new();
     
     public double MainFontSizeAvg { get; set; }
 

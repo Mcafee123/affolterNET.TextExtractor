@@ -1,3 +1,4 @@
+using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
 using affolterNET.TextExtractor.Core.Pipeline.Steps;
@@ -27,7 +28,8 @@ public class JsonSerializerExtensionsTest
         var cleanWordsStep = new CleanWordsStep(_log);
         var linesStep = new DetectLinesStep(lineDetector, _log);
         var blocksStep = new DetectTextBlocksStep(blockDetector, _log);
-        var pipeline = new BasicPdfPipeline(readStep, cleanWordsStep, linesStep, blocksStep, _log);
+        var footnotesStep = new DetectFootnotesStep(_log);
+        var pipeline = new BasicPdfPipeline(readStep, cleanWordsStep, linesStep, blocksStep, footnotesStep, _log);
 
         // var path = "/Users/martin/Downloads/Verfuegung_Nr_23-24_24846_3.pdf";
         var path = "/Users/martin/Downloads/nov-wingo-17463269.pdf";

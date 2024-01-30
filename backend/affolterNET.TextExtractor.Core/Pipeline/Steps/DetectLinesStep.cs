@@ -36,6 +36,6 @@ public class DetectLinesStep: IPipelineStep
         }
 
         var linesSum = context.Document.Pages.Sum(p => p.Lines.Count);
-        _log.Write(EnumLogLevel.Debug, "[yellow]", $"Total Lines: {linesSum}", "[/]");
+        _log.Write(EnumLogLevel.Debug, $"Total Lines: {linesSum}");
     }
 }

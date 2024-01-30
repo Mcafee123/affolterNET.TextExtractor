@@ -9,7 +9,7 @@ var host = new HostBuilder()
     .ConfigureServices((ctx, services) =>
     {
         services.AddTransient<IOutput, FunctionsLogger>();
-        services.AddCoreServices(ctx.Configuration);
+        services.AddTextExtractorCoreServices(ctx.Configuration);
     })
     .Build();
 
