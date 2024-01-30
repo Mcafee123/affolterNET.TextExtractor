@@ -272,7 +272,7 @@ public class WordOnPageJson
     public string Text { get; set; } = null!;
     public int PageNr { get; set; }
     public string FontName { get; set; } = null!;
-    public string Orientation { get; set; }
+    public string? Orientation { get; set; }
     public List<LetterJson> Letters { get; set; } = new();
 }
 
@@ -299,7 +299,7 @@ public class LetterJson
     public PdfPoint StartBaseLine { get; set; }
     public bool IsItalic { get; set; }
     public bool IsBold { get; set; }
-    public string Orientation { get; set; }
+    public string? Orientation { get; set; }
     public PdfRectangle GlyphRectangle { get; set; }
     public string Text { get; set; } = null!;
     public double FontSize { get; set; }

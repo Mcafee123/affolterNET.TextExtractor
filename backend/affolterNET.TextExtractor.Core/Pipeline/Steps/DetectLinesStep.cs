@@ -15,8 +15,15 @@ public class DetectLinesStep: IPipelineStep
         _log = log;
     }
     
+    public class DetectLinesStepSettings: IStepSettings
+    {
+        public int MaxPagesToConsider { get; set; } = int.MaxValue;
+        public double BaseLineMatchingRange { get; set; } = 0.2;
+    }
+    
     public void Execute(IPipelineContext context)
     {
+        var settings = context.GetSettings<DetectLinesStepSettings>();
         if (context.Document == null)
         {
             throw new NullReferenceException(
@@ -24,7 +31,7 @@ public class DetectLinesStep: IPipelineStep
         }
         foreach (var page in context.Document.Pages)
         {
-            var lines = _lineDetector.DetectLines(page.Words);
+            var lines = _lineDetector.DetectLines(page.Words, settings.MaxPagesToConsider, settings.BaseLineMatchingRange);
             page.Lines.AddRange(lines.ToList());
         }
 

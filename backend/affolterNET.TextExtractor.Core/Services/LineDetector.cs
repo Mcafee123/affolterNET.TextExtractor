@@ -22,7 +22,7 @@ public class LineDetector: ILineDetector
         _log = log;
     }
     
-    public PdfLines DetectLines(List<IWordOnPage> inputWords, int maxPagesToConsider)
+    public PdfLines DetectLines(List<IWordOnPage> inputWords, int maxPagesToConsider, double baseLineMatchingRange)
     {
         // sometimes, the order of words is not according to the read-direction.
         // words more on the right can appear in the list before the first word on
@@ -48,7 +48,7 @@ public class LineDetector: ILineDetector
             
             // horizontal
             var wordsHorizontal = words.Where(w => w.TextOrientation == TextOrientation.Horizontal).ToList();
-            var horizontalLines = ReadHorizontalWords(wordsHorizontal);
+            var horizontalLines = ReadHorizontalWords(wordsHorizontal, baseLineMatchingRange);
             lines.AddRange(horizontalLines.ToList());
             
             // rotate270
@@ -93,14 +93,14 @@ public class LineDetector: ILineDetector
         return lines;
     }
 
-    private List<LineOnPage> ReadHorizontalWords(List<IWordOnPage> wordsHorizontal)
+    private List<LineOnPage> ReadHorizontalWords(List<IWordOnPage> wordsHorizontal, double baseLineMatchingRange)
     {
         var lines = new List<LineOnPage>();
         var clone = new List<IWordOnPage>();
         clone.AddRange(wordsHorizontal);
         while (clone.Count > 0)
         {
-            var line = ReadLineHorizontal(clone, 0);
+            var line = ReadLineHorizontal(clone, 0, baseLineMatchingRange);
             if (line.Any(w => !string.IsNullOrWhiteSpace(w.Text)))
             {
                 lines.Add(line);
@@ -151,16 +151,5 @@ public class LineDetector: ILineDetector
         }
 
         return line;
-    }
-    
-    private PdfRectangle GetNormalizedBoxHorizontal(IWordOnPage word)
-    {
-        var box = word.BoundingBox;
-        if (word.Text.All(c => LowerBoxCharacters.Contains(c)))
-        {
-            box = new PdfRectangle(box.BottomLeft, box.TopRight.MoveY(4));
-        }
-
-        return box;
     }
 }

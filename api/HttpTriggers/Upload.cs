@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace api.HttpTriggers;
 
@@ -35,6 +34,9 @@ public class Upload
         await file.CopyToAsync(ms);
         ms.Seek(0, SeekOrigin.Begin);
         var pipelineContext = new PipelineContext(ms, file.FileName);
+        // add custom settings this way:
+        // =============================
+        // pipelineContext.AddSettings(new CleanWordsStep.CleanWordsStepSettings() { BigSpacesSize = 120 });
         _pipeline.Execute(pipelineContext);
         var json = pipelineContext.Document!.Serialize();
         var result = new OkObjectResult(json); 

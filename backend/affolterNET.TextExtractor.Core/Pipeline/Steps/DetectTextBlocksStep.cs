@@ -1,8 +1,6 @@
 using affolterNET.TextExtractor.Core.Helpers;
-using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
 using affolterNET.TextExtractor.Core.Services;
-using UglyToad.PdfPig.DocumentLayoutAnalysis;
 
 namespace affolterNET.TextExtractor.Core.Pipeline.Steps;
 
@@ -16,8 +14,14 @@ public class DetectTextBlocksStep: IPipelineStep
         _blockDetector = blockDetector;
         _log = log;
     }
+    public class DetectTextBlocksStepSettings: IStepSettings
+    {
+        public double TopDistanceRelation { get; set; } = 0.76;
+    }
+    
     public void Execute(IPipelineContext context)
     {
+        var settings = context.GetSettings<DetectTextBlocksStepSettings>();
         if (context.Document == null)
         {
             throw new NullReferenceException(
@@ -37,7 +41,7 @@ public class DetectTextBlocksStep: IPipelineStep
             // // one block per page
             
             // find blocks by connecting lines
-            var blocks = _blockDetector.FindBlocks(page);
+            var blocks = _blockDetector.FindBlocks(page, settings.TopDistanceRelation);
             blockCount += blocks.Count;
             // blocks = _blockDetector.FindHorizontalBlocks(blocks);
             // blockCountWithHorizontal += blocks.Count;
