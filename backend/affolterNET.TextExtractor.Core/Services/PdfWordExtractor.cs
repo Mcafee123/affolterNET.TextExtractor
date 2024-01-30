@@ -16,9 +16,10 @@ public class PdfWordExtractor: IWordExtractor
 
     public IEnumerable<Word> GetWords(IReadOnlyList<Letter> letters)
     {
+        var li = letters.ToList();
         var nnOptions = new NearestNeighbourWordExtractor.NearestNeighbourWordExtractorOptions();
         var nnWordExtractor = new NearestNeighbourWordExtractor(nnOptions);
-        var words = nnWordExtractor.GetWords(letters).ToList();
+        var words = nnWordExtractor.GetWords(li).ToList();
         return words;
     }
 }

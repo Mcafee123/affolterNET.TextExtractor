@@ -1,12 +1,19 @@
 <template lang="pug">
-article
-  h5 Word
-  .contents(v-if="wordJson")
+.word(v-if="wordJson")
+  .row.first
     BoundingBox(v-if="wordJson.boundingBox" :block="wordJson.boundingBox")
-    b Text:
+  .row.first
+    .title 
+      b Text:
     .text {{ wordJson.text }}
-    b Font:
+  .row
+    .title
+      b Font:
     .font {{  wordJson.fontName }}
+  .row
+    .title 
+      b Orient.:
+    .ori {{  wordJson.orientation }}
 </template>
 
 <script lang="ts" setup>
@@ -21,5 +28,20 @@ const { wordJson } = useViewSettings()
 </script>
 
 <style lang="scss" scoped>
+
+.word {
+  display: table;
+}
+
+.row {
+  margin-block-start: 0;
+  &.first {
+    margin-block-start: 0.5rem;
+  }
+}
+
+.title {
+  min-width: 40px;
+}
 
 </style>

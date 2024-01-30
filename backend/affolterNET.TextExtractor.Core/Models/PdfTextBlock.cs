@@ -9,11 +9,11 @@ public class PdfTextBlock: IPdfTextBlock
     public List<IWordOnPage> Words => _lines.Words.ToList();
     public PdfLines Lines => _lines;
     public double TopDistance { get; set; } = LineOnPage.DefaultTopDistance;
-    public double AverageDistance => _lines.Count < 2 ? 0 : _lines.Skip(1).Select(l => l.TopDistance.Size).Average();
+    public double AverageDistance => _lines.Count < 2 ? 0 : _lines.Skip(1).Select(l => _lines.GetTopDistance(l)).Average();
     public IPdfPage? Page { get; set; }
     public PdfRectangle BoundingBox => _lines.BoundingBox;
     public LineOnPage? FirstLine => _lines.FirstOrDefault();
-
+    public List<Gap> VerticalGaps { get; set; } = new();
     public void AddLines(PdfLines lines)
     {
         _lines = lines;
@@ -54,6 +54,8 @@ public interface IPdfTextBlock
     IPdfPage? Page { get; set; }
     PdfLines Lines { get; }
     LineOnPage? FirstLine { get; }
+    List<Gap> VerticalGaps { get; set; }
     bool Any(Func<LineOnPage, bool> predicate);
     void AddLine(LineOnPage line);
+    void AddLines(List<LineOnPage> lines);
 }

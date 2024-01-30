@@ -1,31 +1,29 @@
 <template lang="pug">
-article
-  h5 Anzeigen
-  .col
-    label.checkbox.icon
-      input(type="checkbox" v-model="showBlockBorders")
-      span
-        i close 
-        i done
-      span Blockgrenzen
-    label.checkbox.icon
-      input(type="checkbox" v-model="showLineBorders")
-      span
-        i close 
-        i done
-      span Zeilengrenzen
-    label.checkbox.icon
-      input(type="checkbox" v-model="showWordBorders")
-      span
-        i close 
-        i done  
-      span Wortgrenzen
-    label.checkbox.icon
-      input(type="checkbox" v-model="showLetterBorders")
-      span
-        i close 
-        i done
-      span Buchstabengrenzen
+.col
+  label.checkbox.icon
+    input(type="checkbox" v-model="showBlockBorders")
+    span
+      i close 
+      i done
+    span Blockgrenzen
+  label.checkbox.icon
+    input(type="checkbox" v-model="showLineBorders")
+    span
+      i close 
+      i done
+    span Zeilengrenzen
+  label.checkbox.icon
+    input(type="checkbox" v-model="showWordBorders")
+    span
+      i close 
+      i done  
+    span Wortgrenzen
+  label.checkbox.icon
+    input(type="checkbox" v-model="showLetterBorders")
+    span
+      i close 
+      i done
+    span Buchstabengrenzen
 
 </template>
 

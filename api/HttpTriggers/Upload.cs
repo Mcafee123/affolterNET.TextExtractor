@@ -11,10 +11,10 @@ namespace api.HttpTriggers;
 
 public class Upload
 {
-    private readonly BasicProcessingPipeline _pipeline;
+    private readonly FedlexPipeline _pipeline;
     private readonly ILogger _logger;
 
-    public Upload(BasicProcessingPipeline pipeline, ILoggerFactory loggerFactory)
+    public Upload(FedlexPipeline pipeline, ILoggerFactory loggerFactory)
     {
         _pipeline = pipeline;
         _logger = loggerFactory.CreateLogger<Upload>();
@@ -34,7 +34,7 @@ public class Upload
         var ms = new MemoryStream();
         await file.CopyToAsync(ms);
         ms.Seek(0, SeekOrigin.Begin);
-        var pipelineContext = new PipelineContext(ms, file.FileName);
+        var pipelineContext = new FedlexPipelineContext(ms, file.FileName);
         _pipeline.Execute(pipelineContext);
         var json = pipelineContext.Document!.Serialize();
         var result = new OkObjectResult(json); 

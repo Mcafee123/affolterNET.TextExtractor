@@ -1,4 +1,5 @@
 using System.Collections;
+using affolterNET.TextExtractor.Core.Extensions;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Models;
@@ -10,7 +11,8 @@ public class PdfLines : IList<LineOnPage>
     public IEnumerable<IWordOnPage> Words => _lines.SelectMany(line => line);
 
     public int Count => _lines.Count;
-
+    public double FontSizeAvg => _lines.Average(l => l.FontSizeAvg);
+    public double? WordSpaceAvg => _lines.Average(l => l.WordSpaceAvg);
     public bool IsReadOnly => false;
     public PdfRectangle BoundingBox { get; private set; }
 
@@ -35,27 +37,7 @@ public class PdfLines : IList<LineOnPage>
 
         items.ForEach(item => item.Lines = this);
         _lines.AddRange(items);
-        _lines = _lines.Count > 0
-            ? _lines.OrderBy(line => line.PageNr).ThenByDescending(line => line.Top).ToList()
-            : _lines;
-        var top = _lines.Count > 0 ? _lines.Max(w => w.BoundingBox.Top) : 0;
-        var left = _lines.Count > 0 ? _lines.Min(w => w.BoundingBox.Left) : 0;
-        var bottom = _lines.Count > 0 ? _lines.Min(w => w.BoundingBox.Bottom) : 0;
-        var right = _lines.Count > 0 ? _lines.Max(w => w.BoundingBox.Right) : 0;
-        var bottomLeft = new PdfPoint(left, bottom);
-        var topRight = new PdfPoint(right, top);
-        BoundingBox = new PdfRectangle(bottomLeft, topRight);
-        for (var i = 1; i < _lines.Count; i++)
-        {
-            var boxCurrent = _lines[i].BoundingBox;
-            var boxLast = _lines[i - 1].BoundingBox;
-            _lines[i].TopDistance = new Gap(boxLast.Centroid.Y, boxCurrent.Centroid.Y);
-        }
-
-        if (_lines.Count > 0)
-        {
-            _lines[0].TopDistance = new Gap(LineOnPage.DefaultTopDistance);
-        }
+        Refresh();
     }
     
     public void Add(LineOnPage item)
@@ -88,6 +70,7 @@ public class PdfLines : IList<LineOnPage>
     public void Clear()
     {
         _lines.Clear();
+        Refresh();
     }
 
     public bool Contains(LineOnPage item)
@@ -102,7 +85,9 @@ public class PdfLines : IList<LineOnPage>
 
     public bool Remove(LineOnPage item)
     {
-        return _lines.Remove(item);
+        var result = _lines.Remove(item);
+        Refresh();
+        return result;
     }
 
     public int IndexOf(LineOnPage item)
@@ -113,11 +98,13 @@ public class PdfLines : IList<LineOnPage>
     public void Insert(int index, LineOnPage item)
     {
         _lines.Insert(index, item);
+        Refresh();
     }
 
     public void RemoveAt(int index)
     {
         _lines.RemoveAt(index);
+        Refresh();
     }
 
     public LineOnPage this[int index]
@@ -130,6 +117,23 @@ public class PdfLines : IList<LineOnPage>
     {
         var words = _lines.SelectMany(l => l).ToList();
         return words.Contains(word);
+    }
+
+    public ILineOnPage? FindLineOnTop(ILineOnPage line)
+    {
+        var boxCurrent = line.BoundingBox;
+        var lineOnTop = _lines
+            .Where(l => l.BoundingBox.OverlapsX(boxCurrent) 
+                        && l.BoundingBox.Centroid.Y > line.BoundingBox.Centroid.Y
+                        && !l.BoundingBox.OverlapsY(line.BoundingBox))
+            .MinBy(l => Math.Abs(l.BoundingBox.Centroid.Y - line.BoundingBox.Centroid.Y));
+        return lineOnTop;
+    }
+
+    public double GetTopDistance(ILineOnPage line)
+    {
+        var lineOnTop = FindLineOnTop(line);
+        return lineOnTop == null ? LineOnPage.DefaultTopDistance : lineOnTop.BaseLineY - line.BaseLineY;
     }
 
     private bool FirstWordStartsLowercase(LineOnPage words)
@@ -165,5 +169,19 @@ public class PdfLines : IList<LineOnPage>
         contained = endings.Contains(lastSign);
 
         return contained;
+    }
+
+    private void Refresh()
+    {
+        _lines = _lines.Count > 0
+            ? _lines.OrderBy(line => line.PageNr).ThenByDescending(line => line.Top).ToList()
+            : _lines;
+        var top = _lines.Count > 0 ? _lines.Max(w => w.BoundingBox.Top) : 0;
+        var left = _lines.Count > 0 ? _lines.Min(w => w.BoundingBox.Left) : 0;
+        var bottom = _lines.Count > 0 ? _lines.Min(w => w.BoundingBox.Bottom) : 0;
+        var right = _lines.Count > 0 ? _lines.Max(w => w.BoundingBox.Right) : 0;
+        var bottomLeft = new PdfPoint(left, bottom);
+        var topRight = new PdfPoint(right, top);
+        BoundingBox = new PdfRectangle(bottomLeft, topRight);
     }
 }

@@ -15,7 +15,8 @@ public static class JsonSerializerExtensions
         _options = new JsonSerializerOptions
         {
             WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
         };
         _options.Converters.Add(new PdfPointConverter());
         _options.Converters.Add(new PdfRectangleConverter());
@@ -213,7 +214,7 @@ public class PdfBlockJson
         BoundingBox = block.BoundingBox;
         foreach (var line in block.Lines)
         {
-            Lines.Add(new PdfLineJson(line));
+            Lines.Add(new PdfLineJson(line, block.Lines.GetTopDistance(line)));
         }
     }
 
@@ -228,7 +229,7 @@ public class PdfLineJson
         
     }
     
-    public PdfLineJson(LineOnPage line)
+    public PdfLineJson(LineOnPage line, double topDistance)
     {
         foreach (var word in line)
         {
@@ -236,8 +237,14 @@ public class PdfLineJson
         }
 
         BoundingBox = line.BoundingBox;
+        FontSizeAvg = line.FontSizeAvg;
+        TopDistance = topDistance;
+        FontSizeTopDistanceRelation = Math.Round(line.FontSizeAvg / topDistance, 2);
     }
 
+    public double TopDistance { get; set; }
+    public double FontSizeAvg { get; set; }
+    public double FontSizeTopDistanceRelation { get; set; }
     public PdfRectangle BoundingBox { get; set; }
     public List<WordOnPageJson> Words { get; set; } = new();
 }
@@ -254,6 +261,7 @@ public class WordOnPageJson
         BoundingBox = word.BoundingBox;
         Text = word.Text;
         FontName = word.FontName;
+        Orientation = word.TextOrientation.ToString();
         foreach (var letter in word.Letters)
         {
             Letters.Add(new LetterJson(letter));
@@ -264,6 +272,7 @@ public class WordOnPageJson
     public string Text { get; set; } = null!;
     public int PageNr { get; set; }
     public string FontName { get; set; } = null!;
+    public string Orientation { get; set; }
     public List<LetterJson> Letters { get; set; } = new();
 }
 
@@ -280,19 +289,17 @@ public class LetterJson
         StartBaseLine = letter.StartBaseLine;
         EndBaseLine = letter.EndBaseLine;
         Text = letter.Value;
-        FontSize = letter.FontSize;
+        FontSize = letter.PointSize;
         IsBold = letter.Font.IsBold;
         IsItalic = letter.Font.IsItalic;
+        Orientation = letter.TextOrientation.ToString();
     }
 
     public PdfPoint EndBaseLine { get; set; }
-
     public PdfPoint StartBaseLine { get; set; }
-
     public bool IsItalic { get; set; }
-
     public bool IsBold { get; set; }
-
+    public string Orientation { get; set; }
     public PdfRectangle GlyphRectangle { get; set; }
     public string Text { get; set; } = null!;
     public double FontSize { get; set; }

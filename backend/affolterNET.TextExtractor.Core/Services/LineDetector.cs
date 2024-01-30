@@ -48,18 +48,9 @@ public class LineDetector: ILineDetector
             
             // horizontal
             var wordsHorizontal = words.Where(w => w.TextOrientation == TextOrientation.Horizontal).ToList();
-            foreach (var word in wordsHorizontal)
-            {
-                if (string.IsNullOrWhiteSpace(word.Text) || lines.ContainsWord(word))
-                {
-                    // word was already added
-                    continue;
-                }
-
-                var line = ReadLine(wordsHorizontal, wordsHorizontal.IndexOf(word));
-                lines.Add(line);
-            }
-
+            var horizontalLines = ReadHorizontalWords(wordsHorizontal);
+            lines.AddRange(horizontalLines.ToList());
+            
             // rotate270
             var wordsRotate270 = words
                 .Where(w => w.TextOrientation == TextOrientation.Rotate270)
@@ -102,26 +93,37 @@ public class LineDetector: ILineDetector
         return lines;
     }
 
-    private LineOnPage ReadLine(List<IWordOnPage> words, int startIndex = 0)
+    private List<LineOnPage> ReadHorizontalWords(List<IWordOnPage> wordsHorizontal)
+    {
+        var lines = new List<LineOnPage>();
+        var clone = new List<IWordOnPage>();
+        clone.AddRange(wordsHorizontal);
+        while (clone.Count > 0)
+        {
+            var line = ReadLineHorizontal(clone, 0);
+            if (line.Any(w => !string.IsNullOrWhiteSpace(w.Text)))
+            {
+                lines.Add(line);
+            }
+        }
+
+        return lines;
+    }
+
+    private LineOnPage ReadLineHorizontal(List<IWordOnPage> words, int startIndex = 0, double range = 0.2)
     {
         var line = new LineOnPage(new List<IWordOnPage>(), -1);
         if (words.Count <= startIndex)
         {
             return line;
         }
-
         var initialWord = words[startIndex];
         line.PageNr = initialWord.PageNr;
-        var boundingBox = GetNormalizedBoxHorizontal(initialWord);
-        foreach (var w in words.Where(w => w.PageNr == initialWord.PageNr))
+        var overlappingWords = words.Where(w => Math.Abs(w.BaseLineY - initialWord.BaseLineY) <= range && Math.Abs(w.FontSizeAvg - initialWord.FontSizeAvg) <= range).ToList();
+        foreach (var lineMember in overlappingWords)
         {
-            var box = GetNormalizedBoxHorizontal(w);
-            if (box.OverlapsY(boundingBox))
-            {
-                line.Add(w);
-                // increase BoundingBox (if height is larger) to reach all the contents of a line
-                boundingBox = line.BoundingBox.Height > boundingBox.Height ? line.BoundingBox : boundingBox;
-            }
+            line.Add(lineMember);
+            words.Remove(lineMember);
         }
 
         return line;

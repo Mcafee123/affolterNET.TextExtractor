@@ -9,6 +9,7 @@ export interface Letter {
     fontSize: number,
     isItalic: boolean,
     isBold: boolean,
+    orientation: string,
 }
 
-export type letterType = { [Property in keyof Partial<Letter>]: number | string | Box | Point }
+export type letterType = { [Property in keyof Partial<Letter>]: number | string | boolean | Box | Point }

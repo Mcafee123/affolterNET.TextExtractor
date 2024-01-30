@@ -6,6 +6,7 @@ export interface Word {
     text: string,
     pageNr: number,
     fontName: string,
+    orientation: string,
     letters: Letter[],
 }
 

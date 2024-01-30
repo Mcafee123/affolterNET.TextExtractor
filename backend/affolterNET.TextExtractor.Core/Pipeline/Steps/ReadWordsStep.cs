@@ -1,3 +1,4 @@
+using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
@@ -28,6 +29,8 @@ public class ReadWordsStep: IPipelineStep
         // read pages
         ReadPages(context);
         _log.Write(EnumLogLevel.Debug, "[yellow]", $"Pages: {context.Document.Pages.Count}", "[/]");
+        // add font-statistics
+        GetStatistics(context);
     }
 
     private void Open(IPipelineContext context)
@@ -64,5 +67,11 @@ public class ReadWordsStep: IPipelineStep
     private List<Word> GetWords(IPdfPage page)
     {
         return page.Page.GetWords(_wordExtractor).ToList();
+    }
+
+    private void GetStatistics(IPipelineContext context)
+    {
+        var fontSizes = context.Document!.Words.FindCommonGroups<IWordOnPage>(1, w => w.FontSizeAvg);
+        context.Document.MainFontSizeAvg = fontSizes.First().Average(kvp => kvp.Item1);
     }
 }

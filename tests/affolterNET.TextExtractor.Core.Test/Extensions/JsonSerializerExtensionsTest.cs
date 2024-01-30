@@ -28,7 +28,8 @@ public class JsonSerializerExtensionsTest
         var blocksStep = new DetectTextBlocksStep(blockDetector, _log);
         var pipeline = new BasicProcessingPipeline(readStep, linesStep, blocksStep, _log);
 
-        var path = "/Users/martin/Downloads/Verfuegung_Nr_23-24_24846_3.pdf";
+        // var path = "/Users/martin/Downloads/Verfuegung_Nr_23-24_24846_3.pdf";
+        var path = "/Users/martin/Downloads/nov-wingo-17463269.pdf";
         var context = new PipelineContext(path);
         pipeline.Execute(context);
 

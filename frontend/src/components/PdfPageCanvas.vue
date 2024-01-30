@@ -3,26 +3,29 @@
   canvas(id="letterCanvas" ref="letterCanvas")
   canvas(id="boxesCanvas" ref="boxesCanvas")
   canvas(id="selectionCanvas" ref="selectionCanvas")
+  canvas(id="customBoxCanvas" ref="customBoxCanvas")
   canvas(id="hoveringCanvas" ref="hoveringCanvas" @mousemove="highlight" @click="select")
 </template>
 
 <script lang="ts" setup>
 
-import { useViewSettings } from '@/composables/useViewSettings';
-import type { Box } from '@/types/boundingBox';
-import type { Letter } from '@/types/letter';
-import type { Page } from '@/types/page';
+import { useViewSettings, type customBoxType } from '@/composables/useViewSettings'
+import type { Box } from '@/types/boundingBox'
+import type { Letter } from '@/types/letter'
+import type { Page } from '@/types/page'
 import { onMounted, ref, type PropType, type Ref, onUnmounted, watch } from 'vue'
 
 const wrapper: Ref<HTMLDivElement | undefined> = ref()
 const letterCanvas: Ref<HTMLCanvasElement | undefined> = ref()
 const boxesCanvas: Ref<HTMLCanvasElement | undefined> = ref()
-const hoveringCanvas: Ref<HTMLCanvasElement | undefined> = ref()
 const selectionCanvas: Ref<HTMLCanvasElement | undefined> = ref()
+const customBoxCanvas: Ref<HTMLCanvasElement | undefined> = ref()
+const hoveringCanvas: Ref<HTMLCanvasElement | undefined> = ref()
 const letterCtx = ref<CanvasRenderingContext2D>()
 const boxesCtx = ref<CanvasRenderingContext2D>()
-const hoveringCtx = ref<CanvasRenderingContext2D>()
 const selectionCtx = ref<CanvasRenderingContext2D>()
+const customBoxCtx = ref<CanvasRenderingContext2D>()
+const hoveringCtx = ref<CanvasRenderingContext2D>()
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
@@ -32,8 +35,8 @@ const props = defineProps({
   }
 })
 
-const clearCanvas = (mode?: 'letter' | 'boxes') => {
-  if (!letterCanvas.value || !letterCtx.value || !boxesCtx.value || !hoveringCtx.value || !selectionCtx.value) {
+const clearCanvas = (mode?: 'letter' | 'boxes' | 'custombox') => {
+  if (!letterCanvas.value || !letterCtx.value || !boxesCtx.value || !hoveringCtx.value || ! customBoxCtx.value || !selectionCtx.value) {
     console.error('no canvas or no contexts')
     return
   }
@@ -45,10 +48,13 @@ const clearCanvas = (mode?: 'letter' | 'boxes') => {
   if (mode === 'boxes' || mode == undefined) {
     boxesCtx.value.clearRect(0, 0, letterCanvas.value.width, letterCanvas.value.height)
   }
+  if (mode === 'custombox' || mode == undefined) {
+    customBoxCtx.value.clearRect(0, 0, letterCanvas.value.width, letterCanvas.value.height)
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, blockJson, lineJson, wordJson, letterJson, hexToRgb } = useViewSettings()
+const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, blockJson, lineJson, wordJson, letterJson, hexToRgb, customBox, customBoxIsSet } = useViewSettings()
 const prim = hexToRgb('--primary')
 let primarycoloralpha = 'rgba(134, 217, 146, 0.5)'
 if (prim) {
@@ -102,12 +108,33 @@ watch(() => showLetterBorders.value, () => {
   renderPage(true)
 })
 
+watch(() => customBox.value, () => {
+  if (!customBoxIsSet()) {
+    clearCanvas('custombox')
+    return
+  }
+  clearCanvas('custombox')
+
+  const ctx = customBoxCtx.value as CanvasRenderingContext2D
+  const box = customBox.value as customBoxType
+  drawBox(ctx, box as Box, box.color, 2)
+  if (box.shadow) {
+    const shadowBox = { ...box }
+    shadowBox.bottomLeftX -= 5
+    shadowBox.bottomLeftY -= 5
+    shadowBox.topRightX += 5
+    shadowBox.topRightY += 5
+    drawBox(ctx, shadowBox, 'violet', 3)
+  }
+}, { deep: true })
+
 onMounted(() => {
   window.addEventListener('resize', resize)
   letterCtx.value = letterCanvas.value?.getContext('2d') as CanvasRenderingContext2D
   boxesCtx.value = boxesCanvas.value?.getContext('2d') as CanvasRenderingContext2D
-  hoveringCtx.value = hoveringCanvas.value?.getContext('2d') as CanvasRenderingContext2D
   selectionCtx.value = selectionCanvas.value?.getContext('2d') as CanvasRenderingContext2D
+  hoveringCtx.value = hoveringCanvas.value?.getContext('2d') as CanvasRenderingContext2D
+  customBoxCtx.value = customBoxCanvas.value?.getContext('2d') as CanvasRenderingContext2D
   resize()
 })
 
@@ -116,10 +143,12 @@ onUnmounted(() => {
   letterCtx.value = undefined
   boxesCtx.value = undefined
   hoveringCtx.value = undefined
+  selectionCtx.value = undefined
+  customBoxCtx.value = undefined
 })
 
 const resize = () => {
-  if (!letterCanvas.value || !boxesCanvas.value || !hoveringCanvas.value || !selectionCanvas.value || !wrapper.value) {
+  if (!letterCanvas.value || !boxesCanvas.value || !selectionCanvas.value || !customBoxCanvas.value || !hoveringCanvas.value || !wrapper.value) {
     console.error('no canvas or no wrapper for resize')
     return
   }
@@ -128,10 +157,12 @@ const resize = () => {
   letterCanvas.value.height = wrapper.value.clientWidth / pageWidth * pageHeight
   boxesCanvas.value.width = letterCanvas.value.width
   boxesCanvas.value.height = letterCanvas.value.height
-  hoveringCanvas.value.width = letterCanvas.value.width
-  hoveringCanvas.value.height = letterCanvas.value.height
   selectionCanvas.value.width = letterCanvas.value.width
   selectionCanvas.value.height = letterCanvas.value.height
+  customBoxCanvas.value.width = letterCanvas.value.width
+  customBoxCanvas.value.height = letterCanvas.value.height
+  hoveringCanvas.value.width = letterCanvas.value.width
+  hoveringCanvas.value.height = letterCanvas.value.height
   wrapper.value.style.height = `${letterCanvas.value.height}px`
   scale = letterCanvas.value.width / pageWidth
   renderPage()
@@ -190,13 +221,13 @@ const renderPage = (boxesOnly: boolean = false) => {
     const block = props.page.blocks[b]
     // box around each block
     if (showBlockBorders.value) {
-      drawBox(boxesCtx.value, block.boundingBox, 'red', 1.5, 1.05)
+      drawBox(boxesCtx.value, block.boundingBox, 'red', 1.5)
     }
     for (var l = 0; l < block.lines.length; l++) {
       const line = block.lines[l]
       // box around each line
       if (showLineBorders.value) {
-        drawBox(boxesCtx.value, line.boundingBox, 'blue', 1, 1.1)
+        drawBox(boxesCtx.value, line.boundingBox, 'blue', 1)
       }
       for (var w = 0; w < line.words.length; w++) {
         const word = line.words[w]
@@ -286,11 +317,11 @@ const select = ($event: MouseEvent) => {
           ctx.beginPath()
           makeLetterRect(ctx, letter)
           if (ctx.isPointInPath(x, y)) {
-            letterJson.value = { fontSize: letter.fontSize, text: letter.text, startBaseLine: letter.startBaseLine }
-            wordJson.value = { boundingBox: word.boundingBox, text: word.text, fontName: word.fontName }
-            lineJson.value = { boundingBox: line.boundingBox, text: line.words.map(w => w.text).join('') }
+            letterJson.value = { fontSize: letter.fontSize, orientation: letter.orientation, text: letter.text, startBaseLine: letter.startBaseLine }
+            wordJson.value = { boundingBox: word.boundingBox, text: word.text, fontName: word.fontName, orientation: word.orientation }
+            lineJson.value = { boundingBox: line.boundingBox, topDistance: line.topDistance, fontSizeAvg: line.fontSizeAvg, fontSizeTopDistanceRelation: line.fontSizeTopDistanceRelation, text: line.words.map(w => w.text).join('') }
             blockJson.value = { boundingBox: block.boundingBox, text: block.lines.map(l => l.words.map(w => w.text).join('')).join('') }
-            
+
             // make selection Rectangle
             ctx.clearRect(0, 0, cvs.width, cvs.height)
             ctx.beginPath()

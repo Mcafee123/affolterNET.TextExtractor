@@ -4,6 +4,5 @@ namespace affolterNET.TextExtractor.Core.Services;
 
 public interface IBlockDetector
 {
-    IPdfTextBlocks FindBlocks(IPdfPage page, double rangeY = 1, double blockVerticalTolerance = 10);
-    IPdfTextBlocks FindHorizontalBlocks(IPdfTextBlocks blocks, double blockHorizontalTolerance = 10);
+    IPdfTextBlocks FindBlocks(IPdfPage page, double topDistanceRelation = 0.76);
 }

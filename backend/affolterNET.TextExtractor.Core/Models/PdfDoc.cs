@@ -17,6 +17,10 @@ public class PdfDoc : IPdfDoc
 
     public List<IPdfPage> Pages { get; set; } = new();
 
+    public List<IWordOnPage> Words => Pages.SelectMany(p => p.Words).ToList();
+    
+    public double MainFontSizeAvg { get; set; }
+
     public void GetPages()
     {
         Pages.Clear();
@@ -43,6 +47,8 @@ public interface IPdfDoc : IDisposable
 {
     string Filename { get; }
     List<IPdfPage> Pages { get; set; }
+    List<IWordOnPage> Words { get; }
+    double MainFontSizeAvg { get; set; }
     void GetPages();
     void ToJson(string path);
 }

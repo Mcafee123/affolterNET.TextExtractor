@@ -43,6 +43,22 @@ public static class DistanceExtensions
         return avg.Last();
     }
 
+    public static bool Overlaps(this PdfRectangle first, PdfRectangle second, double tolerance = 0.01)
+    {
+        if (tolerance > 0)
+        {
+            var t = tolerance / 2;
+            first = new PdfRectangle(new PdfPoint(first.BottomLeft.X - t, first.BottomLeft.Y - t),
+                new PdfPoint(first.TopRight.X + t, first.TopRight.Y + t));
+            second = new PdfRectangle(new PdfPoint(second.BottomLeft.X - t, second.BottomLeft.Y - t),
+                new PdfPoint(second.TopRight.X + t, second.TopRight.Y + t));
+        }
+
+        var overlapsX = first.OverlapsX(second);
+        var overlapsY = first.OverlapsY(second);
+        return overlapsX && overlapsY;
+    }
+
     public static bool OverlapsX(this PdfRectangle first, PdfRectangle second)
     {
         var aLeft = first.Left;
