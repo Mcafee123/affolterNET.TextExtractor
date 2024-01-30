@@ -18,7 +18,6 @@ public static class ConfigureServicesExtension
         services.AddTransient<CleanWordsStep>();
         services.AddTransient<DetectLinesStep>();
         services.AddTransient<DetectTextBlocksStep>();
-        services.AddTransient<BasicProcessingPipeline>();
-        services.AddTransient<FedlexPipeline>();
+        services.AddTransient<BasicPdfPipeline>();
     }
 }

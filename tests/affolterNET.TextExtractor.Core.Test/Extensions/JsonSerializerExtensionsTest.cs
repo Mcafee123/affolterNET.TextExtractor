@@ -24,9 +24,10 @@ public class JsonSerializerExtensionsTest
         var lineDetector = new LineDetector(_log);
         var blockDetector = new BlockDetector(lineDetector, _log);
         var readStep = new ReadWordsStep(wordExtractor, _log);
+        var cleanWordsStep = new CleanWordsStep(_log);
         var linesStep = new DetectLinesStep(lineDetector, _log);
         var blocksStep = new DetectTextBlocksStep(blockDetector, _log);
-        var pipeline = new BasicProcessingPipeline(readStep, linesStep, blocksStep, _log);
+        var pipeline = new BasicPdfPipeline(readStep, cleanWordsStep, linesStep, blocksStep, _log);
 
         // var path = "/Users/martin/Downloads/Verfuegung_Nr_23-24_24846_3.pdf";
         var path = "/Users/martin/Downloads/nov-wingo-17463269.pdf";

@@ -14,17 +14,11 @@ public class CleanWordsStep: IPipelineStep
     
     public void Execute(IPipelineContext context)
     {
-        var ctx = context as IFedlexPipelineContext;
-        if (ctx == null)
-        {
-            throw new InvalidOperationException("CleanWordsStep needs IFedlexPipelineContext");
-        }
-
         // remove useless big spaces (Fedlex-Laws)
         foreach (var page in context.Document!.Pages)
         {
             var removedWords = page.Words.RemoveAll(w =>
-                string.IsNullOrWhiteSpace(w.Text) && w.Letters.Count == 1 && w.Letters.Any(l => l.PointSize > ctx.BigSpacesSize));
+                string.IsNullOrWhiteSpace(w.Text) && w.Letters.Count == 1 && w.Letters.Any(l => l.PointSize > context.BigSpacesSize));
             if (removedWords > 0)
             {
                 _log.Write(EnumLogLevel.Debug, "[yellow]", $"Big spaces removed on page {page.Nr}: {removedWords}", "[/]");

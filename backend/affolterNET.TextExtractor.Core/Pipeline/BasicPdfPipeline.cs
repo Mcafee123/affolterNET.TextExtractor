@@ -5,18 +5,20 @@ using affolterNET.TextExtractor.Core.Pipeline.Steps;
 
 namespace affolterNET.TextExtractor.Core.Pipeline;
 
-public class BasicProcessingPipeline
+public class BasicPdfPipeline
 {
     private readonly ReadWordsStep _readWordsStep;
+    private readonly CleanWordsStep _cleanWordsStep;
     private readonly DetectLinesStep _detectLinesStep;
     private readonly DetectTextBlocksStep _detectBlocksStep;
     private readonly IOutput _log;
     private readonly ProcessingPipeline _pipeline;
 
-    public BasicProcessingPipeline(ReadWordsStep readWordsStep, DetectLinesStep detectLinesStep,
+    public BasicPdfPipeline(ReadWordsStep readWordsStep, CleanWordsStep cleanWordsStep, DetectLinesStep detectLinesStep,
         DetectTextBlocksStep detectBlocksStep, IOutput log)
     {
         _readWordsStep = readWordsStep;
+        _cleanWordsStep = cleanWordsStep;
         _detectLinesStep = detectLinesStep;
         _detectBlocksStep = detectBlocksStep;
         _log = log;
@@ -33,6 +35,7 @@ public class BasicProcessingPipeline
     private void BuildPipeline()
     {
         _pipeline.AddStep(_readWordsStep);
+        _pipeline.AddStep(_cleanWordsStep);
         _pipeline.AddStep(_detectLinesStep);
         _pipeline.AddStep(_detectBlocksStep);
     }

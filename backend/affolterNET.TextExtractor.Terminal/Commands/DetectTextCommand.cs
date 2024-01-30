@@ -9,7 +9,7 @@ namespace affolterNET.TextExtractor.Terminal.Commands;
 
 public class DetectTextCommand: AsyncCommand<DetectTextCommand.Settings>
 {
-    private readonly BasicProcessingPipeline _pipeline;
+    private readonly BasicPdfPipeline _pipeline;
     private readonly IOutput _log;
 
     public class Settings : CommandSettings
@@ -29,7 +29,7 @@ public class DetectTextCommand: AsyncCommand<DetectTextCommand.Settings>
         }
     }
 
-    public DetectTextCommand(BasicProcessingPipeline pipeline, IOutput log)
+    public DetectTextCommand(BasicPdfPipeline pipeline, IOutput log)
     {
         _pipeline = pipeline;
         _log = log;

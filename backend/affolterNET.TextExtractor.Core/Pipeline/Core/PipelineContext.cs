@@ -20,6 +20,7 @@ public class PipelineContext: IPipelineContext
     public string Filename { get; }
     public List<Word> OriginalWords { get; } = new();
     public IPdfDoc? Document { get; private set; }
+    public double BigSpacesSize { get; } = 100;
 
     public void SetDocument(PdfDocument document)
     {
