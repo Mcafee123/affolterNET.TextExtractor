@@ -41,7 +41,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { ref, watch } from "vue"
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PdfPageCanvas from "@/components/PdfPageCanvas.vue"
@@ -66,6 +66,7 @@ import type { PdfDocument } from "@/types/pdfDocument"
 import type { Page } from "@/types/page"
 
 import { loaderService } from "affolternet-vue3-library"
+import { toastService } from 'affolternet-vue3-library'
 
 const pdfdata = ref<PdfDocument | null>(null);
 const page = ref<Page | null>(null);
@@ -92,10 +93,17 @@ const uploadFile = async (pdf: File) => {
       method: "POST",
       body: formData,
     };
-    const response = await (await fetch("/api/upload", options)).json()
-    pdfdata.value = response as PdfDocument;
+    const response = await fetch("/api/upload", options)
+    if (response.status !== 200) {
+      toastService.showError(`parsing pdf failed, response.status = ${response.status}`)
+      return
+    }
+    const json = await response.json()
+    pdfdata.value = json as PdfDocument
     currentPage.value = 1
     setPage(0)
+  } catch (error) {
+    console.error(error)
   } finally {
     loaderService.hideLoader()
   }

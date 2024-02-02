@@ -1,4 +1,3 @@
-using affolterNET.TextExtractor.Core.Extensions;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Models;
@@ -9,7 +8,6 @@ public class PdfTextBlock: IPdfTextBlock
     public List<IWordOnPage> Words => _lines.Words.ToList();
     public PdfLines Lines => _lines;
     public double TopDistance { get; set; } = LineOnPage.DefaultTopDistance;
-    public double AverageDistance => _lines.Count < 2 ? 0 : _lines.Skip(1).Select(l => _lines.GetTopDistance(l)).Average();
     public IPdfPage? Page { get; set; }
     public PdfRectangle BoundingBox => _lines.BoundingBox;
     public LineOnPage? FirstLine => _lines.FirstOrDefault();
@@ -48,7 +46,6 @@ public class PdfTextBlock: IPdfTextBlock
 public interface IPdfTextBlock
 {
     double TopDistance { get; set; }
-    double AverageDistance { get; }
     List<IWordOnPage> Words { get; }
     PdfRectangle BoundingBox { get; }
     IPdfPage? Page { get; set; }

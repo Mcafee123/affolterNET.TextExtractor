@@ -1,3 +1,4 @@
+using affolterNET.TextExtractor.Core.Models;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Extensions;
@@ -41,6 +42,11 @@ public static class DistanceExtensions
         var avg = groups.Select(l => l.Select(tpl => tpl.Item1).Average()).ToList();
         avg.Sort();
         return avg.Last();
+    }
+
+    public static double GetTopDistance(this ILineOnPage lowerLine, ILineOnPage? upperLine)
+    {
+        return upperLine?.BaseLineY - lowerLine.BaseLineY ?? LineOnPage.DefaultTopDistance;
     }
 
     public static bool Overlaps(this PdfRectangle first, PdfRectangle second, double tolerance = 0.01)

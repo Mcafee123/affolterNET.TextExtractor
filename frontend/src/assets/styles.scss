@@ -11,3 +11,27 @@ html {
 .invisible {
   visibility: hidden;
 }
+
+.extractor-toast {
+  border-radius: 4px;
+}
+
+.extractor-error {
+  background: var(--error-container);
+  color: var(--on-error-container);
+}
+
+.extractor-warning {
+  background-color: rgb(250, 131, 4);
+  color: var(--on-surface);
+}
+
+.extractor-info {
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+.extractor-done {
+  background-color: rgb(14, 123, 2);
+  color: var(--on-surface);
+}

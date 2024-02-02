@@ -14,6 +14,17 @@ an-loader(:height="3" :color="loadercolor")
 main.responsive.max
   RouterView
 
+an-toasts(
+  :close-icon="{ class: 'extra', content: 'close' }"
+  error-classes="an-toast-default extractor-toast extractor-error top" 
+  :error-icon="{ class: 'extra', content: 'priority_high' }"
+  warn-classes="an-toast-default extractor-toast extractor-warning top" 
+  :warn-icon="{ class: 'extra', content: 'warning' }"
+  info-classes="an-toast-default extractor-toast extractor-info top" 
+  :info-icon="{ class: 'extra', content: 'info' }"
+  done-classes="an-toast-default extractor-toast extractor-done bottom" 
+  :done-icon="{ class: 'extra', content: 'done' }"
+)
 </template>
 
 <script setup lang="ts">
@@ -35,6 +46,7 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+
 main.responsive.max {
     padding: 0;
 }
@@ -43,4 +55,5 @@ main.responsive.max {
     position: absolute;
     border: 1px solid gray;
 }
+
 </style>

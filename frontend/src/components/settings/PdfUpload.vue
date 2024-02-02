@@ -24,7 +24,12 @@ const uploadFile = ($event: Event) => {
     console.error(`"${pdf.name}" is not a pdf file`)
     return
   }
-  emit('upload-file', pdf)
+  try {
+    emit('upload-file', pdf)
+  }
+  finally {
+    target.value = ''
+  }
 }
 
 </script>

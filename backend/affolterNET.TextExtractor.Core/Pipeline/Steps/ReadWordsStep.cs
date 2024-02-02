@@ -8,7 +8,7 @@ using UglyToad.PdfPig.Util;
 
 namespace affolterNET.TextExtractor.Core.Pipeline.Steps;
 
-public class ReadWordsStep: IPipelineStep
+public class ReadWordsStep : IPipelineStep
 {
     private readonly IWordExtractor _wordExtractor;
     private readonly IOutput _log;
@@ -18,7 +18,7 @@ public class ReadWordsStep: IPipelineStep
         _wordExtractor = wordExtractor;
         _log = log;
     }
-    
+
     public void Execute(IPipelineContext context)
     {
         _log.Write(EnumLogLevel.Warning, "[blue]", $"Parsing PDF: {context.Filename}", "[/]");
@@ -29,8 +29,6 @@ public class ReadWordsStep: IPipelineStep
         // read pages
         ReadPages(context);
         _log.Write(EnumLogLevel.Debug, $"Pages: {context.Document.Pages.Count}");
-        // add font-statistics
-        GetStatistics(context);
     }
 
     private void Open(IPipelineContext context)
@@ -45,7 +43,7 @@ public class ReadWordsStep: IPipelineStep
         {
             document = PdfDocument.Open(context.Filename);
         }
-        
+
         context.SetDocument(document);
     }
 
@@ -68,11 +66,5 @@ public class ReadWordsStep: IPipelineStep
     private List<Word> GetWords(IPdfPage page)
     {
         return page.Page.GetWords(_wordExtractor).ToList();
-    }
-
-    private void GetStatistics(IPipelineContext context)
-    {
-        var fontSizes = context.Document!.Words.FindCommonGroups<IWordOnPage>(1, w => w.FontSizeAvg);
-        context.Document.MainFontSizeAvg = fontSizes.First().Average(kvp => kvp.Item1);
     }
 }

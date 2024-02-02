@@ -123,17 +123,19 @@ public class PdfLines : IList<LineOnPage>
     {
         var boxCurrent = line.BoundingBox;
         var lineOnTop = _lines
-            .Where(l => l.BoundingBox.OverlapsX(boxCurrent) 
+            .Where(l =>l.PageNr == line.PageNr 
+                        && l.BoundingBox.OverlapsX(boxCurrent) 
                         && l.BoundingBox.Centroid.Y > line.BoundingBox.Centroid.Y
                         && !l.BoundingBox.OverlapsY(line.BoundingBox))
             .MinBy(l => Math.Abs(l.BoundingBox.Centroid.Y - line.BoundingBox.Centroid.Y));
         return lineOnTop;
     }
-
-    public double GetTopDistance(ILineOnPage line)
+    
+    public void SetTopDistance(LineOnPage line)
     {
         var lineOnTop = FindLineOnTop(line);
-        return lineOnTop == null ? LineOnPage.DefaultTopDistance : lineOnTop.BaseLineY - line.BaseLineY;
+        var topDistance = line.GetTopDistance(lineOnTop);
+        line.SetTopDistance(topDistance);
     }
 
     private bool FirstWordStartsLowercase(LineOnPage words)

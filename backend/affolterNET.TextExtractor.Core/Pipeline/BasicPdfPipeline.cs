@@ -5,19 +5,21 @@ using affolterNET.TextExtractor.Core.Pipeline.Steps;
 
 namespace affolterNET.TextExtractor.Core.Pipeline;
 
-public class BasicPdfPipeline: IBasicPdfPipeline
+public class BasicPdfPipeline : IBasicPdfPipeline
 {
     private readonly IOutput _log;
     private readonly ProcessingPipeline _pipeline;
 
     public BasicPdfPipeline(ReadWordsStep readWordsStep, CleanWordsStep cleanWordsStep, DetectLinesStep detectLinesStep,
-        DetectTextBlocksStep detectBlocksStep, DetectFootnotesStep detectFootnotesStep, IOutput log)
+        AnalyzeLineSpacingStep analyzeLineSpacingStep, DetectTextBlocksStep detectBlocksStep,
+        DetectFootnotesStep detectFootnotesStep, IOutput log)
     {
         _log = log;
         _pipeline = new ProcessingPipeline();
         _pipeline.AddStep(readWordsStep);
         _pipeline.AddStep(cleanWordsStep);
         _pipeline.AddStep(detectLinesStep);
+        _pipeline.AddStep(analyzeLineSpacingStep);
         _pipeline.AddStep(detectBlocksStep);
         _pipeline.AddStep(detectFootnotesStep);
     }
@@ -27,7 +29,7 @@ public class BasicPdfPipeline: IBasicPdfPipeline
         _pipeline.ExecutePipeline(context);
         _log.Write(EnumLogLevel.Warning, "[blue]", "Pipeline finished", "[/]");
     }
-    
+
     public void AddStep(IPipelineStep step)
     {
         _pipeline.AddStep(step);

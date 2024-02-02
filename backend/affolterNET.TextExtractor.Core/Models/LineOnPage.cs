@@ -33,14 +33,6 @@ public class LineOnPage : IList<IWordOnPage>, ILineOnPage
     public PdfLines? Lines { get; set; }
     public IWordOnPage? FirstWord => _words.FirstOrDefault();
     public double FontSizeAvg => _words.Average(w => w.FontSizeAvg);
-    public double MainFontSizeAvg
-    {
-        get
-        {
-            var groups = _words.FindCommonGroups<IWordOnPage>(1, w => w.FontSizeAvg);
-            return groups.First().Average(kvp => kvp.Item1);
-        }
-    }
     public double? WordSpaceAvg
     {
         get
@@ -55,6 +47,13 @@ public class LineOnPage : IList<IWordOnPage>, ILineOnPage
         }
     }
     public TextOrientation TextOrientation { get; private set; }
+    public double TopDistance { get; private set; } = DefaultTopDistance;
+
+    public void SetTopDistance(double topDistance)
+    {
+        TopDistance = topDistance;
+    }
+
     public void AddRange(List<IWordOnPage> items)
     {
         items.ForEach(item => item.Line = this);
@@ -171,4 +170,5 @@ public interface ILineOnPage
     double Right { get; }
     double BaseLineY { get; set; }
     double FontSizeAvg { get; }
+    int PageNr { get; }
 }

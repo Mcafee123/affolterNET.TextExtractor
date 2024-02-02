@@ -214,7 +214,7 @@ public class PdfBlockJson
         BoundingBox = block.BoundingBox;
         foreach (var line in block.Lines)
         {
-            Lines.Add(new PdfLineJson(line, block.Lines.GetTopDistance(line)));
+            Lines.Add(new PdfLineJson(line));
         }
     }
 
@@ -229,7 +229,7 @@ public class PdfLineJson
         
     }
     
-    public PdfLineJson(LineOnPage line, double topDistance)
+    public PdfLineJson(LineOnPage line)
     {
         foreach (var word in line)
         {
@@ -238,8 +238,8 @@ public class PdfLineJson
 
         BoundingBox = line.BoundingBox;
         FontSizeAvg = line.FontSizeAvg;
-        TopDistance = topDistance;
-        FontSizeTopDistanceRelation = Math.Round(line.FontSizeAvg / topDistance, 2);
+        TopDistance = line.TopDistance;
+        FontSizeTopDistanceRelation = Math.Round(line.FontSizeAvg / TopDistance, 2);
     }
 
     public double TopDistance { get; set; }

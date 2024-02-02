@@ -33,6 +33,10 @@ public class DetectLinesStep: IPipelineStep
         {
             var lines = _lineDetector.DetectLines(page.Words, settings.MaxPagesToConsider, settings.BaseLineMatchingRange);
             page.Lines.AddRange(lines.ToList());
+            foreach (var line in lines)
+            {
+                lines.SetTopDistance(line);
+            }
         }
 
         var linesSum = context.Document.Pages.Sum(p => p.Lines.Count);

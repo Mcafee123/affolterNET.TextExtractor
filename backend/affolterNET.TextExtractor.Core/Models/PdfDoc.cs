@@ -12,16 +12,12 @@ public class PdfDoc : IPdfDoc
         Filename = fileName;
         _document = document;
     }
-
-    public string Filename { get; }
-
-    public List<IPdfPage> Pages { get; set; } = new();
-
-    public List<IWordOnPage> Words => Pages.SelectMany(p => p.Words).ToList();
-
-    public List<Footnote> Footnotes { get; set; } = new();
     
-    public double MainFontSizeAvg { get; set; }
+    public string Filename { get; }
+    public List<IPdfPage> Pages { get; set; } = new();
+    public List<IWordOnPage> Words => Pages.SelectMany(p => p.Words).ToList();
+    public List<Footnote> Footnotes { get; set; } = new();
+    public FontSizeSettings FontSizes { get; set; }
 
     public void GetPages()
     {
@@ -50,7 +46,7 @@ public interface IPdfDoc : IDisposable
     string Filename { get; }
     List<IPdfPage> Pages { get; set; }
     List<IWordOnPage> Words { get; }
-    double MainFontSizeAvg { get; set; }
+    FontSizeSettings FontSizes { get; set; }
     void GetPages();
     void ToJson(string path);
 }

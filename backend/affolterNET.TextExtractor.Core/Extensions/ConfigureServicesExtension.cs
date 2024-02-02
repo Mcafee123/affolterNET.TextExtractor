@@ -17,6 +17,7 @@ public static class ConfigureServicesExtension
         services.AddTransient<ReadWordsStep>();
         services.AddTransient<CleanWordsStep>();
         services.AddTransient<DetectLinesStep>();
+        services.AddTransient<AnalyzeLineSpacingStep>();
         services.AddTransient<DetectFootnotesStep>();
         services.AddTransient<DetectTextBlocksStep>();
         services.AddTransient<BasicPdfPipeline>();

@@ -1,7 +1,6 @@
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
-using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Services;
 
@@ -16,7 +15,7 @@ public class BlockDetector: IBlockDetector
         _log = log;
     }
 
-    public IPdfTextBlocks FindBlocks(IPdfPage page, double topDistanceRelation)
+    public IPdfTextBlocks FindBlocks(IPdfPage page, FontSizeSettings fontSizeSettings, double newBlockDistanceDiff)
     {
         var lines = page.Lines;
         var innerBlocks = new PdfTextBlocks();
@@ -27,13 +26,22 @@ public class BlockDetector: IBlockDetector
         foreach (var line in lines)
         {
             // if an already added block overlaps the current line, add to this block later
-            var existingOverlappingY = innerBlocks.FirstOrDefault(block => block.BoundingBox.Overlaps(line.BoundingBox, 0.2));
+            var existingOverlappingY = innerBlocks
+                .FirstOrDefault(b => b.BoundingBox.Overlaps(line.BoundingBox, 0.2));
             if (existingOverlappingY == null)
             {
                 // if there is no overlapping block, check the distance to the next line on top
-                var topDistance = lines.GetTopDistance(line);
-                var fontSizeTopDistanceRelation = Math.Round(line.FontSizeAvg / topDistance, 2);
-                if (fontSizeTopDistanceRelation < topDistanceRelation)
+                var addBlock = line.TopDistance >= LineOnPage.DefaultTopDistance;
+                // if top distance is LineOnPage.DefaultTopDistance, add block
+                if (!addBlock)
+                {
+                    // check if line.TopDistance is bigger than the common line spacing
+                    var distanceDiff = fontSizeSettings.GetTopDistanceDiff(line.FontSizeAvg, line.TopDistance);
+                    // if topdistance is bigger, add block
+                    addBlock = distanceDiff >= newBlockDistanceDiff;
+                }
+                
+                if (addBlock)
                 {
                     var tb = new PdfTextBlock();
                     tb.AddLine(line);
@@ -46,7 +54,7 @@ public class BlockDetector: IBlockDetector
         // for lines with small distances, append to existing blocks
         foreach (var currentLine in allLines)
         {
-            var blockToAppend = innerBlocks.FirstOrDefault(block => block.BoundingBox.Overlaps(currentLine.BoundingBox));
+            var blockToAppend = innerBlocks.FirstOrDefault(b => b.BoundingBox.Overlaps(currentLine.BoundingBox, 0.2));
             if (blockToAppend == null)
             {
                 var nextLineOnTop = page.Lines.FindLineOnTop(currentLine);
@@ -61,6 +69,49 @@ public class BlockDetector: IBlockDetector
             blockToAppend.AddLine(currentLine);
         }
         
+        // fix blocks that are near enough by text size
+        var blocksToRemove = new List<IPdfTextBlock>();
+        foreach (var b in innerBlocks)
+        {
+            // find the nearest block on top, that overlaps
+            var blockOnTop = innerBlocks
+                .Where(bl => bl.BoundingBox.OverlapsX(b.BoundingBox)
+                    && bl.BoundingBox.Bottom > b.BoundingBox.Top)
+                .MinBy(bl => bl.BoundingBox.Bottom);
+            if (blockOnTop != null)
+            {
+                var firstLine = b.FirstLine!;
+                var firstLineGroup = fontSizeSettings.GetGroup(firstLine.FontSizeAvg);
+                // get the lowest line in the block on top, that overlaps the first line of the current block
+                // and fontsize is in the same font-size-group
+                var lowestLine = blockOnTop.Lines
+                    .Where(l => l.BoundingBox.OverlapsX(firstLine.BoundingBox))
+                    .MinBy(l => l.BaseLineY);
+                if (lowestLine == null)
+                {
+                    continue;
+                }
+                var lowestLineGroup = fontSizeSettings.GetGroup(lowestLine.FontSizeAvg);
+                if (lowestLineGroup.GroupId != firstLineGroup.GroupId)
+                {
+                    continue;
+                }
+
+                var dist = firstLine.GetTopDistance(lowestLine);
+                var distanceDiff = fontSizeSettings.GetTopDistanceDiff(firstLine.FontSizeAvg, dist);
+                if (distanceDiff < newBlockDistanceDiff)
+                {
+                    blockOnTop.AddLines(b.Lines.ToList());
+                    blocksToRemove.Add(b);
+                }
+            }
+        }
+
+        foreach (var b in blocksToRemove)
+        {
+            innerBlocks.Remove(b);
+        }
+
         // fix overlapping blocks
         var overlappingBlocks = innerBlocks.GetOverlappingBlocks(out var block);
         while (block != null)
