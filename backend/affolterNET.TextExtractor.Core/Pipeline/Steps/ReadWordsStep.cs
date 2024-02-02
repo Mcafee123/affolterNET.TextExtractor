@@ -18,10 +18,16 @@ public class ReadWordsStep : IPipelineStep
         _wordExtractor = wordExtractor;
         _log = log;
     }
+    
+    public class ReadWordsStepSettings: IStepSettings
+    {
+        public double BaseLineGroupRange { get; set; } = 0.3;
+    }
 
     public void Execute(IPipelineContext context)
     {
         _log.Write(EnumLogLevel.Warning, "[blue]", $"Parsing PDF: {context.Filename}", "[/]");
+        _log.Write(EnumLogLevel.Info, "Reading words");
         // open
         Open(context);
         // get pages
@@ -49,6 +55,7 @@ public class ReadWordsStep : IPipelineStep
 
     private void ReadPages(IPipelineContext context)
     {
+        var settings = context.GetSettings<ReadWordsStepSettings>();
         context.OriginalWords.Clear();
         foreach (var page in context.Document!.Pages)
         {
@@ -57,7 +64,7 @@ public class ReadWordsStep : IPipelineStep
 
             foreach (var word in words)
             {
-                var wop = new WordOnPage(page.Nr, word);
+                var wop = new WordOnPage(page.Nr, word, settings.BaseLineGroupRange);
                 page.Words.Add(wop);
             }
         }

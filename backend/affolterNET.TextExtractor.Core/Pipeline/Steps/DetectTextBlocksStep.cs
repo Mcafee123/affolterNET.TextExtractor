@@ -21,6 +21,7 @@ public class DetectTextBlocksStep: IPipelineStep
     
     public void Execute(IPipelineContext context)
     {
+        _log.Write(EnumLogLevel.Info, "Detecting textblocks");
         var settings = context.GetSettings<DetectTextBlocksStepSettings>();
         if (context.Document == null)
         {

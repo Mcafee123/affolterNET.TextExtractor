@@ -23,6 +23,7 @@ public class DetectLinesStep: IPipelineStep
     
     public void Execute(IPipelineContext context)
     {
+        _log.Write(EnumLogLevel.Info, "Detecting lines");
         var settings = context.GetSettings<DetectLinesStepSettings>();
         if (context.Document == null)
         {

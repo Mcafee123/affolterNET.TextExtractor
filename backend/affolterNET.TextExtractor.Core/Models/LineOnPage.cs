@@ -171,4 +171,7 @@ public interface ILineOnPage
     double BaseLineY { get; set; }
     double FontSizeAvg { get; }
     int PageNr { get; }
+    int IndexOf(IWordOnPage item);
+    int Count { get; }
+    IWordOnPage this[int index] { get; set; }
 }

@@ -7,28 +7,44 @@ namespace affolterNET.TextExtractor.Core.Models;
 public class WordOnPage: IWordOnPage
 {
     private Word _word;
-    
-    public WordOnPage(int pageNr, Word word)
+    private readonly double _baseLineGroupRange;
+
+    public WordOnPage(int pageNr, Word word, double baseLineGroupRange)
     {
         PageNr = pageNr;
         _word = word;
+        _baseLineGroupRange = baseLineGroupRange;
         var bottomLeft = new PdfPoint(word.Letters.Min(l => l.StartBaseLine.X), word.Letters.Min(l => l.StartBaseLine.Y));
         var topRight = new PdfPoint(word.Letters.Max(l => l.EndBaseLine.X),
             bottomLeft.Y + word.Letters.Max(l => l.PointSize));
         BoundingBox = new PdfRectangle(bottomLeft, topRight);
-        var baselineGroups = word.Letters.ToList().FindCommonGroups<Letter>(0.3, l => l.StartBaseLine.Y);
-        BaseLineY = baselineGroups.First().First().Item1;
+        BaseLineGroups = word.Letters.ToList().FindCommonGroups(_baseLineGroupRange, l => l.StartBaseLine.Y);
+        BaseLineY = BaseLineGroups.First().First().Value;
     }
+
+    public FoundGroups<Letter> BaseLineGroups { get; private set; }
 
     public WordOnPage Clone()
     {
-        return new WordOnPage(PageNr, _word);
+        return new WordOnPage(PageNr, _word, _baseLineGroupRange);
     }
 
     public void ChangeWord(List<Letter> letters)
     {
-        _word = new Word(letters);
+        var newLetters = new List<Letter>();
+        foreach (var letter in letters)
+        {
+            var newGlyphRectangle = new PdfRectangle(letter.GlyphRectangle.BottomLeft.X, letter.GlyphRectangle.BottomLeft.Y,
+                letter.GlyphRectangle.BottomLeft.X + letter.Width, letter.GlyphRectangle.TopRight.Y);
+            var l = new Letter(letter.Value, newGlyphRectangle, letter.StartBaseLine, letter.EndBaseLine,
+                letter.Width, letter.FontSize, letter.Font, letter.RenderingMode, letter.StrokeColor, letter.FillColor,
+                letter.PointSize, letter.TextSequence);
+            newLetters.Add(l);
+        }
+        _word = new Word(newLetters);
         BoundingBox = _word.BoundingBox;
+        BaseLineGroups = _word.Letters.ToList().FindCommonGroups(_baseLineGroupRange, l => l.StartBaseLine.Y);
+        BaseLineY = BaseLineGroups.First().First().Value;
     }
 
     public LineOnPage? Line { get; set; }
@@ -64,7 +80,7 @@ public class WordOnPage: IWordOnPage
                 .FindCommonGroups<Letter>(0.1, l => l.PointSize).ToList();
             if (fontSizes.Count > 0)
             {
-                return fontSizes.First().Average(tpl => tpl.Item1);
+                return fontSizes.First().Average(tpl => tpl.Value);
             }
 
             throw new InvalidOperationException("Word with no letters found");
@@ -103,4 +119,5 @@ public interface IWordOnPage
     bool IsBelowY(double horizontalPoint);
     WordOnPage Clone();
     void ChangeWord(List<Letter> letters);
+    FoundGroups<Letter> BaseLineGroups { get; }
 }

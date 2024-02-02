@@ -12,16 +12,16 @@ public class FontSizeSettings : List<FontSizeSettings.FontSizeSetting>
         AllFontNames = selectedWords.Select(w => w.FontName).Distinct().ToList();
         var fsSettings = selectedWords
             .FindCommonGroups<IWordOnPage>(0.5, w => w.FontSizeAvg);
-        foreach (var list in fsSettings)
+        foreach (var foundGroup in fsSettings)
         {
             Add(new FontSizeSetting
             {
                 GroupId = _groupIdentifier++,
-                WordCount = list.Count,
-                AvgFontSize = list.Select(tuple => tuple.Item1).Average(),
-                MinFontSize = list.Min(kvp => kvp.Item1),
-                MaxFontSize = list.Max(kvp => kvp.Item1),
-                FontNames = list.Select(kvp => kvp.Item2.FontName).Distinct().ToList()
+                WordCount = foundGroup.Count,
+                AvgFontSize = foundGroup.AvgValue,
+                MinFontSize = foundGroup.MinValue,
+                MaxFontSize = foundGroup.MaxValue,
+                FontNames = foundGroup.Select(gi => gi.Obj.FontName).Distinct().ToList()
             });
         }
     }
@@ -79,7 +79,7 @@ public class FontSizeSettings : List<FontSizeSettings.FontSizeSetting>
             }
 
             var groups = _lineSpacings.FindCommonGroups(0.5, d => d);
-            return groups.First().Select(kvp => kvp.Item1).Average();
+            return groups.First().AvgValue;
         }
     }
 }

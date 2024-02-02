@@ -16,6 +16,7 @@ public class AnalyzeLineSpacingStep: IPipelineStep
     
     public void Execute(IPipelineContext context)
     {
+        _log.Write(EnumLogLevel.Info, "Analyzing spacing between lines");
         context.Document!.FontSizes = new FontSizeSettings(context.Document.Words);
         var lineGroups = GetLineGroupsByFontSize(context.Document);
         foreach (var groupId in lineGroups.Keys)

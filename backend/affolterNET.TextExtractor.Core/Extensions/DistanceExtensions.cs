@@ -26,7 +26,7 @@ public static class DistanceExtensions
         }
 
         var groups = list.FindCommonGroups(range, d => d);
-        var avg = groups.Select(l => l.Select(tpl => tpl.Item1).Average()).ToList();
+        var avg = groups.Select(l => l.Select(tpl => tpl.Value).Average()).ToList();
         avg.Sort();
         return avg.First();
     }
@@ -39,7 +39,7 @@ public static class DistanceExtensions
         }
 
         var groups = list.FindCommonGroups(range, d => d);
-        var avg = groups.Select(l => l.Select(tpl => tpl.Item1).Average()).ToList();
+        var avg = groups.Select(l => l.Select(tpl => tpl.Value).Average()).ToList();
         avg.Sort();
         return avg.Last();
     }
@@ -167,10 +167,10 @@ public static class DistanceExtensions
         return false;
     }
 
-    public static List<List<Tuple<double, T>>> FindCommonGroups<T>(this IList<T> values, double range,
+    public static FoundGroups<T> FindCommonGroups<T>(this IList<T> values, double range,
         Func<T, double> doubleSelector)
     {
-        var list = new List<List<Tuple<double, T>>>();
+        var list = new FoundGroups<T>();
         if (values.Count == 0)
         {
             return list;
@@ -178,22 +178,22 @@ public static class DistanceExtensions
 
         var sorted = values
             .OrderBy(doubleSelector)
-            .Select(v => new Tuple<double, T>(doubleSelector(v), v))
+            .Select(v => new GroupItem<T>(doubleSelector(v), v))
             .ToList();
 
-        var clusters = new List<List<Tuple<double, T>>>();
-        var currentCluster = new List<Tuple<double, T>> { sorted[0] };
+        var clusters = new FoundGroups<T>();
+        var currentCluster = new FoundGroup<T> { sorted[0] };
 
         for (var i = 1; i < sorted.Count; i++)
         {
-            if (Math.Abs(sorted[i].Item1 - currentCluster.Last().Item1) <= range)
+            if (Math.Abs(sorted[i].Value - currentCluster.Last().Value) <= range)
             {
                 currentCluster.Add(sorted[i]);
             }
             else
             {
                 clusters.Add(currentCluster);
-                currentCluster = new List<Tuple<double, T>> { sorted[i] };
+                currentCluster = [sorted[i]];
             }
         }
 
@@ -202,8 +202,9 @@ public static class DistanceExtensions
         var mostCommonGroups = clusters
             .OrderByDescending(g => g.Count)
             .ToList();
+        list.AddRange(mostCommonGroups);
 
-        return mostCommonGroups;
+        return list;
     }
 
     public static bool MatchWithTolerance(this double currentPosition, double valueCompared, double tolerance)

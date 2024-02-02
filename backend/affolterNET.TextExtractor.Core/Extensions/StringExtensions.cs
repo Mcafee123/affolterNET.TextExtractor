@@ -14,4 +14,24 @@ public static class StringExtensions
 
         return true;
     }
+    
+    public static bool IsStar(this string str)
+    {
+        if (str.Length == 1 && str[0] == '*')
+        {
+            return true;
+        }
+
+        return false;
+    }
+    
+    public static bool IsNumericOrStar(this string str)
+    {
+        if (str.IsStar())
+        {
+            return true;
+        }
+
+        return str.IsNumeric();
+    }
 }
