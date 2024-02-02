@@ -29,17 +29,6 @@ const { wordJson } = useViewSettings()
 
 <style lang="scss" scoped>
 
-.word {
-  display: table;
-}
-
-.row {
-  margin-block-start: 0;
-  &.first {
-    margin-block-start: 0.5rem;
-  }
-}
-
 .title {
   min-width: 40px;
 }

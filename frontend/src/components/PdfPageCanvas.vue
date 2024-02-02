@@ -198,10 +198,10 @@ const drawBox = (ctx: CanvasRenderingContext2D, boundingBox: Box, color: string,
 
 const getFont = (fontName: string, fontSize: number) => {
   const parts: string[] = []
-  if (fontName.indexOf('italic') > -1) {
+  if (fontName.toLowerCase().indexOf('italic') > -1) {
     parts.push('italic')
   }
-  if (fontName.indexOf('bold') > -1) {
+  if (fontName.toLowerCase().indexOf('bold') > -1) {
     parts.push('bold')
   }
   parts.push(`${fontSize * scale}px`)

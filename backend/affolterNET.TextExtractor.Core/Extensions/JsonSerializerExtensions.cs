@@ -170,6 +170,7 @@ public class PdfDocJson
     public PdfDocJson(IPdfDoc pdfDoc)
     {
         Filename = pdfDoc.Filename;
+        FontNames = string.Join(", ", pdfDoc.FontSizes.AllFontNames);
         foreach (var page in pdfDoc.Pages)
         {
             Pages.Add(new PdfPageJson(page));
@@ -177,6 +178,7 @@ public class PdfDocJson
     }
 
     public string Filename { get; set; } = null!;
+    public string FontNames { get; set; }
     public List<PdfPageJson> Pages { get; set; } = new();
 }
 
@@ -239,12 +241,10 @@ public class PdfLineJson
         BoundingBox = line.BoundingBox;
         FontSizeAvg = line.FontSizeAvg;
         TopDistance = line.TopDistance;
-        FontSizeTopDistanceRelation = Math.Round(line.FontSizeAvg / TopDistance, 2);
     }
 
     public double TopDistance { get; set; }
     public double FontSizeAvg { get; set; }
-    public double FontSizeTopDistanceRelation { get; set; }
     public PdfRectangle BoundingBox { get; set; }
     public List<WordOnPageJson> Words { get; set; } = new();
 }

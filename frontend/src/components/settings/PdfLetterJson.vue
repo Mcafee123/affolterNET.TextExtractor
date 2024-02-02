@@ -34,13 +34,6 @@ const { letterJson, round } = useViewSettings()
   display: table;
 }
 
-.row {
-  margin-block-start: 0;
-  &.first {
-    margin-block-start: 0.5rem;
-  }
-}
-
 .title {
   min-width: 70px;
 }

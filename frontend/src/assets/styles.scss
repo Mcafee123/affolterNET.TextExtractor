@@ -35,3 +35,19 @@ html {
   background-color: rgb(14, 123, 2);
   color: var(--on-surface);
 }
+
+.row {
+  margin-block-start: 0;
+  &.first {
+    margin-block-start: 0.6rem;
+  }
+}
+
+.row.wrap {
+  white-space: wrap;
+  gap: 0;
+
+  .txt {
+    flex: inherit;
+  }
+}

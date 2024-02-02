@@ -23,6 +23,10 @@
         button(@click="refreshView()")
           i frame_reload
           span Reload PDF
+        .row.first.wrap
+          .title 
+            b Fonts:
+          .txt {{ pdfdata.fontNames }}
       PdfPart(title="Upload")
         PdfUpload(@uploadFile="uploadFile")
       PdfPart(title="Anzeigen")

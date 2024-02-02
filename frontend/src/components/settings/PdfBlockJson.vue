@@ -38,24 +38,8 @@ const drawBox = () => {
 
 <style lang="scss" scoped>
 
-.row {
-  margin-block-start: 0;
-  &.first {
-    margin-block-start: 0.6rem;
-  }
-}
-
 .title {
   min-width: 75px;
-}
-
-.row.wrap {
-  white-space: wrap;
-  gap: 0;
-
-  .txt {
-    flex: inherit;
-  }
 }
 
 </style>

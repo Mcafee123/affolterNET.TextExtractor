@@ -37,10 +37,6 @@ const { customBox, customBoxIsSet, clearCustomBox } = useViewSettings()
   button {
     max-width: 100px;
   }
-  margin-block-start: 0;
-  &.first {
-    margin-block-start: 0.6rem;
-  }
 }
 
 </style>

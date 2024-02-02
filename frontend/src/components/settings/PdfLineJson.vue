@@ -6,7 +6,7 @@
     .title 
       b Text:
     .txt {{ lineJson.text }}
-  .row 
+  .row.first 
     .title 
       b TopDist:
     .txt {{ round(lineJson.topDistance) }}
@@ -14,10 +14,6 @@
     .title 
       b FontSizeAvg:
     .fsa {{ round(lineJson.fontSizeAvg) }}
-  .row 
-    .title 
-      b FontSizeTopDistRel:
-    .fstdr {{ round(lineJson.fontSizeTopDistanceRelation) }}
   .row.first
     button(@click="drawBox()" alt="Box zeichnen")
       i draw
@@ -50,24 +46,8 @@ const drawBox = () => {
 
 <style lang="scss" scoped>
 
-.row {
-  margin-block-start: 0;
-  &.first {
-    margin-block-start: 0.6rem;
-  }
-}
-
 .title {
   min-width: 90px;
-}
-
-.row.wrap {
-  white-space: wrap;
-  gap: 0;
-
-  .txt {
-    flex: inherit;
-  }
 }
 
 </style>
