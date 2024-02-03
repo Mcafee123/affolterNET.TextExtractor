@@ -14,6 +14,10 @@
     .title 
       b FontSizeAvg:
     .fsa {{ round(lineJson.fontSizeAvg) }}
+  .row 
+    .title 
+      b BaseLine:
+    .bly {{ round(lineJson.baseLineY) }}
   .row.first
     button(@click="drawBox()" alt="Box zeichnen")
       i draw

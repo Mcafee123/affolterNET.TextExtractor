@@ -245,8 +245,10 @@ public class PdfLineJson
         BoundingBox = line.BoundingBox;
         FontSizeAvg = line.FontSizeAvg;
         TopDistance = line.TopDistance;
+        BaseLineY = line.BaseLineY;
     }
 
+    public double BaseLineY { get; set; }
     public double TopDistance { get; set; }
     public double FontSizeAvg { get; set; }
     public PdfRectangle BoundingBox { get; set; }
@@ -263,6 +265,7 @@ public class WordOnPageJson
     public WordOnPageJson(IWordOnPage word)
     {
         BoundingBox = word.BoundingBox;
+        BaseLineY = word.BaseLineY;
         Text = word.Text;
         FontName = word.FontName;
         Orientation = word.TextOrientation.ToString();
@@ -272,6 +275,7 @@ public class WordOnPageJson
         }
     }
 
+    public double BaseLineY { get; set; }
     public PdfRectangle BoundingBox { get; set; }
     public string Text { get; set; } = null!;
     public int PageNr { get; set; }

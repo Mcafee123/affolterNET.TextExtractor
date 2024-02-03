@@ -13,6 +13,7 @@ import { useViewSettings, type customBoxType } from '@/composables/useViewSettin
 import type { Box } from '@/types/boundingBox'
 import type { Letter } from '@/types/letter'
 import type { Page } from '@/types/page'
+import { getSyntheticLeadingComments } from 'typescript'
 import { onMounted, ref, type PropType, type Ref, onUnmounted, watch } from 'vue'
 
 const wrapper: Ref<HTMLDivElement | undefined> = ref()
@@ -318,8 +319,8 @@ const select = ($event: MouseEvent) => {
           makeLetterRect(ctx, letter)
           if (ctx.isPointInPath(x, y)) {
             letterJson.value = { fontSize: letter.fontSize, orientation: letter.orientation, text: letter.text, startBaseLine: letter.startBaseLine }
-            wordJson.value = { boundingBox: word.boundingBox, text: word.text, fontName: word.fontName, orientation: word.orientation }
-            lineJson.value = { boundingBox: line.boundingBox, topDistance: line.topDistance, fontSizeAvg: line.fontSizeAvg, text: line.words.map(w => w.text).join('') }
+            wordJson.value = { boundingBox: word.boundingBox, baseLineY: word.baseLineY, text: word.text, fontName: word.fontName, orientation: word.orientation }
+            lineJson.value = { boundingBox: line.boundingBox, baseLineY: line.baseLineY, topDistance: line.topDistance, fontSizeAvg: line.fontSizeAvg, text: line.words.map(w => w.text).join('') }
             blockJson.value = { boundingBox: block.boundingBox, text: block.lines.map(l => l.words.map(w => w.text).join('')).join('') }
 
             // make selection Rectangle

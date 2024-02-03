@@ -4,8 +4,8 @@
     .row
       .title
         b Size: 
-      .x X: {{ round(block.topRightX - block.bottomLeftX) }}
-      .y Y: {{ round(block.topRightY - block.bottomLeftY) }}
+      .x W: {{ round(block.topRightX - block.bottomLeftX) }}
+      .y H: {{ round(block.topRightY - block.bottomLeftY) }}
   .bottomLeft
     .row
       .title

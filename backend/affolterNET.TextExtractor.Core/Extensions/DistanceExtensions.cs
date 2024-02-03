@@ -51,7 +51,7 @@ public static class DistanceExtensions
 
     public static bool Overlaps(this PdfRectangle first, PdfRectangle second, double tolerance = 0.01)
     {
-        if (tolerance > 0)
+        if (tolerance != 0)
         {
             var t = tolerance / 2;
             first = new PdfRectangle(new PdfPoint(first.BottomLeft.X - t, first.BottomLeft.Y - t),

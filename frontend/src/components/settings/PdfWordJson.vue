@@ -14,6 +14,10 @@
     .title 
       b Orient.:
     .ori {{  wordJson.orientation }}
+  .row 
+    .title 
+      b BaseLine:
+    .bly {{ round(wordJson.baseLineY) }}
 </template>
 
 <script lang="ts" setup>
@@ -23,7 +27,7 @@ import BoundingBox from '@/components/settings/BoundingBox.vue'
 import { useViewSettings } from '@/composables/useViewSettings'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { wordJson } = useViewSettings()
+const { wordJson, round } = useViewSettings()
 
 </script>
 

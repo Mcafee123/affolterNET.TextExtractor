@@ -6,6 +6,7 @@ export interface Line {
     text: string | null,
     topDistance: number,
     fontSizeAvg: number,
+    baseLineY: number,
     words: Word[],
 }
 

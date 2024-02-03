@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
@@ -22,6 +23,7 @@ public class DetectFootnotesStep: IPipelineStep
     public void Execute(IPipelineContext context)
     {
         _log.Write(EnumLogLevel.Info, "Detecting footnotes");
+        var cleanWordsSettings = context.GetSettings<CleanWordsStep.CleanWordsStepSettings>();
         if (context.Document == null)
         {
             throw new NullReferenceException(
@@ -35,18 +37,20 @@ public class DetectFootnotesStep: IPipelineStep
         }
         
         var fontSizes = context.Document.FontSizes;
-        var mainFontSize = (double)10;
+        var mainFontSize = (double)9;
         var mainFontSetting = fontSizes.ToList().MaxBy(fs => fs.WordCount);
         if (mainFontSetting != null)
         {
             mainFontSize = mainFontSetting.AvgFontSize;
         }
 
+        var fn = new List<Footnote>();
         foreach (var page in context.Document.Pages)
         {
             foreach (var block in page.Blocks)
             {
-                var footnotes = DetectInlineFootnotes(block, mainFontSize);
+                var footnotes = DetectInlineFootnotes(block, mainFontSize, cleanWordsSettings.MinBaseLineDiff);
+                fn.AddRange(footnotes);
             }
 
             // var footnotes = page.Lines.DetectFootnotes();
@@ -54,36 +58,77 @@ public class DetectFootnotesStep: IPipelineStep
         }
     }
 
-    private List<Footnote> DetectInlineFootnotes(IPdfTextBlock block, double mainFontSize)
+    private List<Footnote> DetectInlineFootnotes(IPdfTextBlock block, double mainFontSize, double minBaseLineDiff)
     {
-        var words = block.Lines.SelectMany(l => l.ToList()).Select(w => new { Word = w, Letters = w.Letters.Where(l => l.Value.IsNumericOrStar()) }).ToList();
-        foreach (var w in words)
+        var list = new List<Footnote>();
+        var words = block.Lines.SelectMany(l => l.ToList())
+            .Where(w => w.FontSizeAvg < mainFontSize)
+            .Where(w => w.HasText)
+            .Where(w => w.Text.IsNumericOrStar())
+            .ToList();
+        foreach (var word in words)
         {
+            var i = 0;
+            LineOnPage? containingLine = null;
+            var box = word.BoundingBox;
+            while (containingLine == null && i < 5)
+            {
+                containingLine = block.Lines
+                    .FirstOrDefault(l => 
+                        box.Overlaps(l.BoundingBox, -1) && 
+                        Math.Abs(l.BaseLineY - word.BaseLineY) > minBaseLineDiff &&
+                        Math.Abs(l.BaseLineY - word.BaseLineY) < l.FontSizeAvg &&
+                        l.FontSizeAvg > word.FontSizeAvg);
+                box = box.Translate(-1, 0);
+                i++;
+            }
             
+            if (containingLine == null)
+            {
+                continue;
+            }
+            // take the words to the left and calc the distance
+            var distances = containingLine
+                .Where(w => w != word)
+                .Where(w => w.HasText)
+                .Where(w => w.BoundingBox.Centroid.X < word.BoundingBox.Centroid.X)
+                .Select(w => new Tuple<double, IWordOnPage>(w.BoundingBox.TopRight.Distance(word.BoundingBox.BottomLeft), w))
+                .ToList();
+            
+            // find the closest
+            var closestToTheLeft = distances.MinBy(tpl => tpl.Item1);
+
+            if (closestToTheLeft == null)
+            {
+                continue;
+            }
+
+            var fn = new Footnote(int.Parse(word.Text), new PdfTextBlock());
+            list.Add(fn);
         }
 
-        var list = new List<Footnote>();
-        foreach (var line in block.Lines)
-        {
-            foreach (var word in line.Where(w => w.HasText && w.Text.IsNumericOrStar() && w.FontSizeAvg < mainFontSize))
-            {
-                // is it a fraction?
-                if (word.IsFraction(line))
-                {
-                    // abc1/3
-                    // ignore
-                    continue;
-                }
-                
-                // is it the first word in a line?
-                if (line.IndexOf(word) == 0)
-                {
-                    // footnotes have a word to the left where they belong to
-                    // the most left word is never a footnote
-                    continue;
-                }
-            }
-        }
+        // var list = new List<Footnote>();
+        // foreach (var line in block.Lines)
+        // {
+        //     foreach (var word in line.Where(w => w.HasText && w.Text.IsNumericOrStar() && w.FontSizeAvg < mainFontSize))
+        //     {
+        //         // is it a fraction?
+        //         if (word.IsFraction(line))
+        //         {
+        //             // abc1/3
+        //             // ignore
+        //             continue;
+        //         }
+        //         
+        //         // is it the first word in a line?
+        //         if (line.IndexOf(word) == 0)
+        //         {
+        //             // footnotes have a word to the left where they belong to
+        //             // the most left word is never a footnote
+        //             continue;
+        //         }
+        //     }
+        // }
 
         return list;
     }

@@ -3,6 +3,7 @@ import type { Letter } from "./letter";
 
 export interface Word {
     boundingBox: Box,
+    baseLineY: number,
     text: string,
     pageNr: number,
     fontName: string,

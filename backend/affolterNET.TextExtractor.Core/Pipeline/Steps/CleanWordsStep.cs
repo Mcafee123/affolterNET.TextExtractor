@@ -18,7 +18,7 @@ public class CleanWordsStep: IPipelineStep
     public class CleanWordsStepSettings: IStepSettings
     {
         public double BigSpacesSize { get; set; } = 100;
-        public double MinBaseLineDiff { get; set; } = 1.5;
+        public double MinBaseLineDiff { get; set; } = 1;
     }
     
     public void Execute(IPipelineContext context)
