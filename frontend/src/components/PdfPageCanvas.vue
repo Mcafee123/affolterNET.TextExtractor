@@ -319,7 +319,7 @@ const select = ($event: MouseEvent) => {
           if (ctx.isPointInPath(x, y)) {
             letterJson.value = { fontSize: letter.fontSize, orientation: letter.orientation, text: letter.text, startBaseLine: letter.startBaseLine }
             wordJson.value = { boundingBox: word.boundingBox, text: word.text, fontName: word.fontName, orientation: word.orientation }
-            lineJson.value = { boundingBox: line.boundingBox, topDistance: line.topDistance, fontSizeAvg: line.fontSizeAvg, fontSizeTopDistanceRelation: line.fontSizeTopDistanceRelation, text: line.words.map(w => w.text).join('') }
+            lineJson.value = { boundingBox: line.boundingBox, topDistance: line.topDistance, fontSizeAvg: line.fontSizeAvg, text: line.words.map(w => w.text).join('') }
             blockJson.value = { boundingBox: block.boundingBox, text: block.lines.map(l => l.words.map(w => w.text).join('')).join('') }
 
             // make selection Rectangle

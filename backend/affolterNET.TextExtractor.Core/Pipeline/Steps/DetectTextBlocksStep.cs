@@ -28,6 +28,12 @@ public class DetectTextBlocksStep: IPipelineStep
             throw new NullReferenceException(
                 $"context.Document not initialized. Run {nameof(ReadWordsStep)} before this step");
         }
+        
+        if (context.Document.FontSizes == null)
+        {
+            throw new NullReferenceException(
+                $"context.Document.FontSizes not initialized. Run {nameof(AnalyzeLineSpacingStep)} before this step");
+        }
 
         var blockCount = 0;
         var blockCountWithHorizontal = 0;

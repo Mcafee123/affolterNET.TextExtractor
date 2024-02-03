@@ -17,7 +17,13 @@ public class AnalyzeLineSpacingStep: IPipelineStep
     public void Execute(IPipelineContext context)
     {
         _log.Write(EnumLogLevel.Info, "Analyzing spacing between lines");
-        context.Document!.FontSizes = new FontSizeSettings(context.Document.Words);
+        if (context.Document == null)
+        {
+            throw new NullReferenceException(
+                $"context.Document not initialized. Run {nameof(ReadWordsStep)} before this step");
+        }
+        
+        context.Document.FontSizes = new FontSizeSettings(context.Document.Words);
         var lineGroups = GetLineGroupsByFontSize(context.Document);
         foreach (var groupId in lineGroups.Keys)
         {
@@ -35,7 +41,7 @@ public class AnalyzeLineSpacingStep: IPipelineStep
     private Dictionary<int, PdfLines> GetLineGroupsByFontSize(IPdfDoc doc)
     {
         var lineGroups = new Dictionary<int, PdfLines>();
-        foreach (var fsSettings in doc.FontSizes)
+        foreach (var fsSettings in doc.FontSizes!)
         {
             lineGroups.Add(fsSettings.GroupId, new PdfLines());
         }

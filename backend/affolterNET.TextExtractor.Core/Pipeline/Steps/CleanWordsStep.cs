@@ -25,6 +25,11 @@ public class CleanWordsStep: IPipelineStep
     {
         _log.Write(EnumLogLevel.Info, "Cleaning words");
         var settings = context.GetSettings<CleanWordsStepSettings>();
+        if (context.Document == null)
+        {
+            throw new NullReferenceException(
+                $"context.Document not initialized. Run {nameof(ReadWordsStep)} before this step");
+        }
         
         // remove useless big spaces (Fedlex-Laws)
         RemoveBigSpaces(context, settings);

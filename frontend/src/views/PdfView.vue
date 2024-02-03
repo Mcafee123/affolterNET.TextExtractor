@@ -23,16 +23,21 @@
         button(@click="refreshView()")
           i frame_reload
           span Reload PDF
-        .row.first.wrap
-          .title 
-            b Fonts:
-          .txt {{ pdfdata.fontNames }}
       PdfPart(title="Upload")
         PdfUpload(@uploadFile="uploadFile")
       PdfPart(title="Anzeigen")
         PdfViewSettings
       PdfPart(title="Box zeichnen")
         PdfBox
+      PdfPart(title="Fonts")
+        .col
+          .title
+            b Font-Sizes:
+          .txt(v-for="size in pdfdata.fontGroups") {{ size }}
+        .row.first.wrap.table
+          .title 
+            b Fonts:
+          .txt {{ pdfdata.fontNames }}
       PdfPart(title="Block")
         PdfBlockJson
       PdfPart(title="Line")

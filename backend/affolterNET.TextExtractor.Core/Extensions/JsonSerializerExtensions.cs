@@ -170,15 +170,19 @@ public class PdfDocJson
     public PdfDocJson(IPdfDoc pdfDoc)
     {
         Filename = pdfDoc.Filename;
-        FontNames = string.Join(", ", pdfDoc.FontSizes.AllFontNames);
+        FontNames = string.Join(", ", pdfDoc.FontSizes?.AllFontNames ?? new List<string>());
+        FontGroups = pdfDoc.FontSizes?
+            .Select(fs => $"{fs.GroupId + 1}: {Math.Round(fs.AvgFontSize, 2):##.00} (Words: {fs.WordCount}, Min: {Math.Round(fs.MinFontSize, 2):##.00}, Max: {Math.Round(fs.MaxFontSize, 2):##.00})")
+            .ToList() ?? new List<string>();
         foreach (var page in pdfDoc.Pages)
         {
             Pages.Add(new PdfPageJson(page));
         }
     }
 
+    public List<string> FontGroups { get; set; } = new();
     public string Filename { get; set; } = null!;
-    public string FontNames { get; set; }
+    public string FontNames { get; set; } = null!;
     public List<PdfPageJson> Pages { get; set; } = new();
 }
 

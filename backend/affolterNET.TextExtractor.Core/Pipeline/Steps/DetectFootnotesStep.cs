@@ -22,7 +22,19 @@ public class DetectFootnotesStep: IPipelineStep
     public void Execute(IPipelineContext context)
     {
         _log.Write(EnumLogLevel.Info, "Detecting footnotes");
-        var fontSizes = context.Document!.FontSizes;
+        if (context.Document == null)
+        {
+            throw new NullReferenceException(
+                $"context.Document not initialized. Run {nameof(ReadWordsStep)} before this step");
+        }
+        
+        if (context.Document.FontSizes == null)
+        {
+            throw new NullReferenceException(
+                $"context.Document.FontSizes not initialized. Run {nameof(AnalyzeLineSpacingStep)} before this step");
+        }
+        
+        var fontSizes = context.Document.FontSizes;
         var mainFontSize = (double)10;
         var mainFontSetting = fontSizes.ToList().MaxBy(fs => fs.WordCount);
         if (mainFontSetting != null)
