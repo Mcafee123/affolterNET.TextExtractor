@@ -59,7 +59,7 @@ public class CleanWordsStep: IPipelineStep
 
     private void FixMixedBaselineWord(IWordOnPage word, IPdfPage page)
     {
-        page.Words.Remove(word);
+        page.RemoveWord(word);
         var grpId = -1;
         var letterGroups = new List<List<Letter>>();
         foreach (var letter in word.Letters)
@@ -78,7 +78,7 @@ public class CleanWordsStep: IPipelineStep
         {
             var newWord = word.Clone();
             newWord.ChangeWord(group);
-            page.Words.Add(newWord);
+            page.AddWord(newWord);
         }
     }
 
@@ -105,8 +105,7 @@ public class CleanWordsStep: IPipelineStep
 
     private void FixMixedLetterTypeWord(IWordOnPage word, IPdfPage page)
     {
-        page.Words.Remove(word);
-        
+        page.RemoveWord(word);
         var firstPart = new List<Letter>();
         foreach (var letter in word.Letters)
         {
@@ -121,7 +120,7 @@ public class CleanWordsStep: IPipelineStep
         {
             var firstWord = word.Clone();
             firstWord.ChangeWord(firstPart);
-            page.Words.Add(firstWord);
+            page.AddWord(firstWord);
         }
 
         var numbersPart = new List<Letter>();
@@ -136,7 +135,7 @@ public class CleanWordsStep: IPipelineStep
 
         var numbersWord = word.Clone();
         numbersWord.ChangeWord(numbersPart);
-        page.Words.Add(numbersWord);
+        page.AddWord(numbersWord);
             
         var lastPart = new List<Letter>();
         foreach (var letter in word.Letters.Skip(firstPart.Count + numbersPart.Count))
@@ -152,26 +151,8 @@ public class CleanWordsStep: IPipelineStep
         {
             var lastWord = word.Clone();
             lastWord.ChangeWord(lastPart);
-            page.Words.Add(lastWord);
+            page.AddWord(lastWord);
         }
-
-
-
-        // var othersBaseLineAverage = firstPart.Union(lastPart).Average(l => l.StartBaseLine.Y);
-        // var numberBaseLineAvg = numbersPart.Average(l => l.StartBaseLine.Y);
-        //
-        // if (Math.Abs(othersBaseLineAverage - numberBaseLineAvg) > 1.5)
-        // {
-        //     return;
-        // }
-        
-        
-        // new word
-        // var newWord = word.Word.Clone();
-        // newWord.ChangeWord(allLetters.Take(pref.Length).ToList());
-        // wordsToInsert.Add(i, newWord);
-        // // this word
-        // word.ChangeWord(allLetters.Skip(pref.Length).ToList());
     }
 
     private void RemoveBigSpaces(IPipelineContext context, CleanWordsStepSettings settings)
@@ -179,9 +160,15 @@ public class CleanWordsStep: IPipelineStep
         var removedTotal = 0;
         foreach (var page in context.Document!.Pages)
         {
-            var removedWords = page.Words.RemoveAll(w =>
-                string.IsNullOrWhiteSpace(w.Text) && w.Letters.Count == 1 && w.Letters.Any(l => l.PointSize > settings.BigSpacesSize));
-            removedTotal += removedWords;
+            var wordsToRemove = page.Words.Where(w =>
+                string.IsNullOrWhiteSpace(w.Text) && w.Letters.Count == 1 &&
+                w.Letters.Any(l => l.PointSize > settings.BigSpacesSize))
+                .ToList();
+            foreach (var word in wordsToRemove)
+            {
+                page.RemoveWord(word);
+            }
+            removedTotal += wordsToRemove.Count;
         }
         
         if (removedTotal > 0)

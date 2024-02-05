@@ -18,7 +18,6 @@ public class DetectLinesStep: IPipelineStep
     
     public class DetectLinesStepSettings: IStepSettings
     {
-        public int MaxPagesToConsider { get; set; } = int.MaxValue;
         public double BaseLineMatchingRange { get; set; } = 0.2;
     }
     
@@ -33,7 +32,7 @@ public class DetectLinesStep: IPipelineStep
         }
         foreach (var page in context.Document.Pages)
         {
-            var lines = _lineDetector.DetectLines(page.Words, settings.MaxPagesToConsider, settings.BaseLineMatchingRange);
+            var lines = _lineDetector.DetectLines(page.Words.ToList(), settings.BaseLineMatchingRange);
             page.Lines.AddRange(lines.ToList());
             foreach (var line in lines)
             {

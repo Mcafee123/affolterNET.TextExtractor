@@ -65,7 +65,7 @@ public class ReadWordsStep : IPipelineStep
             foreach (var word in words)
             {
                 var wop = new WordOnPage(page.Nr, word, settings.BaseLineGroupRange);
-                page.Words.Add(wop);
+                page.AddWord(wop);
             }
         }
     }

@@ -10,84 +10,71 @@ public class LineDetector: ILineDetector
 {
     private readonly IOutput _log;
 
-    private static readonly List<char> LowerBoxCharacters = new() { 
-        '.', 
-        ',', 
-        '_', 
-        '\u2026' // ellipsis (three dots)
-    };
-
     public LineDetector(IOutput log)
     {
         _log = log;
     }
     
-    public PdfLines DetectLines(List<IWordOnPage> inputWords, int maxPagesToConsider, double baseLineMatchingRange)
+    public PdfLines DetectLines(List<IWordOnPage> words, double baseLineMatchingRange)
     {
         // sometimes, the order of words is not according to the read-direction.
         // words more on the right can appear in the list before the first word on
         // the same line, because they have a slightly bigger y. detect lines and bring words in order
         var lines = new PdfLines();
-        if (!inputWords.Any())
+        if (!words.Any())
         {
             return lines;
         }
 
-        var minPageNr = inputWords.Min(w => w.PageNr);
-        var maxPageNr = inputWords.Max(w => w.PageNr);
-        var pageNrs = maxPageNr;
-        if (maxPageNr - minPageNr > maxPagesToConsider)
+        var pageNrs = words.Select(w => w.PageNr).Distinct().ToList();
+        if (pageNrs.Count > 1)
         {
-            pageNrs = minPageNr + maxPagesToConsider;
+            throw new InvalidOperationException("Multiple pages in one list of words");
+        }
+
+        var pageNr = pageNrs.First();
+
+        // horizontal
+        var wordsHorizontal = words.Where(w => w.TextOrientation == TextOrientation.Horizontal).ToList();
+        var horizontalLines = ReadHorizontalWords(wordsHorizontal, baseLineMatchingRange);
+        lines.AddRange(horizontalLines.ToList());
+        
+        // rotate270
+        var wordsRotate270 = words
+            .Where(w => w.TextOrientation == TextOrientation.Rotate270)
+            .OrderBy(w => w.BoundingBox.Left).ThenBy(w => w.BoundingBox.Bottom)
+            .ToList();
+        foreach (var word in wordsRotate270)
+        {
+            if (string.IsNullOrWhiteSpace(word.Text) || lines.ContainsWord(word))
+            {
+                // word was already added
+                continue;
+            }
+
+            var line = ReadLineUp(wordsRotate270, wordsRotate270.IndexOf(word));
+            lines.Add(line);
         }
         
-        // horizontal
-        for (var i = minPageNr; i <= pageNrs; i++)
+        // rotate90
+        var wordsRotate90 = words.Where(w => w.TextOrientation == TextOrientation.Rotate90).ToList();
+        if (wordsRotate90.Any())
         {
-            var words = inputWords.Where(w => w.PageNr == i).ToList();
-            
-            // horizontal
-            var wordsHorizontal = words.Where(w => w.TextOrientation == TextOrientation.Horizontal).ToList();
-            var horizontalLines = ReadHorizontalWords(wordsHorizontal, baseLineMatchingRange);
-            lines.AddRange(horizontalLines.ToList());
-            
-            // rotate270
-            var wordsRotate270 = words
-                .Where(w => w.TextOrientation == TextOrientation.Rotate270)
-                .OrderBy(w => w.BoundingBox.Left).ThenBy(w => w.BoundingBox.Bottom)
-                .ToList();
-            foreach (var word in wordsRotate270)
-            {
-                if (string.IsNullOrWhiteSpace(word.Text) || lines.ContainsWord(word))
-                {
-                    // word was already added
-                    continue;
-                }
+            throw new NotImplementedException($"words with orientation {TextOrientation.Rotate90} found on page {pageNr}");
+        }
 
-                var line = ReadLineUp(wordsRotate270, wordsRotate270.IndexOf(word));
-                lines.Add(line);
-            }
-            
-            // rotate90
-            var wordsRotate90 = words.Where(w => w.TextOrientation == TextOrientation.Rotate90).ToList();
-            if (wordsRotate90.Any())
-            {
-                throw new NotImplementedException($"words with orientation {TextOrientation.Rotate90} found on page {i}");
-            }
-
-            // rotate180
-            var wordsRotate180 = words.Where(w => w.TextOrientation == TextOrientation.Rotate180).ToList();
-            if (wordsRotate180.Any())
-            {
-                throw new NotImplementedException($"words with orientation {TextOrientation.Rotate180} found found on page {i}");
-            }
-            
-            // rotateOther
-            var wordsRotateOther = words.Where(w => w.TextOrientation == TextOrientation.Other).ToList();
-            if (wordsRotateOther.Any())
-            {
-                throw new NotImplementedException($"words with orientation {TextOrientation.Other} found found on page {i}");
-            }
+        // rotate180
+        var wordsRotate180 = words.Where(w => w.TextOrientation == TextOrientation.Rotate180).ToList();
+        if (wordsRotate180.Any())
+        {
+            throw new NotImplementedException($"words with orientation {TextOrientation.Rotate180} found found on page {pageNr}");
+        }
+        
+        // rotateOther
+        var wordsRotateOther = words.Where(w => w.TextOrientation == TextOrientation.Other).ToList();
+        if (wordsRotateOther.Any())
+        {
+            throw new NotImplementedException($"words with orientation {TextOrientation.Other} found found on page {pageNr}");
         }
 
         return lines;
