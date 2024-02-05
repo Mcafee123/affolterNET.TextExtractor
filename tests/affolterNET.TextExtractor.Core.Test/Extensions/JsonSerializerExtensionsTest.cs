@@ -22,13 +22,14 @@ public class JsonSerializerExtensionsTest
     {
         var wordExtractor = new PdfWordExtractor(_log);
         var lineDetector = new LineDetector(_log);
-        var blockDetector = new BlockDetector(lineDetector, _log);
+        var blockDetector = new BlockDetector(_log);
+        var footnoteDetector = new FootnoteDetector(_log);
         var readStep = new ReadWordsStep(wordExtractor, _log);
         var cleanWordsStep = new CleanWordsStep(_log);
         var linesStep = new DetectLinesStep(lineDetector, _log);
         var analyzeLinesStep = new AnalyzeLineSpacingStep(_log);
         var blocksStep = new DetectTextBlocksStep(blockDetector, _log);
-        var footnotesStep = new DetectFootnotesStep(_log);
+        var footnotesStep = new DetectFootnotesStep(footnoteDetector, _log);
         var pipeline = new BasicPdfPipeline(readStep, cleanWordsStep, linesStep, analyzeLinesStep, blocksStep, footnotesStep, _log);
 
         // var path = "/Users/martin/Downloads/Verfuegung_Nr_23-24_24846_3.pdf";

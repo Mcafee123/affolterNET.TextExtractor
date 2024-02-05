@@ -2,6 +2,7 @@ import type { Box } from "./boundingBox"
 import type { Letter } from "./letter";
 
 export interface Word {
+    id: number,
     boundingBox: Box,
     baseLineY: number,
     text: string,

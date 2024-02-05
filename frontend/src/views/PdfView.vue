@@ -1,7 +1,8 @@
 <template lang="pug">
 .grid
   .s9.m9.l9
-    PdfUpload(class="center upload" v-if="!page" @uploadFile="uploadFile")
+    article(v-if="!page" class="center upload")
+      PdfUpload(@uploadFile="uploadFile")
     .pdfview(v-if="page")
       .backcol(v-if="pdfdata.pages.length > 1" :class="{ invisible: !hasLeft() }" @click="goLeft")
         button.circle.transparent.left
@@ -12,7 +13,7 @@
             input(type="number" v-model="currentPage")
           .field.border.round.small
             input(type="number" v-model="pdfdata.pages.length" disabled)
-        PdfPageCanvas(:page="page")
+        PdfPageCanvas(:page="page" :document="pdfdata")
       .nextcol(v-if="pdfdata.pages.length > 1" :class="{ invisible: !hasRight() }" @click="goRight")
         button.circle.transparent.right
           img.responsive(src="@/assets/arrow_right_icon.png")
@@ -23,6 +24,9 @@
         button(@click="refreshView()")
           i frame_reload
           span Reload PDF
+        button(@click="downloadJson()")
+          i download
+          span Download JSON
       PdfPart(title="Upload")
         PdfUpload(@uploadFile="uploadFile")
       PdfPart(title="Anzeigen")
@@ -116,6 +120,20 @@ const uploadFile = async (pdf: File) => {
   } finally {
     loaderService.hideLoader()
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const downloadJson = () => {
+  if (!pdfdata.value) {
+    console.error("no pdf loaded")
+    return
+  }
+  const filename = pdfdata.value.filename + ".json"
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pdfdata.value))
+  const link = document.createElement('a')
+  link.setAttribute('href', dataStr)
+  link.setAttribute('download', filename)
+  link.click()
 }
 
 watch(currentPage, (index) => {

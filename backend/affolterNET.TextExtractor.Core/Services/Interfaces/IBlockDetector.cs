@@ -1,6 +1,6 @@
 using affolterNET.TextExtractor.Core.Models;
 
-namespace affolterNET.TextExtractor.Core.Services;
+namespace affolterNET.TextExtractor.Core.Services.Interfaces;
 
 public interface IBlockDetector
 {

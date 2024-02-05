@@ -47,6 +47,7 @@ public interface IPdfDoc : IDisposable
     List<IPdfPage> Pages { get; set; }
     List<IWordOnPage> Words { get; }
     FontSizeSettings? FontSizes { get; set; }
+    List<Footnote> Footnotes { get; set; }
     void GetPages();
     void ToJson(string path);
 }

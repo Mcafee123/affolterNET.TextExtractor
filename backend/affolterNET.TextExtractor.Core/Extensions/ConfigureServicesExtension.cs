@@ -1,6 +1,7 @@
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Steps;
 using affolterNET.TextExtractor.Core.Services;
+using affolterNET.TextExtractor.Core.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UglyToad.PdfPig.Util;
@@ -14,6 +15,7 @@ public static class ConfigureServicesExtension
         services.AddTransient<IWordExtractor, PdfWordExtractor>();
         services.AddTransient<ILineDetector, LineDetector>();
         services.AddTransient<IBlockDetector, BlockDetector>();
+        services.AddTransient<IFootnoteDetector, FootnoteDetector>();
         services.AddTransient<ReadWordsStep>();
         services.AddTransient<CleanWordsStep>();
         services.AddTransient<DetectLinesStep>();

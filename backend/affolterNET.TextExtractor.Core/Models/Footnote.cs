@@ -2,20 +2,25 @@ namespace affolterNET.TextExtractor.Core.Models;
 
 public class Footnote
 {
-    public Footnote(int number, IPdfTextBlock bottomContents, bool isStar = false)
+    public Footnote(string id, IPdfTextBlock bottomContents)
     {
-        Number = number;
+        Id = id;
         BottomContents = bottomContents;
-        IsStar = isStar;
+    }
+
+    public Footnote(IWordOnPage inlineWord)
+    {
+        Id = inlineWord.Text;
+        InlineWords.Add(inlineWord);
+        BottomContents = new PdfTextBlock();
     }
 
     public List<IWordOnPage> InlineWords { get; set; } = new();
-    public int Number { get; }
+    public string Id { get; }
     public IPdfTextBlock BottomContents { get; }
-    public bool IsStar { get; }
 
     public override string ToString()
     {
-        return $"{Number}: {BottomContents}";
+        return $"{Id}: {BottomContents}";
     }
 }

@@ -31,6 +31,7 @@ public class LineOnPage : IList<IWordOnPage>, ILineOnPage
     public double Right { get; set; }
     public PdfLines? Lines { get; set; }
     public IWordOnPage? FirstWord => _words.FirstOrDefault();
+    public IWordOnPage? FirstWordWithText => _words.FirstOrDefault(w => w.HasText);
     public double FontSizeAvg => _words.Average(w => w.FontSizeAvg);
     public double? WordSpaceAvg
     {
@@ -62,6 +63,7 @@ public class LineOnPage : IList<IWordOnPage>, ILineOnPage
 
     public void Add(IWordOnPage item)
     {
+        item.Line = this;
         _words.Add(item);
         Refresh();
     }

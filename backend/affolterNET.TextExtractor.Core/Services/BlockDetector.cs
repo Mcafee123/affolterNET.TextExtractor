@@ -1,17 +1,16 @@
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
+using affolterNET.TextExtractor.Core.Services.Interfaces;
 
 namespace affolterNET.TextExtractor.Core.Services;
 
 public class BlockDetector: IBlockDetector
 {
-    private readonly ILineDetector _lineDetector;
     private readonly IOutput _log;
 
-    public BlockDetector(ILineDetector lineDetector, IOutput log)
+    public BlockDetector(IOutput log)
     {
-        _lineDetector = lineDetector;
         _log = log;
     }
 

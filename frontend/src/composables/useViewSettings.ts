@@ -11,6 +11,7 @@ const showLetterBorders = ref(getFromStorage('showLetterBorders', 'false') === '
 const showWordBorders = ref(getFromStorage('showWordBorders', 'false') === 'true')
 const showLineBorders = ref(getFromStorage('showLineBorders', 'false') === 'true')
 const showBlockBorders = ref(getFromStorage('showBlockBorders', 'false') === 'true')
+const showFootnotes = ref(getFromStorage('showFootnotes', 'false') === 'true')
 
 const blockJson = ref<blockType | null>(null)
 const lineJson = ref<lineType | null>(null)
@@ -87,7 +88,8 @@ export function useViewSettings() {
     showLetterBorders, 
     showWordBorders, 
     showLineBorders, 
-    showBlockBorders, 
+    showBlockBorders,
+    showFootnotes,
     blockJson, 
     lineJson, 
     wordJson, 

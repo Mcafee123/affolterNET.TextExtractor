@@ -21,6 +21,11 @@ public class WordOnPage: IWordOnPage
         BaseLineGroups = word.Letters.ToList().FindCommonGroups(_baseLineGroupRange, l => l.StartBaseLine.Y);
         BaseLineY = BaseLineGroups.First().First().Value;
     }
+    
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Text, BoundingBox.BottomLeft.X, BoundingBox.BottomLeft.Y, BoundingBox.TopRight.X, BoundingBox.TopRight.Y);
+    }
 
     public FoundGroups<Letter> BaseLineGroups { get; private set; }
 

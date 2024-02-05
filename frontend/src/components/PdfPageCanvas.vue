@@ -13,7 +13,8 @@ import { useViewSettings, type customBoxType } from '@/composables/useViewSettin
 import type { Box } from '@/types/boundingBox'
 import type { Letter } from '@/types/letter'
 import type { Page } from '@/types/page'
-import { getSyntheticLeadingComments } from 'typescript'
+import type { PdfDocument } from '@/types/pdfDocument'
+import type { Word } from '@/types/word'
 import { onMounted, ref, type PropType, type Ref, onUnmounted, watch } from 'vue'
 
 const wrapper: Ref<HTMLDivElement | undefined> = ref()
@@ -33,6 +34,10 @@ const props = defineProps({
   page: {
     required: true,
     type: Object as PropType<Page>
+  },
+  document: {
+    required: true,
+    type: Object as PropType<PdfDocument>
   }
 })
 
@@ -55,7 +60,7 @@ const clearCanvas = (mode?: 'letter' | 'boxes' | 'custombox') => {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, blockJson, lineJson, wordJson, letterJson, hexToRgb, customBox, customBoxIsSet } = useViewSettings()
+const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, showFootnotes, blockJson, lineJson, wordJson, letterJson, hexToRgb, customBox, customBoxIsSet } = useViewSettings()
 const prim = hexToRgb('--primary')
 let primarycoloralpha = 'rgba(134, 217, 146, 0.5)'
 if (prim) {
@@ -109,6 +114,11 @@ watch(() => showLetterBorders.value, () => {
   renderPage(true)
 })
 
+watch(() => showFootnotes.value, () => {
+  clearCanvas()
+  renderPage()
+})
+
 watch(() => customBox.value, () => {
   if (!customBoxIsSet()) {
     clearCanvas('custombox')
@@ -127,7 +137,7 @@ watch(() => customBox.value, () => {
     shadowBox.topRightY += 5
     drawBox(ctx, shadowBox, 'violet', 3)
   }
-}, { deep: true })
+})
 
 onMounted(() => {
   window.addEventListener('resize', resize)
@@ -214,6 +224,29 @@ const getFont = (fontName: string, fontSize: number) => {
   return parts.join(' ')
 }
 
+const skipFootnoteItem = (word: Word): boolean => {
+  if (showFootnotes.value) {
+    return false
+  }
+  for (var fn = 1; fn < props.document.footnotes.length; fn++) {
+    const footnote = props.document.footnotes[fn]
+    for (var iw = 0; iw < footnote.inlineWords.length; iw++) {
+      if (footnote.inlineWords[iw].id === word.id) {
+        return true
+      }
+    }
+    for (var bl = 0; bl < footnote.bottomContents.lines.length; bl++) {
+      const line = footnote.bottomContents.lines[bl]
+      for (var w = 0; w < line.words.length; w++) {
+        if (line.words[w].id === word.id) {
+          return true
+        }
+      }
+    }
+  }
+  return false
+}
+
 const renderPage = (boxesOnly: boolean = false) => {
   if (!letterCanvas.value || !boxesCanvas.value || !letterCtx.value || !boxesCtx.value) {
     return
@@ -232,6 +265,9 @@ const renderPage = (boxesOnly: boolean = false) => {
       }
       for (var w = 0; w < line.words.length; w++) {
         const word = line.words[w]
+        if (skipFootnoteItem(word)){
+          continue;
+        }
         const fontName = word.fontName
         // box around each word
         if (showWordBorders.value) {

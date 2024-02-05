@@ -1,3 +1,4 @@
+import type { Footnote } from "./footnote";
 import type { Page } from "./page";
 
 export interface PdfDocument {
@@ -5,4 +6,5 @@ export interface PdfDocument {
     fontNames: string,
     fontGroups: string[],
     pages: Page[],
+    footnotes: Footnote[],
 }

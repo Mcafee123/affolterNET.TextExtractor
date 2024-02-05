@@ -178,12 +178,41 @@ public class PdfDocJson
         {
             Pages.Add(new PdfPageJson(page));
         }
+
+        foreach (var footnote in pdfDoc.Footnotes)
+        {
+            Footnotes.Add(new PdfFootnoteJson(footnote));
+        }
     }
 
     public List<string> FontGroups { get; set; } = new();
     public string Filename { get; set; } = null!;
     public string FontNames { get; set; } = null!;
     public List<PdfPageJson> Pages { get; set; } = new();
+    public List<PdfFootnoteJson> Footnotes { get; set; } = new();
+}
+
+public class PdfFootnoteJson
+{
+    public PdfFootnoteJson()
+    {
+        
+    }
+
+    public PdfFootnoteJson(Footnote footnote)
+    {
+        Id = footnote.Id;
+        foreach (var w in footnote.InlineWords)
+        {
+            InlineWords.Add(new WordOnPageJson(w));
+        }
+
+        BottomContents = new PdfBlockJson(footnote.BottomContents);
+    }
+
+    public string Id { get; set; } = null!;
+    public List<WordOnPageJson> InlineWords { get; set; } = new();
+    public PdfBlockJson BottomContents { get; set; }
 }
 
 public class PdfPageJson
@@ -264,6 +293,7 @@ public class WordOnPageJson
     
     public WordOnPageJson(IWordOnPage word)
     {
+        Id = word.GetHashCode();
         BoundingBox = word.BoundingBox;
         BaseLineY = word.BaseLineY;
         Text = word.Text;
@@ -275,6 +305,7 @@ public class WordOnPageJson
         }
     }
 
+    public int Id { get; set; }
     public double BaseLineY { get; set; }
     public PdfRectangle BoundingBox { get; set; }
     public string Text { get; set; } = null!;

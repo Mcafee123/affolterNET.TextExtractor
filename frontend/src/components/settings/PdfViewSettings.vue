@@ -24,7 +24,12 @@
       i close 
       i done
     span Buchstabengrenzen
-
+  label.checkbox.icon
+    input(type="checkbox" v-model="showFootnotes")
+    span
+      i close 
+      i done
+    span Fussnoten
 </template>
 
 <script lang="ts" setup>
@@ -32,7 +37,7 @@
 import { useViewSettings } from '@/composables/useViewSettings'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders } = useViewSettings()
+const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, showFootnotes } = useViewSettings()
 
 </script>
 
