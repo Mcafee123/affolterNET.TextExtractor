@@ -18,6 +18,7 @@ public class DetectTextBlocksStep: IPipelineStep
     public class DetectTextBlocksStepSettings: IStepSettings
     {
         public double NewBlockDistanceDiff { get; set; } = 1;
+        public double BlockOverlapDistanceDiff { get; set; } = 0.4;
     }
     
     public void Execute(IPipelineContext context)
@@ -49,10 +50,11 @@ public class DetectTextBlocksStep: IPipelineStep
             // // one block per page
             
             // find blocks by connecting lines
-            var blocks = _blockDetector.FindBlocks(page, context.Document.FontSizes, settings.NewBlockDistanceDiff);
+            var blocks = _blockDetector.FindBlocks(page, context.Document.FontSizes, settings.NewBlockDistanceDiff, settings.BlockOverlapDistanceDiff);
             blockCount += blocks.Count;
             page.Blocks.AddRange(blocks.ToList());
         }
+
         _log.Write(EnumLogLevel.Debug, $"Blocks: {blockCount}");
         _log.Write(EnumLogLevel.Debug, $"Blocks (incl. horizontal): {blockCountWithHorizontal}");
     }

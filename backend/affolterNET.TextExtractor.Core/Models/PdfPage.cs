@@ -5,6 +5,7 @@ namespace affolterNET.TextExtractor.Core.Models;
 
 public class PdfPage : IPdfPage
 {
+    private static int _id = 0;
     private List<IWordOnPage> _words = new();
     public PdfPage(Page page)
     {
@@ -34,6 +35,7 @@ public class PdfPage : IPdfPage
 
     public void AddWord(IWordOnPage word)
     {
+        word.Id = _id++;
         _words.Add(word);
     }
 

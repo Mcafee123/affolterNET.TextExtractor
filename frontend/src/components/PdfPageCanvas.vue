@@ -13,8 +13,6 @@ import { useViewSettings, type customBoxType } from '@/composables/useViewSettin
 import type { Box } from '@/types/boundingBox'
 import type { Letter } from '@/types/letter'
 import type { Page } from '@/types/page'
-import type { PdfDocument } from '@/types/pdfDocument'
-import type { Word } from '@/types/word'
 import { onMounted, ref, type PropType, type Ref, onUnmounted, watch } from 'vue'
 
 const wrapper: Ref<HTMLDivElement | undefined> = ref()
@@ -35,9 +33,9 @@ const props = defineProps({
     required: true,
     type: Object as PropType<Page>
   },
-  document: {
+  footnoteWordIds: {
     required: true,
-    type: Object as PropType<PdfDocument>
+    type: Object as PropType<number[]>
   }
 })
 
@@ -224,56 +222,29 @@ const getFont = (fontName: string, fontSize: number) => {
   return parts.join(' ')
 }
 
-const skipFootnoteItem = (word: Word): boolean => {
-  if (showFootnotes.value) {
-    return false
-  }
-  for (var fn = 1; fn < props.document.footnotes.length; fn++) {
-    const footnote = props.document.footnotes[fn]
-    for (var iw = 0; iw < footnote.inlineWords.length; iw++) {
-      if (footnote.inlineWords[iw].id === word.id) {
-        return true
-      }
-    }
-    for (var bl = 0; bl < footnote.bottomContents.lines.length; bl++) {
-      const line = footnote.bottomContents.lines[bl]
-      for (var w = 0; w < line.words.length; w++) {
-        if (line.words[w].id === word.id) {
-          return true
-        }
-      }
-    }
-  }
-  return false
-}
-
 const renderPage = (boxesOnly: boolean = false) => {
   if (!letterCanvas.value || !boxesCanvas.value || !letterCtx.value || !boxesCtx.value) {
     return
   }
-  for (var b = 0; b < props.page.blocks.length; b++) {
+  for (let b = 0; b < props.page.blocks.length; b++) {
     const block = props.page.blocks[b]
-    // box around each block
-    if (showBlockBorders.value) {
-      drawBox(boxesCtx.value, block.boundingBox, 'red', 1.5)
-    }
-    for (var l = 0; l < block.lines.length; l++) {
+    let drawBlock = false
+    for (let l = 0; l < block.lines.length; l++) {
       const line = block.lines[l]
-      // box around each line
-      if (showLineBorders.value) {
-        drawBox(boxesCtx.value, line.boundingBox, 'blue', 1)
-      }
-      for (var w = 0; w < line.words.length; w++) {
+      let drawLine = false
+      for (let w = 0; w < line.words.length; w++) {
         const word = line.words[w]
-        if (skipFootnoteItem(word)){
+        if (!showFootnotes.value && props.footnoteWordIds.indexOf(word.id) > -1) {
           continue;
         }
+        drawBlock = true
+        drawLine = true
         const fontName = word.fontName
         // box around each word
         if (showWordBorders.value) {
           drawBox(boxesCtx.value, word.boundingBox, 'green', 0.6)
         }
-        for (var le = 0; le < word.letters.length; le++) {
+        for (let le = 0; le < word.letters.length; le++) {
           const letter = word.letters[le]
           boxesCtx.value.beginPath()
           boxesCtx.value.lineWidth = 0.3
@@ -290,6 +261,14 @@ const renderPage = (boxesOnly: boolean = false) => {
           }
         }
       }
+      // box around each line
+      if (showLineBorders.value && drawLine) {
+        drawBox(boxesCtx.value, line.boundingBox, 'blue', 1)
+      }
+    }
+    // box around each block
+    if (showBlockBorders.value && drawBlock) {
+      drawBox(boxesCtx.value, block.boundingBox, 'red', 1.5)
     }
   }
 }
@@ -309,12 +288,15 @@ const highlight = ($event: MouseEvent) => {
 
   // loop through objects
   ctx.clearRect(0, 0, cvs.width, cvs.height)
-  for (var b = 0; b < props.page.blocks.length; b++) {
+  for (let b = 0; b < props.page.blocks.length; b++) {
     const block = props.page.blocks[b]
-    for (var l = 0; l < block.lines.length; l++) {
+    for (let l = 0; l < block.lines.length; l++) {
       const line = block.lines[l]
-      for (var w = 0; w < line.words.length; w++) {
+      for (let w = 0; w < line.words.length; w++) {
         const word = line.words[w]
+        if (!showFootnotes.value && props.footnoteWordIds.indexOf(word.id) > -1) {
+          continue;
+        }
         ctx.beginPath()
         makeRect(ctx, word.boundingBox, 1.3)
         if (ctx.isPointInPath(x, y)) {
@@ -343,13 +325,16 @@ const select = ($event: MouseEvent) => {
   const x = $event.clientX - rect.left
   const y = $event.clientY - rect.top
 
-  for (var b = 0; b < props.page.blocks.length; b++) {
+  for (let b = 0; b < props.page.blocks.length; b++) {
     const block = props.page.blocks[b]
-    for (var l = 0; l < block.lines.length; l++) {
+    for (let l = 0; l < block.lines.length; l++) {
       const line = block.lines[l]
-      for (var w = 0; w < line.words.length; w++) {
+      for (let w = 0; w < line.words.length; w++) {
         const word = line.words[w]
-        for (var le = 0; le < word.letters.length; le++) {
+        if (!showFootnotes.value && props.footnoteWordIds.indexOf(word.id) > -1) {
+          continue;
+        }
+        for (let le = 0; le < word.letters.length; le++) {
           const letter = word.letters[le]
           ctx.beginPath()
           makeLetterRect(ctx, letter)

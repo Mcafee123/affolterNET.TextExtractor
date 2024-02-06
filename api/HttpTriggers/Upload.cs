@@ -1,4 +1,5 @@
 using affolterNET.TextExtractor.Core.Extensions;
+using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
@@ -12,11 +13,13 @@ namespace api.HttpTriggers;
 public class Upload
 {
     private readonly BasicPdfPipeline _pipeline;
+    private readonly IOutput _log;
     private readonly ILogger _logger;
 
-    public Upload(BasicPdfPipeline pipeline, ILoggerFactory loggerFactory)
+    public Upload(BasicPdfPipeline pipeline, ILoggerFactory loggerFactory, IOutput log)
     {
         _pipeline = pipeline;
+        _log = log;
         _logger = loggerFactory.CreateLogger<Upload>();
     }
 
@@ -39,7 +42,7 @@ public class Upload
         // =============================
         // pipelineContext.AddSettings(new CleanWordsStep.CleanWordsStepSettings() { BigSpacesSize = 120 });
         _pipeline.Execute(pipelineContext);
-        var json = pipelineContext.Document!.Serialize();
+        var json = pipelineContext.Document!.Serialize(_log);
         var result = new OkObjectResult(json); 
         return result;
     }

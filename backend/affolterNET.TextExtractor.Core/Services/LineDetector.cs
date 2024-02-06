@@ -46,14 +46,16 @@ public class LineDetector: ILineDetector
             .ToList();
         foreach (var word in wordsRotate270)
         {
-            if (string.IsNullOrWhiteSpace(word.Text) || lines.ContainsWord(word))
-            {
-                // word was already added
-                continue;
-            }
-
-            var line = ReadLineUp(wordsRotate270, wordsRotate270.IndexOf(word));
-            lines.Add(line);
+            // ignore words with another orientation
+            continue;
+            // if (string.IsNullOrWhiteSpace(word.Text) || lines.ContainsWord(word))
+            // {
+            //     // word was already added
+            //     continue;
+            // }
+            //
+            // var line = ReadLineUp(wordsRotate270, wordsRotate270.IndexOf(word));
+            // lines.Add(line);
         }
         
         // rotate90
@@ -93,7 +95,14 @@ public class LineDetector: ILineDetector
                 lines.Add(line);
             }
         }
-
+        var idsGivenMoreThanOnce = lines.SelectMany(l => l).GroupBy(w => w.Id)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToDictionary(key => key, key => lines.SelectMany(l => l).Where(w => w.Id == key).ToList());
+        if (idsGivenMoreThanOnce.Count > 0)
+        {
+            throw new InvalidOperationException("error with distinct Ids");
+        }
         return lines;
     }
 
@@ -106,7 +115,8 @@ public class LineDetector: ILineDetector
         }
         var initialWord = words[startIndex];
         line.PageNr = initialWord.PageNr;
-        var overlappingWords = words.Where(w => Math.Abs(w.BaseLineY - initialWord.BaseLineY) <= range && Math.Abs(w.FontSizeAvg - initialWord.FontSizeAvg) <= range).ToList();
+        var overlappingWords = words
+            .Where(w => Math.Abs(w.BaseLineY - initialWord.BaseLineY) <= range && Math.Abs(w.FontSizeAvg - initialWord.FontSizeAvg) <= range).ToList();
         foreach (var lineMember in overlappingWords)
         {
             line.Add(lineMember);

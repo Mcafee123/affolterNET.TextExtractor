@@ -1,4 +1,5 @@
 using affolterNET.TextExtractor.Core.Extensions;
+using affolterNET.TextExtractor.Core.Helpers;
 using UglyToad.PdfPig;
 
 namespace affolterNET.TextExtractor.Core.Models;
@@ -17,6 +18,7 @@ public class PdfDoc : IPdfDoc
     public List<IPdfPage> Pages { get; set; } = new();
     public List<IWordOnPage> Words => Pages.SelectMany(p => p.Words).ToList();
     public List<Footnote> Footnotes { get; set; } = new();
+    public List<Footnote> FootnotesWithoutInlineWords { get; set; } = new();
     public FontSizeSettings? FontSizes { get; set; }
 
     public void GetPages()
@@ -30,9 +32,9 @@ public class PdfDoc : IPdfDoc
         }
     }
     
-    public void ToJson(string path)
+    public void ToJson(string path, IOutput log)
     {
-        this.Serialize(path);
+        this.Serialize(path, log);
     }
 
     public void Dispose()
@@ -48,6 +50,7 @@ public interface IPdfDoc : IDisposable
     List<IWordOnPage> Words { get; }
     FontSizeSettings? FontSizes { get; set; }
     List<Footnote> Footnotes { get; set; }
+    List<Footnote> FootnotesWithoutInlineWords { get; set; }
     void GetPages();
-    void ToJson(string path);
+    void ToJson(string path, IOutput log);
 }

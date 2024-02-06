@@ -13,7 +13,7 @@
             input(type="number" v-model="currentPage")
           .field.border.round.small
             input(type="number" v-model="pdfdata.pages.length" disabled)
-        PdfPageCanvas(:page="page" :document="pdfdata")
+        PdfPageCanvas(:page="page" :footnoteWordIds="footnoteWordIds")
       .nextcol(v-if="pdfdata.pages.length > 1" :class="{ invisible: !hasRight() }" @click="goRight")
         button.circle.transparent.right
           img.responsive(src="@/assets/arrow_right_icon.png")
@@ -50,6 +50,12 @@
         PdfWordJson
       PdfPart(title="Letter")
         PdfLetterJson
+      PdfPart(title="Footnotes")
+        .col 
+          .txt(v-for="fn in pdfdata.footnotes") 
+            span {{ fn.id }}
+            br
+            span {{ fn.bottomContents.lines.map(l => l.words.map(w => w.text).join('')).join('') }}
     
 </template>
 
@@ -81,9 +87,10 @@ import type { Page } from "@/types/page"
 import { loaderService } from "affolternet-vue3-library"
 import { toastService } from 'affolternet-vue3-library'
 
-const pdfdata = ref<PdfDocument | null>(null);
-const page = ref<Page | null>(null);
-const currentPage = ref<number>(0);
+const pdfdata = ref<PdfDocument | null>(null)
+const footnoteWordIds = ref<number[]>([])
+const page = ref<Page | null>(null)
+const currentPage = ref<number>(0)
 const pdfFile = ref<File | null>(null)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -113,6 +120,7 @@ const uploadFile = async (pdf: File) => {
     }
     const json = await response.json()
     pdfdata.value = json as PdfDocument
+    footnoteWordIds.value = getFootnoteWords()
     currentPage.value = 1
     setPage(0)
   } catch (error) {
@@ -120,6 +128,28 @@ const uploadFile = async (pdf: File) => {
   } finally {
     loaderService.hideLoader()
   }
+}
+
+const getFootnoteWords = (): number[] => {
+  const footnoteWords: number[] = []
+  if (pdfdata.value) {
+    for (let fn = 0; fn < pdfdata.value.footnotes.length; fn++) {
+      const footnote = pdfdata.value.footnotes[fn]
+      for (let bcw = 0; bcw < footnote.bottomContentsCaption.words.length; bcw++) {
+        footnoteWords.push(footnote.bottomContentsCaption.words[bcw].id)
+      }
+      for (let iw = 0; iw < footnote.inlineWords.length; iw++) {
+        footnoteWords.push(footnote.inlineWords[iw].id)
+      }
+      for (let bl = 0; bl < footnote.bottomContents.lines.length; bl++) {
+        const line = footnote.bottomContents.lines[bl]
+        for (let w = 0; w < line.words.length; w++) {
+          footnoteWords.push(line.words[w].id)
+        }
+      }
+    }
+  }
+  return footnoteWords
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

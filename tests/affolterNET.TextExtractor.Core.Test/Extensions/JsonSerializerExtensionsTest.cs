@@ -37,6 +37,6 @@ public class JsonSerializerExtensionsTest
         var context = new PipelineContext(path);
         pipeline.Execute(context);
 
-        context.Document!.ToJson("/Users/martin/Source/affolterNET.TextExtractor/frontend/src/assets/Verfuegung_Nr_23-24_24846_3.json");
+        context.Document!.ToJson("/Users/martin/Source/affolterNET.TextExtractor/frontend/src/assets/Verfuegung_Nr_23-24_24846_3.json", _log);
     }
 }

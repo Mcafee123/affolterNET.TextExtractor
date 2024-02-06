@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
@@ -29,15 +30,15 @@ public static class JsonSerializerExtensions
         return obj!;
     }
     
-    public static void Serialize(this IPdfDoc pdfDoc, string path)
+    public static void Serialize(this IPdfDoc pdfDoc, string path, IOutput log)
     {
-        var toSerialize = new PdfDocJson(pdfDoc);
+        var toSerialize = new PdfDocJson(pdfDoc, log);
         toSerialize.Serialize(path);
     }
     
-    public static string Serialize(this IPdfDoc pdfDoc)
+    public static string Serialize(this IPdfDoc pdfDoc, IOutput log)
     {
-        var toSerialize = new PdfDocJson(pdfDoc);
+        var toSerialize = new PdfDocJson(pdfDoc, log);
         var json = JsonSerializer.Serialize(toSerialize, _options);
         return json;
     }
@@ -167,7 +168,7 @@ public class PdfDocJson
         
     }
 
-    public PdfDocJson(IPdfDoc pdfDoc)
+    public PdfDocJson(IPdfDoc pdfDoc, IOutput log)
     {
         Filename = pdfDoc.Filename;
         FontNames = string.Join(", ", pdfDoc.FontSizes?.AllFontNames ?? new List<string>());
@@ -176,12 +177,12 @@ public class PdfDocJson
             .ToList() ?? new List<string>();
         foreach (var page in pdfDoc.Pages)
         {
-            Pages.Add(new PdfPageJson(page));
+            Pages.Add(new PdfPageJson(page, log));
         }
 
         foreach (var footnote in pdfDoc.Footnotes)
         {
-            Footnotes.Add(new PdfFootnoteJson(footnote));
+            Footnotes.Add(new PdfFootnoteJson(footnote, log));
         }
     }
 
@@ -199,20 +200,29 @@ public class PdfFootnoteJson
         
     }
 
-    public PdfFootnoteJson(Footnote footnote)
+    public PdfFootnoteJson(Footnote footnote, IOutput log)
     {
         Id = footnote.Id;
         foreach (var w in footnote.InlineWords)
         {
-            InlineWords.Add(new WordOnPageJson(w));
+            InlineWords.Add(new WordOnPageJson(w, log));
         }
 
-        BottomContents = new PdfBlockJson(footnote.BottomContents);
+        BottomContents = new PdfBlockJson(footnote.BottomContents, log);
+        if (footnote.BottomContentsCaption != null)
+        {
+            BottomContentsCaption = new PdfLineJson(footnote.BottomContentsCaption, log);
+        }
+        else
+        {
+            log.Write(EnumLogLevel.Error, $"Footnote {footnote.Id}: BottomContentsCaption is null");
+        }
     }
 
     public string Id { get; set; } = null!;
     public List<WordOnPageJson> InlineWords { get; set; } = new();
-    public PdfBlockJson BottomContents { get; set; }
+    public PdfBlockJson BottomContents { get; set; } = new();
+    public PdfLineJson? BottomContentsCaption { get; set; }
 }
 
 public class PdfPageJson
@@ -222,13 +232,13 @@ public class PdfPageJson
         
     }
 
-    public PdfPageJson(IPdfPage page)
+    public PdfPageJson(IPdfPage page, IOutput log)
     {
         Nr = page.Nr;
         BoundingBox = page.BoundingBox;
         foreach (var block in page.Blocks)
         {
-            Blocks.Add(new PdfBlockJson(block));
+            Blocks.Add(new PdfBlockJson(block, log));
         }
     }
 
@@ -244,12 +254,12 @@ public class PdfBlockJson
         
     }
 
-    public PdfBlockJson(IPdfTextBlock block)
+    public PdfBlockJson(IPdfTextBlock block, IOutput log)
     {
         BoundingBox = block.BoundingBox;
         foreach (var line in block.Lines)
         {
-            Lines.Add(new PdfLineJson(line));
+            Lines.Add(new PdfLineJson(line, log));
         }
     }
 
@@ -264,11 +274,11 @@ public class PdfLineJson
         
     }
     
-    public PdfLineJson(LineOnPage line)
+    public PdfLineJson(LineOnPage line, IOutput log)
     {
         foreach (var word in line)
         {
-            Words.Add(new WordOnPageJson(word));
+            Words.Add(new WordOnPageJson(word, log));
         }
 
         BoundingBox = line.BoundingBox;
@@ -291,9 +301,9 @@ public class WordOnPageJson
         
     }
     
-    public WordOnPageJson(IWordOnPage word)
+    public WordOnPageJson(IWordOnPage word, IOutput log)
     {
-        Id = word.GetHashCode();
+        Id = word.Id;
         BoundingBox = word.BoundingBox;
         BaseLineY = word.BaseLineY;
         Text = word.Text;
@@ -301,7 +311,7 @@ public class WordOnPageJson
         Orientation = word.TextOrientation.ToString();
         foreach (var letter in word.Letters)
         {
-            Letters.Add(new LetterJson(letter));
+            Letters.Add(new LetterJson(letter, log));
         }
     }
 
@@ -322,7 +332,7 @@ public class LetterJson
         
     }
 
-    public LetterJson(Letter letter)
+    public LetterJson(Letter letter, IOutput log)
     {
         GlyphRectangle = letter.GlyphRectangle;
         StartBaseLine = letter.StartBaseLine;

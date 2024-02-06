@@ -13,105 +13,6 @@ public class FootnoteDetector: IFootnoteDetector
     {
         _log = log;
     }
-    
-    public void DetectBottomFootnotes(IPdfPage page, List<Footnote> fn, double mainFontSize)
-    {
-        for (var i = page.Blocks.Count; i > 0; i--)
-        {
-            var block = page.Blocks[i - 1];
-            // detect lines starting with number or star, where no words are on the left
-            var startingWithNumericOrStar = block.Lines.Where(l =>
-                {
-                    if (l.FirstWordWithText == null)
-                    {
-                        return false;
-                    }
-
-                    if (!l.FirstWordWithText.Text.IsNumericOrStar())
-                    {
-                        return false;
-                    }
-
-                    if (l.FontSizeAvg >= mainFontSize)
-                    {
-                        return false;
-                    }
-
-                    var wordsOnTheLeft = page.Words.Where(w => w.HasText).Except(new List<IWordOnPage> { l.FirstWordWithText }).All(w =>
-                        w.BoundingBox.OverlapsY(l.FirstWordWithText.BoundingBox) &&
-                        w.BoundingBox.Centroid.X < l.FirstWordWithText.BoundingBox.Centroid.X
-                    );
-
-                    if (wordsOnTheLeft)
-                    {
-                        return false;
-                    }
-
-                    return true;
-                }).ToDictionary(l => l, v => new List<LineOnPage>());
-            
-            // for each line, detect at least one other line where the fontsize is smaller than "mainFontSize"
-            foreach (var line in startingWithNumericOrStar.Keys)
-            {
-                var otherLines = block.Lines.Except(new List<LineOnPage> { line }).Where(l =>
-                    l.BoundingBox.OverlapsY(line.BoundingBox) &&
-                    l.FontSizeAvg < mainFontSize)
-                .OrderBy(l => Math.Abs(line.BaseLineY - l.BaseLineY))
-                .ToList();
-                if (otherLines.Count == 0)
-                {
-                    continue;
-                }
-                startingWithNumericOrStar[line].Add(otherLines.First());
-            }
-
-            // get name-value lines
-            var footnoteBlockFound = false;
-            foreach (var kvp in startingWithNumericOrStar)
-            {
-                if (kvp.Value.Count < 1)
-                {
-                    continue;
-                }
-
-                var footnote = fn.FirstOrDefault(f => f.Id == kvp.Key.FirstWordWithText!.Text);
-                if (footnote == null)
-                {
-                    continue;
-                }
-
-                var startingLineIdx = block.Lines.IndexOf(kvp.Value.First());
-                if (startingLineIdx < 0)
-                {
-                    continue;
-                }
-                
-                LineOnPage? nextLine = null;
-                var nextIdx = startingWithNumericOrStar.Keys.ToList().IndexOf(kvp.Key) + 1;
-                if (nextIdx < startingWithNumericOrStar.Keys.Count)
-                {
-                    nextLine = startingWithNumericOrStar.Keys.ToList()[nextIdx];
-                }
-                for (var li = startingLineIdx; li < block.Lines.Count; li++)
-                {
-                    var bottomLine = block.Lines[li];
-                    if (bottomLine == nextLine)
-                    {
-                        break;
-                    }
-
-                    footnoteBlockFound = true;
-                    footnote.BottomContents.AddLine(bottomLine);
-                }
-            }
-
-            // break if we've found the footnote block
-            if (footnoteBlockFound)
-            {
-                break;
-            }
-        }
-    }
 
     public List<Footnote> DetectInlineFootnotes(IPdfTextBlock block, double mainFontSize, double minBaseLineDiff)
     {
@@ -176,5 +77,119 @@ public class FootnoteDetector: IFootnoteDetector
         }
 
         return list;
+    }
+    
+    public List<Footnote> DetectBottomFootnotes(IPdfPage page, List<Footnote> fn, double mainFontSize)
+    {
+        // get footnote captions from page.Lines
+        var linesWithNumbersOrStars = FindBottomFootnoteCaptions(page, mainFontSize)
+            .ToDictionary(l => l, v => new List<LineOnPage>());
+        
+        // add the line right to the caption to the dictionary
+        AddFirstBottomContentsLines(linesWithNumbersOrStars, page, mainFontSize);
+
+        // add additional lines per captionLine
+        AddAdditionalBottomContentsLines(linesWithNumbersOrStars, page);
+
+        // add the lines to the footnotes
+        var footnotesWithoutInlineWord = new List<Footnote>();
+        foreach (var captionLine in linesWithNumbersOrStars.Keys)
+        {
+            var bottomContentLines = linesWithNumbersOrStars[captionLine];
+            if (bottomContentLines.Count == 0)
+            {
+                continue;
+            }
+            
+            var footnote = fn.FirstOrDefault(f => f.Id == captionLine.ToString().Trim());
+            if (footnote == null)
+            {
+                _log.Write(EnumLogLevel.Warning, $"Inline footnote with id {captionLine.ToString().Trim()} not found (page: {page.Nr})");
+                footnote = new Footnote(captionLine.ToString().Trim());
+                footnotesWithoutInlineWord.Add(footnote);
+            }
+
+            footnote.BottomContentsCaption = captionLine;
+            footnote.BottomContents.AddLines(bottomContentLines);
+        }
+
+        return footnotesWithoutInlineWord;
+    }
+
+    private void AddAdditionalBottomContentsLines(Dictionary<LineOnPage, List<LineOnPage>> linesWithNumbersOrStars, IPdfPage page)
+    {
+        foreach (var captionLine in linesWithNumbersOrStars.Keys)
+        {
+            var firstTextLine = linesWithNumbersOrStars[captionLine].FirstOrDefault();
+            if (firstTextLine == null)
+            {
+                continue;
+            }
+            var firstTextLineBlock = page.Blocks.FirstOrDefault(b => b.Lines.Contains(firstTextLine));
+            if (firstTextLineBlock == null)
+            {
+                throw new InvalidOperationException("First text line block not found");
+            }
+            var startingLineIdx = firstTextLineBlock.Lines.IndexOf(firstTextLine);
+            if (startingLineIdx < 0)
+            {
+                throw new InvalidOperationException("Line not found in block");
+            }
+            for (var li = startingLineIdx; li < firstTextLineBlock.Lines.Count; li++)
+            {
+                var bottomLine = firstTextLineBlock.Lines[li];
+                if (bottomLine == firstTextLine)
+                {
+                    continue;
+                }
+                
+                // if line is the caption of the next, continue
+                if (linesWithNumbersOrStars.Keys.Any(l => l == bottomLine))
+                {
+                    continue;
+                }
+                
+                // if line is the first line of the next, break
+                if (linesWithNumbersOrStars.Values.Any(l => l.Contains(bottomLine)))
+                {
+                    break;
+                }
+            
+                linesWithNumbersOrStars[captionLine].Add(bottomLine);
+            }
+        }
+    }
+
+    private void AddFirstBottomContentsLines(Dictionary<LineOnPage, List<LineOnPage>> linesWithNumbersOrStars, IPdfPage page, double mainFontSize)
+    {
+        foreach (var captionLine in linesWithNumbersOrStars.Keys)
+        {
+            var linesToTheRight = page.Lines.Except(linesWithNumbersOrStars.Keys)
+                .Where(l =>
+                    captionLine.BoundingBox.OverlapsY(l.BoundingBox) &&
+                    captionLine.BoundingBox.Centroid.X < l.BoundingBox.Left &&
+                    l.FontSizeAvg < mainFontSize
+                )
+                .OrderBy(l => Math.Abs(captionLine.BaseLineY - l.BaseLineY))
+                .ToList();
+
+            if (linesToTheRight.Count == 0)
+            {
+                continue;
+            }
+
+            var sameLineAsCaption = linesToTheRight.First();
+            linesWithNumbersOrStars[captionLine].Add(sameLineAsCaption);
+        }
+    }
+
+    private List<LineOnPage> FindBottomFootnoteCaptions(IPdfPage page, double mainFontSize)
+    {
+        var captionLines = page.Blocks.SelectMany(b => b.Lines)
+            .Where(l => l.FontSizeAvg < mainFontSize)
+            .Where(l => l.FirstWordWithText is { HasText: true } && l.ToString().Trim() == l.FirstWordWithText.Text)
+            .Where(l => l.FirstWordWithText!.Text.IsNumericOrStar())
+            .ToList();
+        return captionLines;
     }
 }

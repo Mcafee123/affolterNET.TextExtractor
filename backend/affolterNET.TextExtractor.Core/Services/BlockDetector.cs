@@ -14,7 +14,7 @@ public class BlockDetector: IBlockDetector
         _log = log;
     }
 
-    public IPdfTextBlocks FindBlocks(IPdfPage page, FontSizeSettings fontSizeSettings, double newBlockDistanceDiff)
+    public IPdfTextBlocks FindBlocks(IPdfPage page, FontSizeSettings fontSizeSettings, double newBlockDistanceDiff, double blockOverlapDistanceDiff)
     {
         var lines = page.Lines;
         var innerBlocks = new PdfTextBlocks();
@@ -26,7 +26,7 @@ public class BlockDetector: IBlockDetector
         {
             // if an already added block overlaps the current line, add to this block later
             var existingOverlappingY = innerBlocks
-                .FirstOrDefault(b => b.BoundingBox.Overlaps(line.BoundingBox, 0.2));
+                .FirstOrDefault(b => b.BoundingBox.Overlaps(line.BoundingBox, blockOverlapDistanceDiff));
             if (existingOverlappingY == null)
             {
                 // if there is no overlapping block, check the distance to the next line on top
@@ -53,7 +53,7 @@ public class BlockDetector: IBlockDetector
         // for lines with small distances, append to existing blocks
         foreach (var currentLine in allLines)
         {
-            var blockToAppend = innerBlocks.FirstOrDefault(b => b.BoundingBox.Overlaps(currentLine.BoundingBox, 0.2));
+            var blockToAppend = innerBlocks.FirstOrDefault(b => b.BoundingBox.Overlaps(currentLine.BoundingBox, blockOverlapDistanceDiff));
             if (blockToAppend == null)
             {
                 var nextLineOnTop = page.Lines.FindLineOnTop(currentLine);

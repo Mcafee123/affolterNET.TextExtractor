@@ -56,7 +56,10 @@ public class DetectFootnotesStep: IPipelineStep
 
         foreach (var page in context.Document.Pages)
         {
-            _footnoteDetector.DetectBottomFootnotes(page, context.Document.Footnotes, mainFontSize);
+            var footNotesWithoutInlineWord = _footnoteDetector.DetectBottomFootnotes(page, context.Document.Footnotes, mainFontSize);
+            context.Document.FootnotesWithoutInlineWords.AddRange(footNotesWithoutInlineWord);
         }
+
+        _log.Write(EnumLogLevel.Info, $"Detected {context.Document.Footnotes.Count} footnotes");
     }
 }
