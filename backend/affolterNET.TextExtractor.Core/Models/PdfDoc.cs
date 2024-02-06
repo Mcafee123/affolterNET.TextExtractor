@@ -1,3 +1,4 @@
+using System.Text;
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
 using UglyToad.PdfPig;
@@ -32,6 +33,84 @@ public class PdfDoc : IPdfDoc
         }
     }
     
+    public bool Verify(out string message)
+    {
+        var success = true;
+        var sb = new StringBuilder();
+        // if (!VerifyBlocks(out var blocksErrors))
+        // {
+        //     sb.Append(blocksErrors);
+        //     success = false;
+        // }
+    
+        // if (!VerifyHeaders(out var headersErrors))
+        // {
+        //     sb.Append(headersErrors);
+        //     success = false;
+        // }
+        //
+        // if (!VerifyFooters(out var footersErrors))
+        // {
+        //     sb.Append(footersErrors);
+        //     success = false;
+        // }
+    
+        if (!VerifyFootnotes(out var footnoteErrors))
+        {
+            sb.Append(footnoteErrors);
+            success = false;
+        }
+    
+        message = sb.ToString();
+        return success;
+    }
+    
+    public bool VerifyFootnotes(out string message)
+    {
+        var success = true;
+        var sb = new StringBuilder();
+        
+        // check for double footnotes
+        var multipleIds = Footnotes.GroupBy(f => f.Id).Where(g => g.Count() > 1).ToList();
+        foreach (var n in multipleIds)
+        {
+            sb.AppendLine($"Footnote {n} found more than once");
+            success = false;
+        }
+        
+        // check for missing footnotes
+        var numericFootnotes = Footnotes.Where(f => f.Id.IsNumeric()).ToList();
+        var missing = Enumerable.Range(1, numericFootnotes.Distinct().Count()).Except(numericFootnotes.Select(f => int.Parse(f.Id))).ToList();
+        foreach (var miss in missing)
+        {
+            sb.AppendLine($"Footnote {miss} not found");
+            success = false;
+        }
+        
+        // check footnote contents
+        foreach (var fn in Footnotes)
+        {
+            if (!fn.BottomContents.Lines.Any())
+            {
+                sb.AppendLine($"Footnote {fn.Id} has no BottomContents");
+                success = false;
+            }
+        }
+        
+        // check inline words
+        foreach (var fn in Footnotes)
+        {
+            if (fn.InlineWords.Count < 1)
+            {
+                sb.AppendLine($"Inline Footnote {fn.Id} not found");
+                success = false;
+            }
+        }
+
+        message = sb.ToString();
+        return success;
+    }
+    
     public void ToJson(string path, IOutput log)
     {
         this.Serialize(path, log);
@@ -53,4 +132,5 @@ public interface IPdfDoc : IDisposable
     List<Footnote> FootnotesWithoutInlineWords { get; set; }
     void GetPages();
     void ToJson(string path, IOutput log);
+    bool Verify(out string message);
 }

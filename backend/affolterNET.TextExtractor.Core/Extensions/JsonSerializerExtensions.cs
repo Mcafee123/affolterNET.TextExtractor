@@ -215,7 +215,7 @@ public class PdfFootnoteJson
         }
         else
         {
-            log.Write(EnumLogLevel.Error, $"Footnote {footnote.Id}: BottomContentsCaption is null");
+            log.Write(EnumLogLevel.Error, $"Footnote {footnote.Id}: BottomContentsCaption is null, page: {InlineWords.FirstOrDefault()?.PageNr}");
         }
     }
 

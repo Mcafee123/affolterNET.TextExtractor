@@ -13,6 +13,7 @@ public static class ConfigureServicesExtension
     public static void AddTextExtractorCoreServices(this IServiceCollection services, IConfiguration config)
     {
         services.AddTransient<IWordExtractor, PdfWordExtractor>();
+        services.AddTransient<IWordCleaner, WordCleaner>();
         services.AddTransient<ILineDetector, LineDetector>();
         services.AddTransient<IBlockDetector, BlockDetector>();
         services.AddTransient<IFootnoteDetector, FootnoteDetector>();

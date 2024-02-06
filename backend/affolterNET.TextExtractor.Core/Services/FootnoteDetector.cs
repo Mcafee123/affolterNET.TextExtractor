@@ -34,6 +34,7 @@ public class FootnoteDetector: IFootnoteDetector
                         box.Overlaps(l.BoundingBox, -1) && 
                         Math.Abs(l.BaseLineY - word.BaseLineY) > minBaseLineDiff &&
                         Math.Abs(l.BaseLineY - word.BaseLineY) < l.FontSizeAvg &&
+                        l.BaseLineY < word.BaseLineY &&
                         l.FontSizeAvg > word.FontSizeAvg);
                 box = box.Translate(-1, 0);
                 i++;
@@ -70,7 +71,7 @@ public class FootnoteDetector: IFootnoteDetector
 
             if (word.Line == null)
             {
-                throw new InvalidOperationException("Word has no line");
+                throw new InvalidOperationException("word has no line");
             }
             
             list.Add(fn);
@@ -82,7 +83,7 @@ public class FootnoteDetector: IFootnoteDetector
     public List<Footnote> DetectBottomFootnotes(IPdfPage page, List<Footnote> fn, double mainFontSize)
     {
         // get footnote captions from page.Lines
-        var linesWithNumbersOrStars = FindBottomFootnoteCaptions(page, mainFontSize)
+        var linesWithNumbersOrStars = FindBottomFootnoteCaptions(page, fn, mainFontSize)
             .ToDictionary(l => l, v => new List<LineOnPage>());
         
         // add the line right to the caption to the dictionary
@@ -162,13 +163,14 @@ public class FootnoteDetector: IFootnoteDetector
 
     private void AddFirstBottomContentsLines(Dictionary<LineOnPage, List<LineOnPage>> linesWithNumbersOrStars, IPdfPage page, double mainFontSize)
     {
-        foreach (var captionLine in linesWithNumbersOrStars.Keys)
+        var lineList = linesWithNumbersOrStars.Keys.ToList();
+        for (var i = lineList.Count - 1; i > -1; i--)
         {
+            var captionLine = lineList[i];
             var linesToTheRight = page.Lines.Except(linesWithNumbersOrStars.Keys)
                 .Where(l =>
                     captionLine.BoundingBox.OverlapsY(l.BoundingBox) &&
-                    captionLine.BoundingBox.Centroid.X < l.BoundingBox.Left &&
-                    l.FontSizeAvg < mainFontSize
+                    captionLine.BoundingBox.Centroid.X < l.BoundingBox.Left
                 )
                 .OrderBy(l => Math.Abs(captionLine.BaseLineY - l.BaseLineY))
                 .ToList();
@@ -183,13 +185,39 @@ public class FootnoteDetector: IFootnoteDetector
         }
     }
 
-    private List<LineOnPage> FindBottomFootnoteCaptions(IPdfPage page, double mainFontSize)
+    private List<LineOnPage> FindBottomFootnoteCaptions(IPdfPage page, List<Footnote> fn, double mainFontSize)
     {
+        var inlineWords = fn.SelectMany(f => f.InlineWords);
         var captionLines = page.Blocks.SelectMany(b => b.Lines)
+            .Where(l => l.All(w => !inlineWords.Contains(w)))
             .Where(l => l.FontSizeAvg < mainFontSize)
             .Where(l => l.FirstWordWithText is { HasText: true } && l.ToString().Trim() == l.FirstWordWithText.Text)
             .Where(l => l.FirstWordWithText!.Text.IsNumericOrStar())
             .ToList();
+        
+        // if multiple captions with the same footnote id are found, select the ones lower on the page
+        var multipleIds = captionLines.GroupBy(l => l.FirstWordWithText!.Text)
+            .Where(g => g.Count() > 1)
+            .ToList();
+        foreach (var grp in multipleIds)
+        {
+            var lowestOnPage = grp.MinBy(l => l.BaseLineY);
+            foreach (var upperLine in grp.Except([lowestOnPage]))
+            {
+                captionLines.Remove(upperLine);
+            }
+        }
+        
+        // remove already added footnotes from found captions
+        foreach (var footnote in fn)
+        {
+            var captionLine = captionLines.FirstOrDefault(l => l.FirstWordWithText!.Text == footnote.Id);
+            if (captionLine != null && footnote.BottomContents.Lines.Count > 0)
+            {
+                captionLines.Remove(captionLine);
+            }
+        }
+
         return captionLines;
     }
 }

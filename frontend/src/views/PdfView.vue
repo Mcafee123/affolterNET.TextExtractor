@@ -135,7 +135,7 @@ const getFootnoteWords = (): number[] => {
   if (pdfdata.value) {
     for (let fn = 0; fn < pdfdata.value.footnotes.length; fn++) {
       const footnote = pdfdata.value.footnotes[fn]
-      for (let bcw = 0; bcw < footnote.bottomContentsCaption.words.length; bcw++) {
+      for (let bcw = 0; bcw < footnote.bottomContentsCaption?.words?.length || 0; bcw++) {
         footnoteWords.push(footnote.bottomContentsCaption.words[bcw].id)
       }
       for (let iw = 0; iw < footnote.inlineWords.length; iw++) {

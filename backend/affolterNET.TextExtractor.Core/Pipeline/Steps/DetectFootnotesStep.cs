@@ -56,6 +56,12 @@ public class DetectFootnotesStep: IPipelineStep
 
         foreach (var page in context.Document.Pages)
         {
+            if (context.Document.Footnotes.All(fn =>
+                    fn.BottomContents.Lines.Count > 0 && fn.BottomContentsCaption != null))
+            {
+                break;
+            }
+
             var footNotesWithoutInlineWord = _footnoteDetector.DetectBottomFootnotes(page, context.Document.Footnotes, mainFontSize);
             context.Document.FootnotesWithoutInlineWords.AddRange(footNotesWithoutInlineWord);
         }
