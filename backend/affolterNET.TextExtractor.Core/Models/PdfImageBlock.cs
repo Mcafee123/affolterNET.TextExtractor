@@ -1,7 +1,4 @@
 using affolterNET.TextExtractor.Core.Models.Interfaces;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Png;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 using UglyToad.PdfPig.XObjects;
