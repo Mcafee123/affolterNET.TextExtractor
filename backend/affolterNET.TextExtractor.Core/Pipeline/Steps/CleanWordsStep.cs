@@ -30,7 +30,7 @@ public class CleanWordsStep: IPipelineStep
         if (context.Document == null)
         {
             throw new NullReferenceException(
-                $"context.Document not initialized. Run {nameof(ReadWordsStep)} before this step");
+                $"context.Document not initialized. Run {nameof(ReadPagesStep)} before this step");
         }
 
         var w = context.Document.Words.Where(w => w.Text.Length > 1 && w.Text.StartsWith(" ")).ToList();

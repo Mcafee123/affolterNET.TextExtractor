@@ -28,7 +28,7 @@ public class DetectTextBlocksStep: IPipelineStep
         if (context.Document == null)
         {
             throw new NullReferenceException(
-                $"context.Document not initialized. Run {nameof(ReadWordsStep)} before this step");
+                $"context.Document not initialized. Run {nameof(ReadPagesStep)} before this step");
         }
         
         if (context.Document.FontSizes == null)
@@ -41,8 +41,6 @@ public class DetectTextBlocksStep: IPipelineStep
         var blockCountWithHorizontal = 0;
         foreach (var page in context.Document.Pages)
         {
-            page.Blocks.Clear();
-            
             // // one block per page
             // var tb = new PdfTextBlock();
             // tb.AddLines(page.Lines);

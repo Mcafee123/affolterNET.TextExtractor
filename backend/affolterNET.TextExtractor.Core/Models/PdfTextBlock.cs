@@ -1,3 +1,4 @@
+using affolterNET.TextExtractor.Core.Models.Interfaces;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Models;
@@ -5,10 +6,16 @@ namespace affolterNET.TextExtractor.Core.Models;
 public class PdfTextBlock: IPdfTextBlock
 {
     private PdfLines _lines = new();
+
+    public PdfTextBlock(IPdfPage page)
+    {
+        Page = page;
+    }
+
     public List<IWordOnPage> Words => _lines.Words.ToList();
     public PdfLines Lines => _lines;
     public double TopDistance { get; set; } = LineOnPage.DefaultTopDistance;
-    public IPdfPage? Page { get; set; }
+    public IPdfPage Page { get; }
     public PdfRectangle BoundingBox => _lines.BoundingBox;
     public LineOnPage? FirstLine => _lines.FirstOrDefault();
     public List<Gap> VerticalGaps { get; set; } = new();
@@ -41,18 +48,4 @@ public class PdfTextBlock: IPdfTextBlock
     {
         return _lines.ToString();
     }
-}
-
-public interface IPdfTextBlock
-{
-    double TopDistance { get; set; }
-    List<IWordOnPage> Words { get; }
-    PdfRectangle BoundingBox { get; }
-    IPdfPage? Page { get; set; }
-    PdfLines Lines { get; }
-    LineOnPage? FirstLine { get; }
-    List<Gap> VerticalGaps { get; set; }
-    bool Any(Func<LineOnPage, bool> predicate);
-    void AddLine(LineOnPage line);
-    void AddLines(List<LineOnPage> lines);
 }

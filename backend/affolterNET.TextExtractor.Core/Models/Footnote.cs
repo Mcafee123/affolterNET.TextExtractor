@@ -1,25 +1,24 @@
+using affolterNET.TextExtractor.Core.Models.Interfaces;
+
 namespace affolterNET.TextExtractor.Core.Models;
 
 public class Footnote
 {
-    public Footnote(string id)
+    public Footnote(string id, IPdfPage page)
     {
         Id = id;
-        BottomContents = new PdfTextBlock();
-    }
-    public Footnote(string id, IPdfTextBlock bottomContents)
-    {
-        Id = id;
-        BottomContents = bottomContents;
+        BottomContents = new PdfTextBlock(page);
     }
 
-    public Footnote(IWordOnPage inlineWord)
+    public Footnote(IPdfPage page, IWordOnPage inlineWord, IWordOnPage footnoteWord)
     {
         Id = inlineWord.Text;
         InlineWords.Add(inlineWord);
-        BottomContents = new PdfTextBlock();
+        FootnoteWords.Add(footnoteWord);
+        BottomContents = new PdfTextBlock(page);
     }
 
+    public List<IWordOnPage> FootnoteWords { get; set; } = new();
     public List<IWordOnPage> InlineWords { get; set; } = new();
     public string Id { get; }
     public IPdfTextBlock BottomContents { get; }

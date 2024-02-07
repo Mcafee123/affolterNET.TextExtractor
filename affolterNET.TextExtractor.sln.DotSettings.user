@@ -1,10 +1,10 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=920f6c26_002D6b83_002D4064_002Daf02_002D9323d173d90f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="OverlapsTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=920f6c26_002D6b83_002D4064_002Daf02_002D9323d173d90f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="OverlapsTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;xUnit::FA7C4B0C-2330-41EC-A5AF-9D838831B2CC::net8.0::affolterNET.TextExtractor.Core.Test.Extensions.DistanceExtensionsTest.OverlapsTest&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ab1f3e15_002D07d8_002D4e77_002Db4c1_002D95f469ce9519/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="PdfDoc_ToJson_Test" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ab1f3e15_002D07d8_002D4e77_002Db4c1_002D95f469ce9519/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="PdfDoc_ToJson_Test" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;xUnit::FA7C4B0C-2330-41EC-A5AF-9D838831B2CC::net8.0::affolterNET.TextExtractor.Core.Test.Extensions.JsonSerializerExtensionsTest.PdfDoc_ToJson_Test&lt;/TestId&gt;
     &lt;TestId&gt;xUnit::FA7C4B0C-2330-41EC-A5AF-9D838831B2CC::net8.0::affolterNET.TextExtractor.Core.Test.Extensions.DistanceExtensionsTest&lt;/TestId&gt;

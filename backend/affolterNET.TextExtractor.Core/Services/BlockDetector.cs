@@ -1,6 +1,7 @@
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
+using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 
 namespace affolterNET.TextExtractor.Core.Services;
@@ -14,10 +15,10 @@ public class BlockDetector: IBlockDetector
         _log = log;
     }
 
-    public IPdfTextBlocks FindBlocks(IPdfPage page, FontSizeSettings fontSizeSettings, double newBlockDistanceDiff, double blockOverlapDistanceDiff)
+    public IPdfBlocks FindBlocks(IPdfPage page, FontSizeSettings fontSizeSettings, double newBlockDistanceDiff, double blockOverlapDistanceDiff)
     {
         var lines = page.Lines;
-        var innerBlocks = new PdfTextBlocks();
+        var innerBlocks = new PdfBlocks();
         var allLines = new PdfLines();
         allLines.AddRange(lines.ToList());
 
@@ -42,7 +43,7 @@ public class BlockDetector: IBlockDetector
                 
                 if (addBlock)
                 {
-                    var tb = new PdfTextBlock();
+                    var tb = new PdfTextBlock(page);
                     tb.AddLine(line);
                     innerBlocks.Add(tb);
                     allLines.Remove(line);
@@ -53,11 +54,11 @@ public class BlockDetector: IBlockDetector
         // for lines with small distances, append to existing blocks
         foreach (var currentLine in allLines)
         {
-            var blockToAppend = innerBlocks.FirstOrDefault(b => b.BoundingBox.Overlaps(currentLine.BoundingBox, blockOverlapDistanceDiff));
+            var blockToAppend = innerBlocks.TextBlocks.FirstOrDefault(b => b.BoundingBox.Overlaps(currentLine.BoundingBox, blockOverlapDistanceDiff));
             if (blockToAppend == null)
             {
                 var nextLineOnTop = page.Lines.FindLineOnTop(currentLine);
-                blockToAppend = innerBlocks.FirstOrDefault(b => b.Any(l => l == nextLineOnTop));
+                blockToAppend = innerBlocks.TextBlocks.FirstOrDefault(b => b.Any(l => l == nextLineOnTop));
             }
             
             if (blockToAppend == null)
@@ -70,10 +71,11 @@ public class BlockDetector: IBlockDetector
         
         // fix blocks that are near enough by text size
         var blocksToRemove = new List<IPdfTextBlock>();
-        foreach (var b in innerBlocks)
+        foreach (var b in innerBlocks.TextBlocks)
         {
             // find the nearest block on top, that overlaps
             var blockOnTop = innerBlocks
+                .TextBlocks
                 .Where(bl => bl.BoundingBox.OverlapsX(b.BoundingBox)
                     && bl.BoundingBox.Bottom > b.BoundingBox.Top)
                 .MinBy(bl => bl.BoundingBox.Bottom);
@@ -115,10 +117,13 @@ public class BlockDetector: IBlockDetector
         var overlappingBlocks = innerBlocks.GetOverlappingBlocks(out var block);
         while (block != null)
         {
-            foreach (var overlappingBlock in overlappingBlocks)
+            foreach (var overlappingBlock in overlappingBlocks.OfType<IPdfTextBlock>())
             {
-                block.AddLines(overlappingBlock.Lines.ToList());
-                innerBlocks.Remove(overlappingBlock);
+                if (block is IPdfTextBlock textBlock)
+                {
+                    textBlock.AddLines(overlappingBlock.Lines.ToList());
+                    innerBlocks.Remove(overlappingBlock);
+                }
             }
             
             overlappingBlocks = innerBlocks.GetOverlappingBlocks(out block);

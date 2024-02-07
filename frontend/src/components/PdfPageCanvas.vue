@@ -271,6 +271,23 @@ const renderPage = (boxesOnly: boolean = false) => {
       drawBox(boxesCtx.value, block.boundingBox, 'red', 1.5)
     }
   }
+  // images
+  for (let ib = 0; ib < props.page.imageBlocks.length; ib++) {
+    const img = props.page.imageBlocks[ib]
+    const imgObj = new Image()
+    imgObj.addEventListener(
+      "load",
+      () => {
+        // execute drawImage statements here
+        if (!letterCtx.value) {
+          return
+        }
+        letterCtx.value.drawImage(imgObj, img.boundingBox.bottomLeftX * scale, getY(img.boundingBox.topRightY) * scale, (img.boundingBox.topRightX - img.boundingBox.bottomLeftX) * scale, (img.boundingBox.topRightY - img.boundingBox.bottomLeftY) * scale)
+      },
+      false,
+    )
+    imgObj.src = img.base64Image
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

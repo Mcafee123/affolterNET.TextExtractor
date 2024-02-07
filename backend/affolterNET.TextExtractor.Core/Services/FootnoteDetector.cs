@@ -1,6 +1,7 @@
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
+using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 
 namespace affolterNET.TextExtractor.Core.Services;
@@ -62,7 +63,7 @@ public class FootnoteDetector: IFootnoteDetector
 
             var fn = list.FirstOrDefault(f => f.Id == word.Text);
             if (fn == null) {
-                fn = new Footnote(word);
+                fn = new Footnote(block.Page, word, closestToTheLeft.Item2);
             }
             else
             {
@@ -106,7 +107,7 @@ public class FootnoteDetector: IFootnoteDetector
             if (footnote == null)
             {
                 _log.Write(EnumLogLevel.Warning, $"Inline footnote with id {captionLine.ToString().Trim()} not found (page: {page.Nr})");
-                footnote = new Footnote(captionLine.ToString().Trim());
+                footnote = new Footnote(captionLine.ToString().Trim(), page);
                 footnotesWithoutInlineWord.Add(footnote);
             }
 
@@ -126,7 +127,7 @@ public class FootnoteDetector: IFootnoteDetector
             {
                 continue;
             }
-            var firstTextLineBlock = page.Blocks.FirstOrDefault(b => b.Lines.Contains(firstTextLine));
+            var firstTextLineBlock = page.Blocks.TextBlocks.FirstOrDefault(b => b.Lines.Contains(firstTextLine));
             if (firstTextLineBlock == null)
             {
                 throw new InvalidOperationException("First text line block not found");
@@ -188,7 +189,7 @@ public class FootnoteDetector: IFootnoteDetector
     private List<LineOnPage> FindBottomFootnoteCaptions(IPdfPage page, List<Footnote> fn, double mainFontSize)
     {
         var inlineWords = fn.SelectMany(f => f.InlineWords);
-        var captionLines = page.Blocks.SelectMany(b => b.Lines)
+        var captionLines = page.Blocks.TextBlocks.SelectMany(b => b.Lines)
             .Where(l => l.All(w => !inlineWords.Contains(w)))
             .Where(l => l.FontSizeAvg < mainFontSize)
             .Where(l => l.FirstWordWithText is { HasText: true } && l.ToString().Trim() == l.FirstWordWithText.Text)

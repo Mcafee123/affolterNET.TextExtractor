@@ -1,6 +1,7 @@
 using System.Text;
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Models.Interfaces;
 using UglyToad.PdfPig;
 
 namespace affolterNET.TextExtractor.Core.Models;
@@ -37,23 +38,11 @@ public class PdfDoc : IPdfDoc
     {
         var success = true;
         var sb = new StringBuilder();
-        // if (!VerifyBlocks(out var blocksErrors))
-        // {
-        //     sb.Append(blocksErrors);
-        //     success = false;
-        // }
-    
-        // if (!VerifyHeaders(out var headersErrors))
-        // {
-        //     sb.Append(headersErrors);
-        //     success = false;
-        // }
-        //
-        // if (!VerifyFooters(out var footersErrors))
-        // {
-        //     sb.Append(footersErrors);
-        //     success = false;
-        // }
+        if (!VerifyBlocks(out var blocksErrors))
+        {
+            sb.Append(blocksErrors);
+            success = false;
+        }
     
         if (!VerifyFootnotes(out var footnoteErrors))
         {
@@ -64,7 +53,23 @@ public class PdfDoc : IPdfDoc
         message = sb.ToString();
         return success;
     }
-    
+
+    public bool VerifyBlocks(out string blocksErrors)
+    {
+        var success = true;
+        var sb = new StringBuilder();
+        foreach (var page in Pages)
+        {
+            if (!page.VerifyBlocks(out var pageErrors))
+            {
+                sb.Append(pageErrors);
+                success = false;
+            }
+        }
+        blocksErrors = sb.ToString();
+        return success;
+    }
+
     public bool VerifyFootnotes(out string message)
     {
         var success = true;
@@ -120,6 +125,37 @@ public class PdfDoc : IPdfDoc
     {
         _document.Dispose();
     }
+
+    public void RemoveByWordIds(List<int> wordIds)
+    {
+        foreach (var page in Pages)
+        {
+            var blocksToRemove = new List<IPdfTextBlock>();
+            foreach (var block in page.Blocks.TextBlocks)
+            {
+                var linesToRemove = new List<LineOnPage>();
+                foreach (var line in block.Lines)
+                {
+                    var wordsToRemove = line.Where(word => wordIds.Contains(word.Id)).ToList();
+                    line.RemoveAll(wordsToRemove);
+                    if (line.Count == 0)
+                    {
+                        linesToRemove.Add(line);
+                    }
+                }
+                block.Lines.RemoveAll(linesToRemove);
+                if (block.Lines.Count == 0)
+                {
+                    blocksToRemove.Add(block);
+                }
+            }
+
+            foreach (var blockToRemove in blocksToRemove)
+            {
+                page.Blocks.Remove(blockToRemove);
+            }
+        }
+    }
 }
 
 public interface IPdfDoc : IDisposable
@@ -133,4 +169,5 @@ public interface IPdfDoc : IDisposable
     void GetPages();
     void ToJson(string path, IOutput log);
     bool Verify(out string message);
+    void RemoveByWordIds(List<int> wordIds);
 }

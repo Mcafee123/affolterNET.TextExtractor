@@ -10,13 +10,13 @@ public class BasicPdfPipeline : IBasicPdfPipeline
     private readonly IOutput _log;
     private readonly ProcessingPipeline _pipeline;
 
-    public BasicPdfPipeline(ReadWordsStep readWordsStep, CleanWordsStep cleanWordsStep, DetectLinesStep detectLinesStep,
+    public BasicPdfPipeline(ReadPagesStep readPagesStep, CleanWordsStep cleanWordsStep, DetectLinesStep detectLinesStep,
         AnalyzeLineSpacingStep analyzeLineSpacingStep, DetectTextBlocksStep detectBlocksStep,
         DetectFootnotesStep detectFootnotesStep, IOutput log)
     {
         _log = log;
         _pipeline = new ProcessingPipeline();
-        _pipeline.AddStep(readWordsStep);
+        _pipeline.AddStep(readPagesStep);
         _pipeline.AddStep(cleanWordsStep);
         _pipeline.AddStep(detectLinesStep);
         _pipeline.AddStep(analyzeLineSpacingStep);

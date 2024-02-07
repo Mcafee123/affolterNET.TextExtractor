@@ -17,7 +17,7 @@ public static class ConfigureServicesExtension
         services.AddTransient<ILineDetector, LineDetector>();
         services.AddTransient<IBlockDetector, BlockDetector>();
         services.AddTransient<IFootnoteDetector, FootnoteDetector>();
-        services.AddTransient<ReadWordsStep>();
+        services.AddTransient<ReadPagesStep>();
         services.AddTransient<CleanWordsStep>();
         services.AddTransient<DetectLinesStep>();
         services.AddTransient<AnalyzeLineSpacingStep>();

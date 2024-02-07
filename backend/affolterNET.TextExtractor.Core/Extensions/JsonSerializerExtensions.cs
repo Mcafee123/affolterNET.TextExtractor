@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
+using affolterNET.TextExtractor.Core.Models.Interfaces;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 
@@ -9,24 +10,24 @@ namespace affolterNET.TextExtractor.Core.Extensions;
 
 public static class JsonSerializerExtensions
 {
-    private static readonly JsonSerializerOptions _options;
+    private static readonly JsonSerializerOptions Options;
 
     static JsonSerializerExtensions()
     {
-        _options = new JsonSerializerOptions
+        Options = new JsonSerializerOptions
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
         };
-        _options.Converters.Add(new PdfPointConverter());
-        _options.Converters.Add(new PdfRectangleConverter());
+        Options.Converters.Add(new PdfPointConverter());
+        Options.Converters.Add(new PdfRectangleConverter());
     }
 
     public static T Deserialize<T>(this string path)
     {
         var json = File.ReadAllText(path);
-        var obj = JsonSerializer.Deserialize<T>(json, _options);
+        var obj = JsonSerializer.Deserialize<T>(json, Options);
         return obj!;
     }
     
@@ -39,13 +40,13 @@ public static class JsonSerializerExtensions
     public static string Serialize(this IPdfDoc pdfDoc, IOutput log)
     {
         var toSerialize = new PdfDocJson(pdfDoc, log);
-        var json = JsonSerializer.Serialize(toSerialize, _options);
+        var json = JsonSerializer.Serialize(toSerialize, Options);
         return json;
     }
     
     private static void Serialize(this object obj, string path)
     {
-        var json = JsonSerializer.Serialize(obj, _options);
+        var json = JsonSerializer.Serialize(obj, Options);
         File.WriteAllTextAsync(path, json).GetAwaiter().GetResult();
     }
 }
@@ -61,15 +62,15 @@ public class PdfPointConverter : JsonConverter<PdfPoint>
         {
             throw new JsonException();
         }
-
-        double X = default;
-        double Y = default;
+        
+        double x = default;
+        double y = default;
 
         while (reader.Read())
         {
             if (reader.TokenType == JsonTokenType.EndObject)
             {
-                return new PdfPoint(X, Y);
+                return new PdfPoint(x, y);
             }
 
             if (reader.TokenType == JsonTokenType.PropertyName)
@@ -79,10 +80,10 @@ public class PdfPointConverter : JsonConverter<PdfPoint>
                 switch (propertyName)
                 {
                     case nameof(X):
-                        X = reader.GetDouble();
+                        x = reader.GetDouble();
                         break;
                     case nameof(Y):
-                        Y = reader.GetDouble();
+                        y = reader.GetDouble();
                         break;
                 }
             }
@@ -208,7 +209,7 @@ public class PdfFootnoteJson
             InlineWords.Add(new WordOnPageJson(w, log));
         }
 
-        BottomContents = new PdfBlockJson(footnote.BottomContents, log);
+        BottomContents = new PdfTextBlockJson(footnote.BottomContents, log);
         if (footnote.BottomContentsCaption != null)
         {
             BottomContentsCaption = new PdfLineJson(footnote.BottomContentsCaption, log);
@@ -221,7 +222,7 @@ public class PdfFootnoteJson
 
     public string Id { get; set; } = null!;
     public List<WordOnPageJson> InlineWords { get; set; } = new();
-    public PdfBlockJson BottomContents { get; set; } = new();
+    public PdfTextBlockJson BottomContents { get; set; } = new();
     public PdfLineJson? BottomContentsCaption { get; set; }
 }
 
@@ -236,25 +237,31 @@ public class PdfPageJson
     {
         Nr = page.Nr;
         BoundingBox = page.BoundingBox;
-        foreach (var block in page.Blocks)
+        foreach (var block in page.Blocks.TextBlocks)
         {
-            Blocks.Add(new PdfBlockJson(block, log));
+            Blocks.Add(new PdfTextBlockJson(block, log));
+        }
+        foreach (var block in page.Blocks.ImageBlocks)
+        {
+            ImageBlocks.Add(new PdfImageBlockJson(block, log));
         }
     }
 
+    public List<PdfImageBlockJson> ImageBlocks { get; set; } = new();
+
     public int Nr { get; set; }
     public PdfRectangle BoundingBox { get; set; }
-    public List<PdfBlockJson> Blocks { get; set; } = new();
+    public List<PdfTextBlockJson> Blocks { get; set; } = new();
 }
 
-public class PdfBlockJson
+public class PdfTextBlockJson
 {
-    public PdfBlockJson()
+    public PdfTextBlockJson()
     {
         
     }
 
-    public PdfBlockJson(IPdfTextBlock block, IOutput log)
+    public PdfTextBlockJson(IPdfTextBlock block, IOutput log)
     {
         BoundingBox = block.BoundingBox;
         foreach (var line in block.Lines)
@@ -265,6 +272,24 @@ public class PdfBlockJson
 
     public PdfRectangle BoundingBox { get; set; }
     public List<PdfLineJson> Lines { get; set; } = new();
+}
+
+public class PdfImageBlockJson
+{
+    public PdfImageBlockJson()
+    {
+        
+    }
+
+    public PdfImageBlockJson(IPdfImageBlock block, IOutput log)
+    {
+        BoundingBox = block.BoundingBox;
+        Base64Image = block.Base64Image;
+    }
+
+    public string Base64Image { get; set; }
+
+    public PdfRectangle BoundingBox { get; set; }
 }
 
 public class PdfLineJson

@@ -1,5 +1,6 @@
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
+using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 
@@ -28,7 +29,7 @@ public class DetectFootnotesStep: IPipelineStep
         if (context.Document == null)
         {
             throw new NullReferenceException(
-                $"context.Document not initialized. Run {nameof(ReadWordsStep)} before this step");
+                $"context.Document not initialized. Run {nameof(ReadPagesStep)} before this step");
         }
         
         if (context.Document.FontSizes == null)
@@ -47,7 +48,7 @@ public class DetectFootnotesStep: IPipelineStep
         
         foreach (var page in context.Document.Pages)
         {
-            foreach (var block in page.Blocks)
+            foreach (var block in page.Blocks.TextBlocks)
             {
                 var footnotes = _footnoteDetector.DetectInlineFootnotes(block, mainFontSize, cleanWordsSettings.MinBaseLineDiff);
                 context.Document.Footnotes.AddRange(footnotes);

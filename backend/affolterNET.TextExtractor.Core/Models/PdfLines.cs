@@ -107,6 +107,16 @@ public class PdfLines : IList<LineOnPage>
         Refresh();
     }
 
+    public void RemoveAll(IEnumerable<LineOnPage> lines)
+    {
+        foreach (var line in lines)
+        {
+            _lines.Remove(line);
+        }
+
+        Refresh();
+    }
+    
     public LineOnPage this[int index]
     {
         get => _lines[index];

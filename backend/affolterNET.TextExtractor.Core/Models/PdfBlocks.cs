@@ -1,20 +1,22 @@
 using System.Collections;
-using System.ComponentModel;
 using affolterNET.TextExtractor.Core.Extensions;
+using affolterNET.TextExtractor.Core.Models.Interfaces;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Models;
 
-public class PdfTextBlocks: IPdfTextBlocks
+public class PdfBlocks: IPdfBlocks
 {
-    private List<IPdfTextBlock> _blocks = new();
+    private List<IPdfBlock> _blocks = new();
 
-    public PdfTextBlocks()
+    public PdfBlocks()
     {
         
     }
 
-    public List<IPdfTextBlock> GetOverlappingBlocks(out IPdfTextBlock? block)
+    public List<IPdfTextBlock> TextBlocks => _blocks.OfType<IPdfTextBlock>().ToList();
+    public List<IPdfImageBlock> ImageBlocks => _blocks.OfType<IPdfImageBlock>().ToList();
+    public List<IPdfBlock> GetOverlappingBlocks(out IPdfBlock? block)
     {
         foreach (var b in _blocks)
         {
@@ -28,15 +30,15 @@ public class PdfTextBlocks: IPdfTextBlocks
         }
 
         block = null;
-        return new List<IPdfTextBlock>();
+        return new List<IPdfBlock>();
     }
 
-    public PdfTextBlocks(PdfTextBlock block)
+    public PdfBlocks(IPdfBlock block)
     {
-        AddRange(new List<IPdfTextBlock> { block });        
+        AddRange([block]);        
     }
     
-    public IEnumerator<IPdfTextBlock> GetEnumerator()
+    public IEnumerator<IPdfBlock> GetEnumerator()
     {
         return _blocks.GetEnumerator();
     }
@@ -46,12 +48,12 @@ public class PdfTextBlocks: IPdfTextBlocks
         return GetEnumerator();
     }
 
-    public void Add(IPdfTextBlock item)
+    public void Add(IPdfBlock item)
     {
         AddRange([item]);
     }
 
-    public void AddRange(List<IPdfTextBlock> items)
+    public void AddRange(List<IPdfBlock> items)
     {
         _blocks.AddRange(items);
         Refresh();
@@ -73,17 +75,17 @@ public class PdfTextBlocks: IPdfTextBlocks
         Refresh();
     }
 
-    public bool Contains(IPdfTextBlock item)
+    public bool Contains(IPdfBlock item)
     {
         return _blocks.Contains(item);
     }
 
-    public void CopyTo(IPdfTextBlock[] array, int arrayIndex)
+    public void CopyTo(IPdfBlock[] array, int arrayIndex)
     {
         _blocks.CopyTo(array, arrayIndex);
     }
 
-    public bool Remove(IPdfTextBlock item)
+    public bool Remove(IPdfBlock item)
     {
         var result = _blocks.Remove(item);
         Refresh();
@@ -93,12 +95,12 @@ public class PdfTextBlocks: IPdfTextBlocks
     public int Count => _blocks.Count;
     public bool IsReadOnly => false;
 
-    public int IndexOf(IPdfTextBlock item)
+    public int IndexOf(IPdfBlock item)
     {
         return _blocks.IndexOf(item);
     }
 
-    public void Insert(int index, IPdfTextBlock item)
+    public void Insert(int index, IPdfBlock item)
     {
         _blocks.Insert(index, item);
         Refresh();
@@ -110,7 +112,7 @@ public class PdfTextBlocks: IPdfTextBlocks
         Refresh();
     }
 
-    public IPdfTextBlock this[int index]
+    public IPdfBlock this[int index]
     {
         get => _blocks[index];
         set => _blocks[index] = value;
@@ -119,9 +121,9 @@ public class PdfTextBlocks: IPdfTextBlocks
     public void Refresh()
     {
         _blocks = _blocks.Count > 0
-            ? _blocks.OrderBy(b => b, Comparer<IPdfTextBlock>.Create((tb1, tb2) =>
+            ? _blocks.OrderBy(b => b, Comparer<IPdfBlock>.Create((tb1, tb2) =>
                 {
-                    if (tb1.Page != null && tb2.Page != null && tb1.Page.Nr != tb2.Page.Nr)
+                    if (tb1.Page.Nr != tb2.Page.Nr)
                     {
                         return tb1.Page.Nr.CompareTo(tb2.Page.Nr);
                     }
@@ -142,9 +144,4 @@ public class PdfTextBlocks: IPdfTextBlocks
         var topRight = new PdfPoint(Right, Top);
         BoundingBox = new PdfRectangle(bottomLeft, topRight);
     }
-}
-
-public interface IPdfTextBlocks : IList<IPdfTextBlock>
-{
-    void AddRange(List<IPdfTextBlock> items);
 }

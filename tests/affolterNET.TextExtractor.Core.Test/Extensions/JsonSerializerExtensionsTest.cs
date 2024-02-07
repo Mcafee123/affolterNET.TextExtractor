@@ -25,7 +25,7 @@ public class JsonSerializerExtensionsTest
         var blockDetector = new BlockDetector(_log);
         var footnoteDetector = new FootnoteDetector(_log);
         var wordCleaner = new WordCleaner(_log);
-        var readStep = new ReadWordsStep(wordExtractor, _log);
+        var readStep = new ReadPagesStep(wordExtractor, _log);
         var cleanWordsStep = new CleanWordsStep(wordCleaner, _log);
         var linesStep = new DetectLinesStep(lineDetector, _log);
         var analyzeLinesStep = new AnalyzeLineSpacingStep(_log);

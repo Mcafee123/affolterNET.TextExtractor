@@ -28,7 +28,7 @@ public class DetectLinesStep: IPipelineStep
         if (context.Document == null)
         {
             throw new NullReferenceException(
-                $"context.Document not initialized. Run {nameof(ReadWordsStep)} before this step");
+                $"context.Document not initialized. Run {nameof(ReadPagesStep)} before this step");
         }
         foreach (var page in context.Document.Pages)
         {

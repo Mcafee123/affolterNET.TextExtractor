@@ -1,9 +1,11 @@
+using System.Text;
+using affolterNET.TextExtractor.Core.Models.Interfaces;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Models;
 
-public class PdfPage : IPdfPage
+public class PdfPage : IPdfPageAccess
 {
     private static int _id = 0;
     private List<IWordOnPage> _words = new();
@@ -14,13 +16,15 @@ public class PdfPage : IPdfPage
 
     public Page Page { get; }
     public PdfRectangle BoundingBox => Page.CropBox.Bounds;
+    public Page.Experimental ExperimentalAccess => Page.ExperimentalAccess;
+    public CropBox CropBox => Page.CropBox;
     public int Nr => Page.Number;
     public IEnumerable<IWordOnPage> Words {
         get
         {
-            if (Blocks.Count  > 0)
+            if (Blocks.TextBlocks.Count  > 0)
             {
-                return Blocks.SelectMany(b => b.Words).ToList();
+                return Blocks.TextBlocks.SelectMany(b => b.Words).ToList();
             }
             if (Lines.Count > 0)
             {
@@ -31,7 +35,7 @@ public class PdfPage : IPdfPage
         }
     }
     public PdfLines Lines { get; } = new();
-    public PdfTextBlocks Blocks { get; set; } = new();
+    public PdfBlocks Blocks { get; set; } = new();
 
     public void AddWord(IWordOnPage word)
     {
@@ -43,16 +47,21 @@ public class PdfPage : IPdfPage
     {
         return _words.Remove(word);
     }
-}
-
-public interface IPdfPage
-{
-    Page Page { get; }
-    PdfRectangle BoundingBox { get; }
-    int Nr { get; }
-    IEnumerable<IWordOnPage> Words { get; }
-    PdfLines Lines { get; }
-    PdfTextBlocks Blocks { get; set; }
-    void AddWord(IWordOnPage word);
-    bool RemoveWord(IWordOnPage word);
+    
+     public bool VerifyBlocks(out string message)
+     {
+         var success = true;
+         var sb = new StringBuilder(); 
+         foreach (var block in Blocks.TextBlocks)
+         {
+             if (block.FirstLine == null)
+             {
+                 sb.AppendLine($"page {Nr} contains an empty block");
+                 success = false;
+             }
+         }
+     
+         message = sb.ToString();
+         return success;
+     }
 }

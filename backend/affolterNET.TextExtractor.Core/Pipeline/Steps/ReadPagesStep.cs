@@ -1,19 +1,20 @@
-using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
+using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Util;
+using UglyToad.PdfPig.XObjects;
 
 namespace affolterNET.TextExtractor.Core.Pipeline.Steps;
 
-public class ReadWordsStep : IPipelineStep
+public class ReadPagesStep : IPipelineStep
 {
     private readonly IWordExtractor _wordExtractor;
     private readonly IOutput _log;
 
-    public ReadWordsStep(IWordExtractor wordExtractor, IOutput log)
+    public ReadPagesStep(IWordExtractor wordExtractor, IOutput log)
     {
         _wordExtractor = wordExtractor;
         _log = log;
@@ -57,15 +58,23 @@ public class ReadWordsStep : IPipelineStep
     {
         var settings = context.GetSettings<ReadWordsStepSettings>();
         context.OriginalWords.Clear();
+        context.OriginalImages.Clear();
         foreach (var page in context.Document!.Pages)
         {
             var words = GetWords(page);
             context.OriginalWords.AddRange(words);
-
             foreach (var word in words)
             {
                 var wop = new WordOnPage(page.Nr, word, settings.BaseLineGroupRange);
                 page.AddWord(wop);
+            }
+            
+            var images = GetImages(page);
+            context.OriginalImages.AddRange(images);
+            foreach (var image in images)
+            {
+                var ib = new PdfImageBlock(page, image);
+                page.Blocks.Add(ib);
             }
         }
     }
@@ -73,5 +82,10 @@ public class ReadWordsStep : IPipelineStep
     private List<Word> GetWords(IPdfPage page)
     {
         return page.Page.GetWords(_wordExtractor).ToList();
+    }
+    
+    private List<IPdfImage> GetImages(IPdfPage page)
+    {
+        return page.Page.GetImages().ToList();
     }
 }
