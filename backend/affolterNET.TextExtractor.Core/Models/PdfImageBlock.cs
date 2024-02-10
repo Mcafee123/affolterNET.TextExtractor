@@ -43,5 +43,6 @@ public class PdfImageBlock: IPdfImageBlock
     public double TopDistance { get; set; }
     public PdfRectangle BoundingBox => _image.Bounds;
     public IPdfPage Page { get; set; }
+    public int PageNr => Page.Nr;
     public string Base64Image { get; }
 }

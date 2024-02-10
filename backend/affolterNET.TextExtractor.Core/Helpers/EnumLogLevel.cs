@@ -6,5 +6,6 @@ public enum EnumLogLevel
     Error = 1,    // Error
     Warning = 2,  // Warning
     Info = 3,     // Info
-    Debug = 4     // Debug
+    Debug = 4,     // Debug
+    Trace = 5     // Trace
 }

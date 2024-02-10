@@ -7,9 +7,9 @@ public class FunctionsLogger: IOutput
 {
     private readonly ILogger<FunctionsLogger> _logger;
 
-    public FunctionsLogger(ILoggerFactory loggerFactory)
+    public FunctionsLogger(ILogger<FunctionsLogger> logger)
     {
-        _logger = loggerFactory.CreateLogger<FunctionsLogger>();
+        _logger = logger;
     }
     
     public void Write(EnumLogLevel logLevel, params string[] msg)
@@ -17,6 +17,9 @@ public class FunctionsLogger: IOutput
         var txt = string.Join("", msg.Where(m => !(m.StartsWith("[") && m.EndsWith("]"))));
         switch (logLevel)
         {
+            case EnumLogLevel.Trace:
+                _logger.LogTrace(txt);
+                return;
             case EnumLogLevel.Debug:
                 _logger.LogDebug(txt);
                 return;

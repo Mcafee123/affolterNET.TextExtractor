@@ -10,18 +10,20 @@ namespace affolterNET.TextExtractor.Core.Extensions;
 
 public static class JsonSerializerExtensions
 {
+    public static JsonSerializerOptions ConfigureJsonSerializerOptions(this JsonSerializerOptions options)
+    {
+        options.WriteIndented = true;
+        options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+        options.Converters.Add(new PdfPointConverter());
+        options.Converters.Add(new PdfRectangleConverter());
+        return options;
+    }
     private static readonly JsonSerializerOptions Options;
-
+    
     static JsonSerializerExtensions()
     {
-        Options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
-        };
-        Options.Converters.Add(new PdfPointConverter());
-        Options.Converters.Add(new PdfRectangleConverter());
+        Options = new JsonSerializerOptions().ConfigureJsonSerializerOptions();
     }
 
     public static T Deserialize<T>(this string path)
@@ -287,7 +289,7 @@ public class PdfImageBlockJson
         Base64Image = block.Base64Image;
     }
 
-    public string Base64Image { get; set; }
+    public string Base64Image { get; set; } = null!;
 
     public PdfRectangle BoundingBox { get; set; }
 }

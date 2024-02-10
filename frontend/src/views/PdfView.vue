@@ -26,7 +26,7 @@
           span Reload PDF
         button(@click="downloadJson()")
           i download
-          span Download JSON
+          span JSON
       PdfPart(title="Upload")
         PdfUpload(@uploadFile="uploadFile")
       PdfPart(title="Anzeigen")

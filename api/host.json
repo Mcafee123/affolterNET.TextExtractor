@@ -1,12 +1,19 @@
 {
     "version": "2.0",
-    "logging": {
+    "logging": { //  must be the same as in appsettings.json
+        "LogLevel": {
+            "Default": "Trace",
+            "api": "Trace",
+            "Host": "Warning",
+            "Microsoft": "Warning",
+            "Worker": "Warning",
+            "Azure": "Warning"
+        },
         "applicationInsights": {
             "samplingSettings": {
                 "isEnabled": true,
                 "excludedTypes": "Request"
-            },
-            "enableLiveMetricsFilters": true
+            }
         }
     }
 }

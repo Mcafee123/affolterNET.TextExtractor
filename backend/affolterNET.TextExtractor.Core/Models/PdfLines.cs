@@ -7,6 +7,11 @@ namespace affolterNET.TextExtractor.Core.Models;
 public class PdfLines : IList<LineOnPage>
 {
     private List<LineOnPage> _lines = new();
+
+    public PdfLines(params LineOnPage[] lines)
+    {
+        AddRange(lines.ToList());
+    }
     
     public IEnumerable<IWordOnPage> Words => _lines.SelectMany(line => line);
 

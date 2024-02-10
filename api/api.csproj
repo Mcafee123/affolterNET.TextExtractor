@@ -7,17 +7,14 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
+        <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
+        <PackageReference Include="HttpMultipartParser" Version="8.3.0" />
+        <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.21.0" />
+        <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.0.0" />
         <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
-        <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="1.2.0" />
-        <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.16.4" />
-        <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.1" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.17.0" />
     </ItemGroup>
     <ItemGroup>
-        <None Update="host.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
         <None Update="local.settings.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
@@ -28,5 +25,11 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\backend\affolterNET.TextExtractor.Core\affolterNET.TextExtractor.Core.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="appsettings.json" />
+      <Content Include="appsettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 </Project>

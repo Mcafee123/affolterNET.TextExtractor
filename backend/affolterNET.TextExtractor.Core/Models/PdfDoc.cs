@@ -126,7 +126,7 @@ public class PdfDoc : IPdfDoc
         _document.Dispose();
     }
 
-    public void RemoveByWordIds(List<int> wordIds)
+    public void RemoveByWordIds(IEnumerable<int> wordIds)
     {
         foreach (var page in Pages)
         {
@@ -138,7 +138,7 @@ public class PdfDoc : IPdfDoc
                 {
                     var wordsToRemove = line.Where(word => wordIds.Contains(word.Id)).ToList();
                     line.RemoveAll(wordsToRemove);
-                    if (line.Count == 0)
+                    if (line.All(w => !w.HasText))
                     {
                         linesToRemove.Add(line);
                     }
@@ -169,5 +169,5 @@ public interface IPdfDoc : IDisposable
     void GetPages();
     void ToJson(string path, IOutput log);
     bool Verify(out string message);
-    void RemoveByWordIds(List<int> wordIds);
+    void RemoveByWordIds(IEnumerable<int> wordIds);
 }

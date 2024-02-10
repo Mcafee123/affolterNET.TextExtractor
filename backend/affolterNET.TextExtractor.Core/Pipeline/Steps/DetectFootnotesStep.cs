@@ -19,12 +19,14 @@ public class DetectFootnotesStep: IPipelineStep
     
     public class DetectFootnotesStepSettings: IStepSettings
     {
-    
+        public double MaxDistFromLeft { get; set; } = 1;
+        public double LeftBorderGroupRange { get; set; } = 10;
     }
     
     public void Execute(IPipelineContext context)
     {
         _log.Write(EnumLogLevel.Info, "Detecting footnotes");
+        var settings = context.GetSettings<DetectFootnotesStepSettings>();
         var cleanWordsSettings = context.GetSettings<CleanWordsStep.CleanWordsStepSettings>();
         if (context.Document == null)
         {
@@ -63,7 +65,7 @@ public class DetectFootnotesStep: IPipelineStep
                 break;
             }
 
-            var footNotesWithoutInlineWord = _footnoteDetector.DetectBottomFootnotes(page, context.Document.Footnotes, mainFontSize);
+            var footNotesWithoutInlineWord = _footnoteDetector.DetectBottomFootnotes(page, context.Document.Footnotes, mainFontSize, settings);
             context.Document.FootnotesWithoutInlineWords.AddRange(footNotesWithoutInlineWord);
         }
 
