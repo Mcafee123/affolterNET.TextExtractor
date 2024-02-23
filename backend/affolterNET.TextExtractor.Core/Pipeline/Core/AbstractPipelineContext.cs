@@ -22,6 +22,7 @@ public abstract class AbstractPipelineContext: IPipelineContext
     public string Filename { get; }
     public List<Word> OriginalWords { get; } = new();
     public List<IPdfImage> OriginalImages { get; }= new();
+    public string? TextContent { get; set; }
     public IPdfDoc? Document { get; private set; }
     public abstract void SetDocument(PdfDocument document);
 

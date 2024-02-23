@@ -48,8 +48,13 @@ public class PdfTextBlock: IPdfTextBlock
         return _lines.Any(predicate);
     }
 
+    public string GetText(Func<IWordOnPage, bool> exclude)
+    {
+        return _lines.GetText(exclude);
+    }
+
     public override string ToString()
     {
-        return _lines.ToString();
+        return _lines.GetText(null);
     }
 }

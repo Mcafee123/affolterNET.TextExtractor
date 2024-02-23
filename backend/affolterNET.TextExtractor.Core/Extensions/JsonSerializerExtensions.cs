@@ -35,13 +35,13 @@ public static class JsonSerializerExtensions
     
     public static void Serialize(this IPdfDoc pdfDoc, string path, IOutput log)
     {
-        var toSerialize = new PdfDocJson(pdfDoc, log);
+        var toSerialize = new PdfDocJson(pdfDoc, null, log);
         toSerialize.Serialize(path);
     }
     
     public static string Serialize(this IPdfDoc pdfDoc, IOutput log)
     {
-        var toSerialize = new PdfDocJson(pdfDoc, log);
+        var toSerialize = new PdfDocJson(pdfDoc, null, log);
         var json = JsonSerializer.Serialize(toSerialize, Options);
         return json;
     }
@@ -171,13 +171,14 @@ public class PdfDocJson
         
     }
 
-    public PdfDocJson(IPdfDoc pdfDoc, IOutput log)
+    public PdfDocJson(IPdfDoc pdfDoc, string? textContent, IOutput? log)
     {
         Filename = pdfDoc.Filename;
         FontNames = string.Join(", ", pdfDoc.FontSizes?.AllFontNames ?? new List<string>());
         FontGroups = pdfDoc.FontSizes?
             .Select(fs => $"{fs.GroupId + 1}: {Math.Round(fs.AvgFontSize, 2):##.00} (Words: {fs.WordCount}, Min: {Math.Round(fs.MinFontSize, 2):##.00}, Max: {Math.Round(fs.MaxFontSize, 2):##.00})")
             .ToList() ?? new List<string>();
+        TextContent = textContent;
         foreach (var page in pdfDoc.Pages)
         {
             Pages.Add(new PdfPageJson(page, log));
@@ -188,6 +189,8 @@ public class PdfDocJson
             Footnotes.Add(new PdfFootnoteJson(footnote, log));
         }
     }
+
+    public string? TextContent { get; set; }
 
     public List<string> FontGroups { get; set; } = new();
     public string Filename { get; set; } = null!;

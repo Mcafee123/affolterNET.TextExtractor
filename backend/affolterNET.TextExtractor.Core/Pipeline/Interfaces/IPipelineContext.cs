@@ -12,6 +12,7 @@ public interface IPipelineContext: IDisposable
     void SetDocument(PdfDocument document);
     Stream? PdfStream { get; }
     List<IPdfImage> OriginalImages { get; }
+    string? TextContent { get; set; }
     void AddSettings<T>(T settings) where T : class, IStepSettings, new();
     T GetSettings<T>() where T : class, IStepSettings, new();
 }

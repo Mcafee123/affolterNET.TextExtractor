@@ -23,6 +23,7 @@ public static class ConfigureServicesExtension
         services.AddTransient<AnalyzeLineSpacingStep>();
         services.AddTransient<DetectFootnotesStep>();
         services.AddTransient<DetectTextBlocksStep>();
+        services.AddTransient<ExtractTextStep>();
         services.AddTransient<BasicPdfPipeline>();
     }
 }

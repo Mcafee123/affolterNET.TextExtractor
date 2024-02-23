@@ -21,12 +21,14 @@
     .settingscol(v-if="page")
       PdfPart(title="File")
         p {{ pdfdata.filename }}
-        button(@click="refreshView()")
+        button(@click="refreshView()" title="reload")
           i frame_reload
-          span Reload PDF
         button(@click="downloadJson()")
           i download
           span JSON
+        button(@click="downloadText()")
+          i download
+          span TXT
       PdfPart(title="Upload")
         PdfUpload(@uploadFile="uploadFile")
       PdfPart(title="Anzeigen")
@@ -160,6 +162,20 @@ const downloadJson = () => {
   }
   const filename = pdfdata.value.filename + ".json"
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pdfdata.value))
+  const link = document.createElement('a')
+  link.setAttribute('href', dataStr)
+  link.setAttribute('download', filename)
+  link.click()
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const downloadText = () => {
+  if (!pdfdata.value) {
+    console.error("no pdf loaded")
+    return
+  }
+  const filename = pdfdata.value.filename + ".txt"
+  const dataStr = "data:text/plain;charset=utf-8," + pdfdata.value.textContent
   const link = document.createElement('a')
   link.setAttribute('href', dataStr)
   link.setAttribute('download', filename)

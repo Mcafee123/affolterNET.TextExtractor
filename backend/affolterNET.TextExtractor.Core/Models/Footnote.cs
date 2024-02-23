@@ -28,4 +28,11 @@ public class Footnote
     {
         return $"{Id}: {BottomContents}";
     }
+
+    public bool Contains(IWordOnPage word)
+    {
+        return InlineWords.Any(w => w == word) || 
+               (BottomContentsCaption?.Any(w => w == word) ?? false) ||
+               BottomContents.Words.Any(w => w == word);
+    }
 }

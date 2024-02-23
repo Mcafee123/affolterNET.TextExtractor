@@ -49,9 +49,15 @@ public class PdfLines : IList<LineOnPage>
     {
         AddRange(new List<LineOnPage> { item });
     }
-
-    public override string ToString()
+    
+    public string GetText(Func<IWordOnPage, bool>? exclude)
     {
+        // footnote blocks can be excluded as a whole
+        if (exclude != null && _lines.SelectMany(l => l).All(exclude))
+        {
+            return "";
+        }
+
         var wordList = new List<string>();
         for (var i = 0; i < _lines.Count; i++)
         {
@@ -65,11 +71,22 @@ public class PdfLines : IList<LineOnPage>
             }
             else
             {
-                wordList.AddRange(words.Select(w => w.Text));
+                var selectedWords = words.ToList();
+                if (exclude != null)
+                {
+                    selectedWords = words.Where(w => !exclude(w)).ToList();
+                }
+                wordList.AddRange(selectedWords.Select(w => w.Text));
             }
         }
 
         return string.Join("", wordList);
+    }
+    
+    
+    public override string ToString()
+    {
+        return GetText(null);
     }
 
     public void Clear()

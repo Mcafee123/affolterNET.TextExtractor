@@ -10,4 +10,5 @@ public interface IPdfTextBlock: IPdfBlock
     bool Any(Func<LineOnPage, bool> predicate);
     void AddLine(LineOnPage line);
     void AddLines(List<LineOnPage> lines);
+    string GetText(Func<IWordOnPage, bool> exclude);
 }

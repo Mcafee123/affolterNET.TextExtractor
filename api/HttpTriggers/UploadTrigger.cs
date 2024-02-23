@@ -57,7 +57,7 @@ public class UploadTrigger
         // =============================
         // pipelineContext.AddSettings(new CleanWordsStep.CleanWordsStepSettings() { BigSpacesSize = 120 });
         _pipeline.Execute(pipelineContext);
-        var pdfDocJson =  new PdfDocJson(pipelineContext.Document!, _log);
+        var pdfDocJson =  new PdfDocJson(pipelineContext.Document!, pipelineContext.TextContent, _log);
         var response = req.CreateResponse(HttpStatusCode.OK);
         await response.WriteAsJsonAsync(pdfDocJson);
         return response;
