@@ -50,11 +50,11 @@ public class PdfTextBlock: IPdfTextBlock
 
     public string GetText(Func<IWordOnPage, bool> exclude)
     {
-        return _lines.GetText(exclude);
+        return _lines.GetText(exclude, "");
     }
 
     public override string ToString()
     {
-        return _lines.GetText(null);
+        return _lines.GetText(null, "");
     }
 }

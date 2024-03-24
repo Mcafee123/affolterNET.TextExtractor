@@ -6,16 +6,19 @@ namespace affolterNET.TextExtractor.Core.Models;
 
 public class LineOnPage : IList<IWordOnPage>, ILineOnPage
 {
+    private static long _id = 0;
     private List<IWordOnPage> _words = new();
 
     public const double DefaultTopDistance = 2000;
 
     public LineOnPage(List<IWordOnPage> words, int pageNr)
     {
+        Id = _id++;
         PageNr = pageNr;
         AddRange(words);
     }
-    
+
+    public long Id { get; }
     public PdfRectangle BoundingBox { get; private set; }
     public int Count => _words.Count;
     public double BaseLineY { get; set; }
@@ -166,6 +169,7 @@ public class LineOnPage : IList<IWordOnPage>, ILineOnPage
 
 public interface ILineOnPage
 {
+    long Id { get; }
     PdfRectangle BoundingBox { get; }
     double Left { get; }
     double Right { get; }
@@ -175,4 +179,5 @@ public interface ILineOnPage
     int IndexOf(IWordOnPage item);
     int Count { get; }
     IWordOnPage this[int index] { get; set; }
+    IWordOnPage? FirstWord { get; }
 }

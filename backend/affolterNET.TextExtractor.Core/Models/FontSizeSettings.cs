@@ -81,5 +81,10 @@ public class FontSizeSettings : List<FontSizeSettings.FontSizeSetting>
             var groups = _lineSpacings.FindCommonGroups(0.5, d => d);
             return groups.First().AvgValue;
         }
+
+        public override string ToString()
+        {
+            return $"Size: {AvgFontSize}, Count: {WordCount}, Spacing: {MostCommonLineSpacing()}";
+        }
     }
 }

@@ -74,6 +74,9 @@ public class WordOnPage: IWordOnPage
     /// </summary>
     public string FontName => _word.FontName;
 
+    public bool IsItalic => FontName.ToLower().Contains("italic") ||
+                            Letters.All(l => l.Font.IsItalic);
+
     public double FontSizeAvg {
         get
         {
@@ -114,6 +117,7 @@ public interface IWordOnPage
     TextOrientation TextOrientation { get; }
     string FontName { get; }
     double FontSizeAvg { get; }
+    bool IsItalic { get; }
     LineOnPage? Line { get; set; }
     PdfRectangle BoundingBox { get; }
     IReadOnlyList<Letter> Letters { get; }

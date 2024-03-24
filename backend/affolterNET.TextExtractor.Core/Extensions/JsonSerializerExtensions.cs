@@ -171,7 +171,7 @@ public class PdfDocJson
         
     }
 
-    public PdfDocJson(IPdfDoc pdfDoc, string? textContent, IOutput? log)
+    public PdfDocJson(IPdfDoc pdfDoc, string? textContent, IOutput log)
     {
         Filename = pdfDoc.Filename;
         FontNames = string.Join(", ", pdfDoc.FontSizes?.AllFontNames ?? new List<string>());
