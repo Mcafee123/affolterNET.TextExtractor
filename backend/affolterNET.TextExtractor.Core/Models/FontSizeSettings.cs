@@ -39,12 +39,11 @@ public class FontSizeSettings : List<FontSizeSettings.FontSizeSetting>
         return this.OrderBy(fs => Math.Abs(fs.AvgFontSize - lineFontSize)).First();
     }
     
-    public double GetTopDistanceDiff(double fontSize, double topDistance)
+    public double GetCommonLineSpacing(double fontSize)
     {
         var fontSizeGroup = GetGroup(fontSize);
         var mostCommonLineSpacing = fontSizeGroup.MostCommonLineSpacing();
-        var distanceDiff = Math.Abs(mostCommonLineSpacing - topDistance);
-        return distanceDiff;
+        return mostCommonLineSpacing;
     }
 
     public class FontSizeSetting

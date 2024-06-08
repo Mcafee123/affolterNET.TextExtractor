@@ -22,8 +22,9 @@ public class PdfTextBlock: IPdfTextBlock
     public int PageNr => Page.Nr;
     public PdfRectangle BoundingBox => _lines.BoundingBox;
     public LineOnPage? FirstLine => _lines.FirstOrDefault();
-    public List<Gap> VerticalGaps { get; set; } = new();
-    public void AddLines(PdfLines lines)
+    public List<PdfRectangle> VerticalGaps { get; set; } = new();
+    public List<PdfRectangle> HorizontalGaps { get; set; } = new();
+    public void SetLines(PdfLines lines)
     {
         _lines = lines;
     }
@@ -56,5 +57,10 @@ public class PdfTextBlock: IPdfTextBlock
     public override string ToString()
     {
         return _lines.GetText(null, "");
+    }
+
+    public void RemoveWord(IWordOnPage word)
+    {
+        _lines.RemoveWord(word);
     }
 }

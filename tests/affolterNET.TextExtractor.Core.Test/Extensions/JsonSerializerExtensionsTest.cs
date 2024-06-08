@@ -22,7 +22,7 @@ public class JsonSerializerExtensionsTest
     {
         var wordExtractor = new PdfWordExtractor(_log);
         var lineDetector = new LineDetector(_log);
-        var blockDetector = new BlockDetector(_log);
+        var blockDetector = new BlockDetector(lineDetector, _log);
         var footnoteDetector = new FootnoteDetector(_log);
         var wordCleaner = new WordCleaner(_log);
         var readStep = new ReadPagesStep(wordExtractor, _log);

@@ -25,6 +25,7 @@ public class DetectTextBlocksStep: IPipelineStep
     {
         _log.Write(EnumLogLevel.Info, "Detecting textblocks");
         var settings = context.GetSettings<DetectTextBlocksStepSettings>();
+        var detectLinesSettings = context.GetSettings<DetectLinesStep.DetectLinesStepSettings>();
         if (context.Document == null)
         {
             throw new NullReferenceException(
@@ -48,9 +49,13 @@ public class DetectTextBlocksStep: IPipelineStep
             // // one block per page
             
             // find blocks by connecting lines
-            var blocks = _blockDetector.FindBlocks(page, context.Document.FontSizes, settings.NewBlockDistanceDiff, settings.BlockOverlapDistanceDiff);
-            blockCount += blocks.Count;
-            page.Blocks.AddRange(blocks.ToList());
+            _blockDetector.FindBlocks(
+                page,
+                context.Document.FontSizes,
+                settings.NewBlockDistanceDiff,
+                settings.BlockOverlapDistanceDiff,
+                detectLinesSettings.BaseLineMatchingRange);
+            blockCount += page.Blocks.Count;
         }
 
         _log.Write(EnumLogLevel.Debug, $"Blocks: {blockCount}");

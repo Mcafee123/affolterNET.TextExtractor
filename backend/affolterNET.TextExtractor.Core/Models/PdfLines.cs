@@ -139,7 +139,29 @@ public class PdfLines : IList<LineOnPage>
 
         Refresh();
     }
+    
+    public void RemoveWord(IWordOnPage word)
+    {
+        LineOnPage? toRemove = null;
+        foreach (var line in _lines)
+        {
+            if (line.Contains(word))
+            {
+                line.Remove(word);
+                if (line.Count < 1)
+                {
+                    toRemove = line;
+                }
+                break;
+            }
+        }
 
+        if (toRemove != null)
+        {
+            _lines.Remove(toRemove);
+        }
+    }
+    
     public LineOnPage this[int index]
     {
         get => _lines[index];

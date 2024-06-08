@@ -4,5 +4,6 @@ public interface IPdfBlocks : IList<IPdfBlock>
 {
     List<IPdfTextBlock> TextBlocks { get; }
     List<IPdfImageBlock> ImageBlocks { get; }
-    void AddRange(List<IPdfBlock> items);
+    void AddRange(IEnumerable<IPdfBlock> items);
+    void AddRange(IEnumerable<IPdfBlockBase> items);
 }

@@ -56,9 +56,15 @@ public abstract class BlocksBase<TBase, TText, TImage>: IEnumerable<TBase>
         AddRange([item]);
     }
 
-    public void AddRange(List<TBase> items)
+    public void AddRange(IEnumerable<TBase> items)
     {
         _blocks.AddRange(items);
+        Refresh();
+    }
+    
+    public void AddRange(IEnumerable<IPdfBlockBase> items)
+    {
+        _blocks.AddRange(items.Cast<TBase>());
         Refresh();
     }
 

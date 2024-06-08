@@ -1,325 +1,233 @@
-using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
+using UglyToad.PdfPig.Core;
+using UglyToad.PdfPig.DocumentLayoutAnalysis.Export.PAGE;
 
 namespace affolterNET.TextExtractor.Core.Services;
 
-public class BlockDetector: IBlockDetector
+public class BlockDetector : IBlockDetector
 {
+    private readonly ILineDetector _lineDetector;
     private readonly IOutput _log;
 
-    public BlockDetector(IOutput log)
+    public BlockDetector(ILineDetector lineDetector, IOutput log)
     {
+        _lineDetector = lineDetector;
         _log = log;
     }
 
-    public IPdfBlocks FindBlocks(IPdfPage page, FontSizeSettings fontSizeSettings, double newBlockDistanceDiff, double blockOverlapDistanceDiff)
+    public FontSizeSettings FontSizes { get; private set; } = new([]);
+    public double NewBlockDistDiff { get; private set; }
+    public double BaseLineMatchingRange { get; private set; }
+
+    public void FindBlocks(IPdfPage page, FontSizeSettings fontSizeSettings, double horizontalDistDiff,
+        double blockOverlapDistanceDiff, double baseLineMatchingRange)
     {
-        var lines = page.Lines;
-        var innerBlocks = new PdfBlocks();
-        var allLines = new PdfLines();
-        allLines.AddRange(lines.ToList());
+        // block list
+        var blockList = new List<IPdfTextBlock>();
+        // first, one block per page
+        var mainPageBlock = new PdfTextBlock(page);
+        mainPageBlock.SetLines(page.Lines);
+        blockList.Add(mainPageBlock);
 
-        // loop through lines top down
-        foreach (var line in lines)
+        // get settings
+        FontSizes = fontSizeSettings;
+        NewBlockDistDiff = horizontalDistDiff;
+        BaseLineMatchingRange = baseLineMatchingRange;
+
+        // separate into smaller blocks in a loop.
+        // stop if nothing changes anymore
+        var runs = 0;
+        int lastBlockCount;
+        do
         {
-            // if an already added block overlaps the current line, add to this block later
-            var existingOverlappingY = innerBlocks
-                .FirstOrDefault(b => b.BoundingBox.Overlaps(line.BoundingBox, blockOverlapDistanceDiff));
-            if (existingOverlappingY == null)
+            // last block count
+            lastBlockCount = blockList.Count;
+            // detect gaps and fix blocks
+            var toRemove = new List<IPdfTextBlock>();
+            var toAdd = new List<IPdfTextBlock>();
+            foreach (var block in blockList)
             {
-                // if there is no overlapping block, check the distance to the next line on top
-                var addBlock = line.TopDistance >= LineOnPage.DefaultTopDistance;
-                // if top distance is LineOnPage.DefaultTopDistance, add block
-                if (!addBlock)
+                DetectGaps(block);
+                var newBlocks = SeparateBlocks(block);
+                if (newBlocks.Count > 0)
                 {
-                    // check if line.TopDistance is bigger than the common line spacing
-                    var distanceDiff = fontSizeSettings.GetTopDistanceDiff(line.FontSizeAvg, line.TopDistance);
-                    // if topdistance is bigger, add block
-                    addBlock = distanceDiff >= newBlockDistanceDiff;
-                }
-                
-                if (addBlock)
-                {
-                    var tb = new PdfTextBlock(page);
-                    tb.AddLine(line);
-                    innerBlocks.Add(tb);
-                    allLines.Remove(line);
+                    toRemove.Add(block);
+                    toAdd.AddRange(newBlocks);
                 }
             }
-        }
-        
-        // for lines with small distances, append to existing blocks
-        foreach (var currentLine in allLines)
-        {
-            var blockToAppend = innerBlocks.TextBlocks.FirstOrDefault(b => b.BoundingBox.Overlaps(currentLine.BoundingBox, blockOverlapDistanceDiff));
-            if (blockToAppend == null)
-            {
-                var nextLineOnTop = page.Lines.FindLineOnTop(currentLine);
-                blockToAppend = innerBlocks.TextBlocks.FirstOrDefault(b => b.Any(l => l == nextLineOnTop));
-            }
-            
-            if (blockToAppend == null)
-            {
-                throw new InvalidOperationException($"block to append not found: {currentLine}");
-            }
-            
-            blockToAppend.AddLine(currentLine);
-        }
-        
-        // fix blocks that are near enough by text size
-        var blocksToRemove = new List<IPdfTextBlock>();
-        foreach (var b in innerBlocks.TextBlocks)
-        {
-            // find the nearest block on top, that overlaps
-            var blockOnTop = innerBlocks
-                .TextBlocks
-                .Where(bl => bl.BoundingBox.OverlapsX(b.BoundingBox)
-                    && bl.BoundingBox.Bottom > b.BoundingBox.Top)
-                .MinBy(bl => bl.BoundingBox.Bottom);
-            if (blockOnTop != null)
-            {
-                var firstLine = b.FirstLine!;
-                var firstLineGroup = fontSizeSettings.GetGroup(firstLine.FontSizeAvg);
-                // get the lowest line in the block on top, that overlaps the first line of the current block
-                // and fontsize is in the same font-size-group
-                var lowestLine = blockOnTop.Lines
-                    .Where(l => l.BoundingBox.OverlapsX(firstLine.BoundingBox))
-                    .MinBy(l => l.BaseLineY);
-                if (lowestLine == null)
-                {
-                    continue;
-                }
-                var lowestLineGroup = fontSizeSettings.GetGroup(lowestLine.FontSizeAvg);
-                if (lowestLineGroup.GroupId != firstLineGroup.GroupId)
-                {
-                    continue;
-                }
 
-                var dist = firstLine.GetTopDistance(lowestLine);
-                var distanceDiff = fontSizeSettings.GetTopDistanceDiff(firstLine.FontSizeAvg, dist);
-                if (distanceDiff < newBlockDistanceDiff)
-                {
-                    blockOnTop.AddLines(b.Lines.ToList());
-                    blocksToRemove.Add(b);
-                }
-            }
-        }
-
-        foreach (var b in blocksToRemove)
-        {
-            innerBlocks.Remove(b);
-        }
-
-        // fix overlapping blocks
-        var overlappingBlocks = innerBlocks.GetOverlappingBlocks(out var block);
-        while (block != null)
-        {
-            foreach (var overlappingBlock in overlappingBlocks.OfType<IPdfTextBlock>())
+            foreach (var rem in toRemove)
             {
-                if (block is IPdfTextBlock textBlock)
-                {
-                    textBlock.AddLines(overlappingBlock.Lines.ToList());
-                    innerBlocks.Remove(overlappingBlock);
-                }
+                blockList.Remove(rem);
             }
-            
-            overlappingBlocks = innerBlocks.GetOverlappingBlocks(out block);
-        }
 
-        return innerBlocks;
+            blockList.AddRange(toAdd);
+            runs++;
+        } while (lastBlockCount != blockList.Count);
+
+        _log.Write(EnumLogLevel.Debug, $"Detected {blockList.Count} Blocks in {runs} runs.");
+        page.Blocks.AddRange(blockList);
     }
-    
-    // public IPdfTextBlocks FindHorizontalBlocks(IPdfTextBlocks blocks)
-    // {
-    //     var blockList = new List<IPdfTextBlock>();
-    //     blockList.AddRange(blocks);
-    //     blocks.Clear();
-    //     foreach (var block in blockList)
-    //     {
-    //         var fixedBlocks = FixVerticalGaps(block);
-    //         blocks.AddRange(fixedBlocks);
-    //     }
-    //
-    //     return blocks;
-    // }
-    //
-    // private List<IPdfTextBlock> FixVerticalGaps(IPdfTextBlock block)
-    // {
-    //     var blocks = new List<IPdfTextBlock>();
-    //     // var blocksWithMain = new PdfTextBlock();
-    //     // blocksWithMain.AddLines(block.Lines);
-    //     // foreach (var line in blocksWithMain.Lines)
-    //     // {
-    //     //     var smallWords = line.Where(w => w.FontSizeAvg + 0.2 < line.MainFontSizeAvg).ToList();
-    //     //     line.RemoveAll(smallWords);
-    //     // }
-    //
-    //     block.VerticalGaps = FindVerticalGaps(block.Lines);
-    //     
-    //     List<Gap> relevantGaps = new();
-    //     var biggestGap = block.VerticalGaps.MaxBy(g => g.Size);
-    //     if (biggestGap != null && biggestGap.Size > 2 * block.Lines.WordSpaceAvg)
-    //     {
-    //         relevantGaps.Add(biggestGap);
-    //     }
-    //     
-    //     // if (block.Lines.WordSpaceAvg != null)
-    //     // {
-    //     //     relevantGaps = block.VerticalGaps.Where(g => g.Size > 2 * block.Lines.WordSpaceAvg).ToList();
-    //     // }
-    //     // else
-    //     // {
-    //     //     relevantGaps = new();
-    //     //     foreach (var gap in block.VerticalGaps)
-    //     //     {
-    //     //         var rel = block.Lines.FontSizeAvg / gap.Size;
-    //     //         if (rel < 0.5)
-    //     //         {
-    //     //             relevantGaps.Add(gap);
-    //     //         }
-    //     //     }
-    //     // }
-    //     
-    //     if (relevantGaps.Count < 1)
-    //     {
-    //         // no relevant gaps found, add whole block
-    //         blocks.Add(block);
-    //         return blocks;
-    //     }
-    //
-    //     // add all the blocks left to the gaps
-    //     foreach (var gap in relevantGaps)
-    //     {
-    //         var leftSideWords = block.Words
-    //             .Where(w => w.BoundingBox.Centroid.X < gap.First)
-    //             .ToList();
-    //         if (leftSideWords.Count > 0)
-    //         {
-    //             var lines = _lineDetector.DetectLines(leftSideWords);
-    //             if (lines.Count > 0)
-    //             {
-    //                 var tb = new PdfTextBlock
-    //                 {
-    //                     TopDistance = block.TopDistance,
-    //                     Page = block.Page
-    //                 };
-    //                 tb.AddLines(lines);
-    //                 blocks.Add(tb);
-    //             }
-    //         }
-    //     }
-    //
-    //     // add content right to the last gap
-    //     var lastGap = relevantGaps[^1];
-    //     var mostRightWords = block.Words
-    //         .Where(w => w.BoundingBox.Centroid.X > lastGap.Second)
-    //         .ToList();
-    //     if (mostRightWords.Count > 0)
-    //     {
-    //         var mostRightLines = _lineDetector.DetectLines(mostRightWords);
-    //         if (mostRightLines.Count > 0)
-    //         {
-    //             var mostRightTb = new PdfTextBlock
-    //             {
-    //                 TopDistance = block.TopDistance,
-    //                 Page = block.Page
-    //             };
-    //             mostRightTb.AddLines(mostRightLines);
-    //             blocks.Add(mostRightTb);
-    //         }
-    //     }
-    //
-    //     return blocks;
-    // }
-    //
-    // public List<Gap> FindVerticalGaps(PdfLines lawLines)
-    // {
-    //     if (lawLines.Count == 0)
-    //     {
-    //         return new List<Gap>();
-    //     }
-    //
-    //     // get dictionary with lines and lists of PdfRectangles for the words
-    //     var wordList = lawLines
-    //         .ToDictionary(
-    //             line => (LineOnPage)line, 
-    //             line => line
-    //                 .Where(w => w.HasText) // consider only words with content
-    //                 .Select(w => w.BoundingBox).OrderBy(w => w.Left).ToList()
-    //             );
-    //
-    //     // invert the rectangles and find rectangles on X-axis where _no_ word is found
-    //     var wordGapList = wordList.ToDictionary(
-    //         kvp => kvp.Key,
-    //         kvp => FindFreeSpaces(kvp.Value));
-    //     
-    //     // get the min and max line spans and fill the free spaces in all lines with gaps
-    //     var min = lawLines.Select(l => l.Left).Min();
-    //     var max = lawLines.Select(l => l.Right).Max();
-    //     foreach (var line in wordGapList.Keys)
-    //     {
-    //         var y = line.BoundingBox.Centroid.Y;
-    //         if (line.Left > min)
-    //         {
-    //             var x1 = min;
-    //             var x2 = line.Left;
-    //             wordGapList[line].Insert(0, new PdfRectangle(x1, y, x2, y));
-    //         }
-    //
-    //         if (line.Right < max)
-    //         {
-    //             var x1 = line.Right;
-    //             var x2 = max;
-    //             wordGapList[line].Add(new PdfRectangle(x1, y, x2, y));
-    //         }
-    //     }
-    //
-    //     // get gaps in all lines by intersecting line by line
-    //     var checkLine = wordGapList.First().Value;
-    //     for (var i = 1; i < wordGapList.Count; i++)
-    //     {
-    //         // get gaps of next line
-    //         var otherLine = wordGapList.Skip(i).First();
-    //         checkLine = checkLine.GetIntersections(otherLine.Value);
-    //     }
-    //
-    //     var gaps = checkLine.Select(rect => new Gap(rect.Left, rect.Right));
-    //     return gaps.ToList();
-    // }
-    //
-    // private List<PdfRectangle> FindFreeSpaces(List<PdfRectangle> rects)
-    // {
-    //     // make two lists, ordered by left and right values of the rectangles
-    //     var leftOrderedRects = rects.OrderBy(r => r.Left).ToList();
-    //     var rightOrderedRects = leftOrderedRects.OrderByDescending(r => r.Right).ToList();
-    //     // select range, where to search for gaps
-    //     var min = leftOrderedRects.Select(r => r.Left).Min();
-    //     var max = leftOrderedRects.Select(r => r.Right).Max();
-    //     // loop, starting by the left range of the leftmost rectangle
-    //     var freeSpaces = new List<PdfRectangle>();
-    //     var stepRange = 0.1;
-    //     for (var x = min; x < max; x += stepRange)
-    //     {
-    //         var overlapping = leftOrderedRects.Where(r => r.Left <= x && r.Right >= x).ToList();
-    //         if (overlapping.Count > 0)
-    //         {
-    //             // if there are overlapping rectangles, continue searching 
-    //             // with the value of the overlapping rectangle that goes most
-    //             // right from this position
-    //             x = overlapping.MaxBy(r => r.Right).Right;
-    //             continue;
-    //         }
-    //
-    //         var prev = rightOrderedRects.FirstOrDefault(r => r.Right <= x);
-    //         var next = leftOrderedRects.FirstOrDefault(r => r.Left >= x);
-    //         var y = prev.Centroid.Y;
-    //         freeSpaces.Add(new PdfRectangle(prev.Right, y, next.Left, y));
-    //         x = next.Left;
-    //     }
-    //
-    //     return freeSpaces;
-    // }
+
+    private List<IPdfTextBlock> SeparateBlocks(IPdfTextBlock block)
+    {
+        var horizontalBlocks = GetHorizontalBlocks(block);
+        if (horizontalBlocks.Count > 0)
+        {
+            return horizontalBlocks;
+        }
+
+        var verticalBlocks = GetVerticalBlocks(block);
+        if (verticalBlocks.Count > 0)
+        {
+            return verticalBlocks;
+        }
+
+        return new List<IPdfTextBlock>();
+    }
+
+    private void DetectGaps(IPdfTextBlock block)
+    {
+        var tree = new Quadtree(block.BoundingBox);
+        foreach (var word in block.Words)
+        {
+            tree.Insert(word.BoundingBox);
+        }
+
+        block.VerticalGaps = tree.GetVerticalGaps();
+        block.HorizontalGaps = tree.GetHorizontalGaps();
+    }
+
+    private List<IPdfTextBlock> GetHorizontalBlocks(IPdfTextBlock block)
+    {
+        var blocksAdded = false;
+        var blockWords = new List<IWordOnPage>();
+        blockWords.AddRange(block.Words);
+        var horizontalBlocks = new List<IPdfTextBlock>();
+        PdfRectangle? lastGap = null;
+        var newBlock = new PdfTextBlock(block.Page);
+        horizontalBlocks.Add(newBlock);
+        foreach (var gap in block.HorizontalGaps)
+        {
+            // add the words above the gap
+            var upperWords = blockWords.Where(w => w.BoundingBox.Bottom >= gap.Top).ToList();
+            if (upperWords.Count < 1)
+            {
+                continue;
+            }
+
+            // remove words from original block
+            WordsToBlock(blockWords, newBlock, upperWords);
+
+            // remember the last gap
+            lastGap = gap;
+
+            // get the line below the gap
+            var line = block.Lines.FirstOrDefault(l => l.BoundingBox.Top <= gap.Bottom);
+            if (line == null)
+            {
+                continue;
+            }
+
+            // check if gap is bigger than the common line spacing
+            var spacingDiff = FontSizes.GetCommonLineSpacing(line.FontSizeAvg) - line.FontSizeAvg;
+            // if topdistance is bigger, add new block
+            if (gap.Height > spacingDiff + NewBlockDistDiff)
+            {
+                blocksAdded = true;
+                newBlock = new PdfTextBlock(block.Page);
+                horizontalBlocks.Add(newBlock);
+            }
+        }
+
+        if (lastGap != null)
+        {
+            var lowerWords = blockWords.Where(w => w.BoundingBox.Top <= lastGap.Value.Bottom).ToList();
+            if (lowerWords.Count > 0)
+            {
+                WordsToBlock(blockWords, newBlock, lowerWords);
+            }
+        }
+
+        if (blocksAdded)
+        {
+            if (blockWords.Count != 0)
+            {
+                throw new InvalidOperationException("BlockDetector: Not all words were assigned to a new block.");
+            }
+
+            return horizontalBlocks;
+        }
+
+        return new List<IPdfTextBlock>();
+    }
+
+    private List<IPdfTextBlock> GetVerticalBlocks(IPdfTextBlock block)
+    {
+        var blocksAdded = false;
+        var blockWords = new List<IWordOnPage>();
+        blockWords.AddRange(block.Words);
+        var verticalBlocks = new List<IPdfTextBlock>();
+        PdfRectangle? lastGap = null;
+        var newBlock = new PdfTextBlock(block.Page);
+        verticalBlocks.Add(newBlock);
+        foreach (var gap in block.VerticalGaps)
+        {
+            // add the words left of the gap
+            var leftWords = blockWords.Where(w => w.BoundingBox.Right <= gap.Left).ToList();
+            if (leftWords.Count < 1)
+            {
+                continue;
+            }
+
+            // remove words from original block
+            WordsToBlock(blockWords, newBlock, leftWords);
+
+            // remember the last gap
+            lastGap = gap;
+
+            var verticalDistDiff = 2 * (newBlock.Lines.WordSpaceAvg ?? 0);
+            if (gap.Width > verticalDistDiff + NewBlockDistDiff)
+            {
+                blocksAdded = true;
+                newBlock = new PdfTextBlock(block.Page);
+                verticalBlocks.Add(newBlock);
+            }
+        }
+        
+        if (lastGap != null)
+        {
+            var rightWords = blockWords.Where(w => w.BoundingBox.Left >= lastGap.Value.Right).ToList();
+            if (rightWords.Count > 0)
+            {
+                WordsToBlock(blockWords, newBlock, rightWords);
+            }
+        }
+        
+        if (blocksAdded)
+        {
+            if (blockWords.Count != 0)
+            {
+                throw new InvalidOperationException("BlockDetector: Not all words were assigned to a new block.");
+            }
+
+            return verticalBlocks;
+        }
+
+        return new List<IPdfTextBlock>();
+    }
+
+    private void WordsToBlock(List<IWordOnPage> blockWords, IPdfTextBlock newBlock, List<IWordOnPage> words)
+    {
+        foreach (var word in words)
+        {
+            blockWords.Remove(word);
+        }
+
+        var lines = _lineDetector.DetectLines(words, BaseLineMatchingRange);
+        newBlock.AddLines(lines.ToList());
+    }
 }

@@ -1,3 +1,5 @@
+using UglyToad.PdfPig.Core;
+
 namespace affolterNET.TextExtractor.Core.Models.Interfaces;
 
 public interface IPdfTextBlock: IPdfBlock
@@ -6,9 +8,11 @@ public interface IPdfTextBlock: IPdfBlock
     List<IWordOnPage> Words { get; }
     PdfLines Lines { get; }
     LineOnPage? FirstLine { get; }
-    List<Gap> VerticalGaps { get; set; }
+    List<PdfRectangle> VerticalGaps { get; set; }
+    List<PdfRectangle> HorizontalGaps { get; set; }
     bool Any(Func<LineOnPage, bool> predicate);
     void AddLine(LineOnPage line);
     void AddLines(List<LineOnPage> lines);
     string GetText(Func<IWordOnPage, bool> exclude);
+    void RemoveWord(IWordOnPage word);
 }
