@@ -42,12 +42,6 @@ public class DetectTextBlocksStep: IPipelineStep
         var blockCountWithHorizontal = 0;
         foreach (var page in context.Document.Pages)
         {
-            // // one block per page
-            // var tb = new PdfTextBlock();
-            // tb.AddLines(page.Lines);
-            // page.Blocks.Add(tb);
-            // // one block per page
-            
             // find blocks by connecting lines
             _blockDetector.FindBlocks(
                 page,
