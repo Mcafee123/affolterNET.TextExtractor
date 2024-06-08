@@ -3,7 +3,6 @@ using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 using UglyToad.PdfPig.Core;
-using UglyToad.PdfPig.DocumentLayoutAnalysis.Export.PAGE;
 
 namespace affolterNET.TextExtractor.Core.Services;
 
