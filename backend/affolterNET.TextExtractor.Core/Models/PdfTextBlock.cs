@@ -22,8 +22,11 @@ public class PdfTextBlock: IPdfTextBlock
     public int PageNr => Page.Nr;
     public PdfRectangle BoundingBox => _lines.BoundingBox;
     public LineOnPage? FirstLine => _lines.FirstOrDefault();
+    public double FontSizeAvg => _lines.Average(w => w.FontSizeAvg);
     public List<PdfRectangle> VerticalGaps { get; set; } = new();
     public List<PdfRectangle> HorizontalGaps { get; set; } = new();
+    public BlockNodes BlockNodes { get; set; }
+
     public void SetLines(PdfLines lines)
     {
         _lines = lines;

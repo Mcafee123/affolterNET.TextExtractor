@@ -8,8 +8,10 @@ public interface IPdfTextBlock: IPdfBlock
     List<IWordOnPage> Words { get; }
     PdfLines Lines { get; }
     LineOnPage? FirstLine { get; }
+    double FontSizeAvg { get; }
     List<PdfRectangle> VerticalGaps { get; set; }
     List<PdfRectangle> HorizontalGaps { get; set; }
+    BlockNodes BlockNodes { get; set; }
     bool Any(Func<LineOnPage, bool> predicate);
     void AddLine(LineOnPage line);
     void AddLines(List<LineOnPage> lines);

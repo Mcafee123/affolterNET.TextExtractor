@@ -8,18 +8,18 @@ public class Quadtree
     private static int _id = 0;
     
     private int _level;
-    private List<PdfRectangle> _objects;
+    private List<PdfRectangle> _filled;
     private readonly double _resolution;
     private Quadtree? nw;
     private Quadtree? ne;
     private Quadtree? sw;
     private Quadtree? se;
 
-    public Quadtree(PdfRectangle boundingBox, double resolution = 1)
+    public Quadtree(PdfRectangle boundingBox, double resolution)
     {
         Id = _id;
         _level = 0;
-        _objects = new List<PdfRectangle>();
+        _filled = new List<PdfRectangle>();
         BoundingBox = boundingBox;
         _resolution = resolution;
         Split();
@@ -30,7 +30,7 @@ public class Quadtree
         _id++;
         Id = _id;
         _level = level;
-        _objects = new List<PdfRectangle>();
+        _filled = new List<PdfRectangle>();
         BoundingBox = boundingBox;
         _resolution = resolution;
         Parent = parent;
@@ -40,60 +40,51 @@ public class Quadtree
     public int Id { get; set; }
     private PdfRectangle BoundingBox { get; }
     public Quadtree? Parent { get; }
+    public double DeepestLevelNodeWidth => DeepestLevelNodes.FirstOrDefault()?.BoundingBox.Width ?? -1;
+    public double DeepestLevelNodeHeight => DeepestLevelNodes.FirstOrDefault()?.BoundingBox.Height ?? -1;
     private bool IsFilled { get; set; }
     private bool IsDeepestLevel => nw == null && ne == null && sw == null && se == null;
-    private List<IGrouping<double, Quadtree>> Columns { get; set; } = new();
-    private List<IGrouping<double, Quadtree>> Rows { get; set; } = new();
+    private List<Quadtree> DeepestLevelNodes { get; } = new();
     
-    public void Insert(PdfRectangle pRect)
+    public void Insert(PdfRectangle rect)
     {
         // if it does not overlap, return
-        if (!pRect.Overlaps(BoundingBox))
+        if (!rect.Overlaps(BoundingBox))
         {
             return;
         }
         
         // set to filled
-        _objects.Add(pRect);
+        _filled.Add(rect);
         IsFilled = true;
         if (!IsDeepestLevel)
         {
-            nw!.Insert(pRect);
-            ne!.Insert(pRect);
-            sw!.Insert(pRect);
-            se!.Insert(pRect);
+            nw!.Insert(rect);
+            ne!.Insert(rect);
+            sw!.Insert(rect);
+            se!.Insert(rect);
         }
     }
 
-    public List<PdfRectangle> GetVerticalGaps()
+    public List<Quadtree> GetOverlappingNodes(PdfRectangle rect)
     {
-        GetRowsAndColumns();
-        var verticalGaps = GetGaps(Columns);
-        var mergedVerticalGaps = new List<PdfRectangle>();
-        foreach (var rect in verticalGaps)
-        {
-            var distToLast = Math.Abs(mergedVerticalGaps.LastOrDefault().Right - rect.Left);
-            if (distToLast < 0.01)
-            {
-                // If the current rectangle can be merged with the last one in the merged list,
-                // replace the last rectangle with the merged rectangle
-                var lastRect = mergedVerticalGaps.Last();
-                mergedVerticalGaps[^1] = new PdfRectangle(lastRect.Left, lastRect.Bottom, rect.Right, rect.Top);
-            }
-            else
-            {
-                // If the current rectangle cannot be merged with the last one, add it to the merged list
-                mergedVerticalGaps.Add(rect);
-            }
-        }
-
-        return mergedVerticalGaps;
+        var list = GetNodes(rect).OrderBy(r => r.BoundingBox.Centroid.X).ToList();
+        return list;
     }
 
-    public List<PdfRectangle> GetHorizontalGaps()
+    public BlockNodes GetRowsAndColumns(PdfRectangle blockBox)
     {
-        GetRowsAndColumns();
-        var horizontalGaps = GetGaps(Rows);
+        // get rows and columns
+        var nodes = GetOverlappingNodes(blockBox);
+        var rows = nodes.GroupBy(n => n.BoundingBox.Centroid.Y).ToList();
+        var columns = nodes.GroupBy(n => n.BoundingBox.Centroid.X).ToList();
+        return new BlockNodes(rows, columns);
+    }
+    
+    public List<PdfRectangle> GetHorizontalGaps(BlockNodes blockNodes)
+    {
+        // get gaps with the quadtree coordinate system
+        var horizontalGaps = GetGaps(blockNodes.Rows);
         var mergedHorizontalGaps = new List<PdfRectangle>();
         foreach (var rect in horizontalGaps)
         {
@@ -112,7 +103,103 @@ public class Quadtree
             }
         }
 
-        return mergedHorizontalGaps;
+        // enlarge gaps with the real "filled"-positions
+        var fixedHorizontalGaps = new List<PdfRectangle>();
+        foreach (var gap in mergedHorizontalGaps)
+        {
+            var closestToTheTop = gap.Top;
+            var topNodes = _filled.Where(f => f.Bottom > gap.Top).ToList();
+            if (topNodes.Count > 0)
+            {
+                closestToTheTop = topNodes.Min(f => f.Bottom);
+            }
+
+            var closestToTheBottom = gap.Bottom;
+            var bottomNodes = _filled.Where(f => f.Top < gap.Bottom).ToList();
+            if (bottomNodes.Count > 0)
+            {
+                closestToTheBottom = bottomNodes.Max(f => f.Top);
+            }
+
+            var bottomLeft = new PdfPoint(gap.Left, closestToTheBottom);
+            var topRight = new PdfPoint(gap.Right, closestToTheTop);
+            var fixedRect = new PdfRectangle(bottomLeft, topRight);
+            fixedHorizontalGaps.Add(fixedRect);
+        }
+
+        return fixedHorizontalGaps;
+    }
+
+    public List<PdfRectangle> GetVerticalGaps(BlockNodes blockNodes)
+    {
+        // get gaps with the quadtree coordinate system
+        var verticalGaps = GetGaps(blockNodes.Columns);
+        var mergedVerticalGaps = new List<PdfRectangle>();
+        foreach (var rect in verticalGaps)
+        {
+            var distToLast = Math.Abs(mergedVerticalGaps.LastOrDefault().Right - rect.Left);
+            if (distToLast < 0.01)
+            {
+                // If the current rectangle can be merged with the last one in the merged list,
+                // replace the last rectangle with the merged rectangle
+                var lastRect = mergedVerticalGaps.Last();
+                mergedVerticalGaps[^1] = new PdfRectangle(lastRect.Left, lastRect.Bottom, rect.Right, rect.Top);
+            }
+            else
+            {
+                // If the current rectangle cannot be merged with the last one, add it to the merged list
+                mergedVerticalGaps.Add(rect);
+            }
+        }
+
+        // enlarge gaps with the real "filled"-positions
+        var fixedVerticalGaps = new List<PdfRectangle>();
+        foreach (var gap in mergedVerticalGaps)
+        {
+            var closestToTheLeft = gap.Left;
+            var leftNodes = _filled.Where(f => f.Right < gap.Left).ToList();
+            if (leftNodes.Count > 0)
+            {
+                closestToTheLeft = leftNodes.Max(f => f.Right);
+            }
+            
+            var closestToTheRight = gap.Right;
+            var rightNodes = _filled.Where(f => f.Left > gap.Right).ToList();
+            if (rightNodes.Count > 0)
+            {
+                closestToTheRight = rightNodes.Min(f => f.Left);
+            }
+            
+            var bottomLeft = new PdfPoint(closestToTheLeft, gap.Bottom);
+            var topRight = new PdfPoint(closestToTheRight, gap.Top);
+            var fixedRect = new PdfRectangle(bottomLeft, topRight);
+            fixedVerticalGaps.Add(fixedRect);
+        }
+
+        return fixedVerticalGaps;
+    }
+
+    private List<Quadtree> GetNodes(PdfRectangle rect)
+    {
+        var list = new List<Quadtree>();
+        // if it does not overlap, return
+        if (!rect.Overlaps(BoundingBox))
+        {
+            return list;
+        }
+        if (!IsDeepestLevel)
+        {
+            list.AddRange(nw!.GetNodes(rect));
+            list.AddRange(ne!.GetNodes(rect));
+            list.AddRange(sw!.GetNodes(rect));
+            list.AddRange(se!.GetNodes(rect));
+        }
+        else
+        {
+            list.Add(this);
+        }
+
+        return list;
     }
 
     private List<PdfRectangle> GetGaps(List<IGrouping<double, Quadtree>> rowsOrColumns)
@@ -136,22 +223,11 @@ public class Quadtree
         return gaps;
     }
 
-    private void GetRowsAndColumns()
-    {
-        if (Rows.Count == 0 && Columns.Count == 0)
-        {
-            // get nodes
-            var nodes = GetDeepestLevelNodes();
-            // get rows and columns
-            Rows = nodes.GroupBy(n => n.BoundingBox.Centroid.Y).OrderByDescending(g => g.Key).ToList();
-            Columns = nodes.GroupBy(n => n.BoundingBox.Centroid.X).OrderBy(g => g.Key).ToList();
-        }
-    }
-
     private void Split()
     {
         if (BoundingBox.Height - _resolution <= 0)
         {
+            AddDeepestLevelNode(this);
             return;
         }
 
@@ -170,20 +246,48 @@ public class Quadtree
         se = new Quadtree(_level + 1, seRect, _resolution, this);
     }
 
-    private List<Quadtree> GetDeepestLevelNodes()
+    private void AddDeepestLevelNode(Quadtree node)
     {
-        var nodes = new List<Quadtree>();
-        if (IsDeepestLevel)
+        if (Parent == null)
         {
-            nodes.Add(this);
+            DeepestLevelNodes.Add(node);
         }
         else
         {
-            nodes.AddRange(nw!.GetDeepestLevelNodes());
-            nodes.AddRange(ne!.GetDeepestLevelNodes());
-            nodes.AddRange(sw!.GetDeepestLevelNodes());
-            nodes.AddRange(se!.GetDeepestLevelNodes());
+            Parent.AddDeepestLevelNode(node);
         }
-        return nodes;
+    }
+
+    private class QuadTreeComparer : IComparer<Quadtree>
+    {
+        public int Compare(Quadtree? rect1, Quadtree? rect2)
+        {
+            if (rect1 == null || rect2 == null)
+            {
+                return 0;
+            }
+
+            if (rect1.BoundingBox.Centroid.X < rect2.BoundingBox.Centroid.X)
+            {
+                return -1;
+            }
+
+            if (rect1.BoundingBox.Centroid.X > rect2.BoundingBox.Centroid.X)
+            {
+                return 1;
+            }
+
+            if (rect1.BoundingBox.Centroid.Y < rect2.BoundingBox.Centroid.Y)
+            {
+                return -1;
+            }
+
+            if (rect1.BoundingBox.Centroid.Y > rect2.BoundingBox.Centroid.Y)
+            {
+                return 1;
+            }
+
+            return 0;
+        }
     }
 }

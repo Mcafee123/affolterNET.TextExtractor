@@ -32,7 +32,6 @@ public class LineOnPage : IList<IWordOnPage>, ILineOnPage
     public double Left { get; set; }
     public double Bottom { get; set; }
     public double Right { get; set; }
-    public PdfLines? Lines { get; set; }
     public IWordOnPage? FirstWord => _words.FirstOrDefault();
     public IWordOnPage? FirstWordWithText => _words.FirstOrDefault(w => w.HasText);
     public double FontSizeAvg => _words.Average(w => w.FontSizeAvg);

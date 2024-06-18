@@ -5,5 +5,6 @@ namespace affolterNET.TextExtractor.Core.Services.Interfaces;
 
 public interface IBlockDetector
 {
-    void FindBlocks(IPdfPage page, FontSizeSettings fontSizeSettings, double horizontalDistDiff, double blockOverlapDistanceDiff, double baseLineMatchingRange);
+    void FindBlocks(IPdfPage page, FontSizeSettings fontSizeSettings, double horizontalDistDiff,
+        double blockOverlapDistanceDiff, double baseLineMatchingRange, double quadtreeBlockResolution);
 }

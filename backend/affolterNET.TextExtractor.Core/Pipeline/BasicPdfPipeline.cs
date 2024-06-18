@@ -22,7 +22,7 @@ public class BasicPdfPipeline : IBasicPdfPipeline
         _pipeline.AddStep(analyzeLineSpacingStep);
         _pipeline.AddStep(detectBlocksStep);
         _pipeline.AddStep(detectFootnotesStep);
-        _pipeline.AddStep(extractTextStep);
+        // _pipeline.AddStep(extractTextStep);
     }
 
     public void Execute(IPipelineContext context)

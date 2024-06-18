@@ -179,7 +179,7 @@ public class FootnoteDetector : IFootnoteDetector
         for (var i = lineList.Count - 1; i > -1; i--)
         {
             var captionLine = lineList[i];
-            var linesToTheRight = page.Lines.Except(linesWithNumbersOrStars.Keys)
+            var linesToTheRight = page.Blocks.TextBlocks.SelectMany(L => L.Lines).Except(linesWithNumbersOrStars.Keys)
                 .Where(l =>
                     captionLine.BoundingBox.OverlapsY(l.BoundingBox) &&
                     captionLine.BoundingBox.Centroid.X < l.BoundingBox.Left

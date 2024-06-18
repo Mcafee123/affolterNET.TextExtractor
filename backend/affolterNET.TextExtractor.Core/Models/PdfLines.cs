@@ -39,8 +39,7 @@ public class PdfLines : IList<LineOnPage>
         {
             return;
         }
-
-        items.ForEach(item => item.Lines = this);
+        
         _lines.AddRange(items);
         Refresh();
     }

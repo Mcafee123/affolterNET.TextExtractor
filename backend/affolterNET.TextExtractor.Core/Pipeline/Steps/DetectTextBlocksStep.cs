@@ -1,6 +1,5 @@
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
-using affolterNET.TextExtractor.Core.Services;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 
 namespace affolterNET.TextExtractor.Core.Pipeline.Steps;
@@ -19,6 +18,7 @@ public class DetectTextBlocksStep: IPipelineStep
     {
         public double NewBlockDistanceDiff { get; set; } = 1;
         public double BlockOverlapDistanceDiff { get; set; } = 0.4;
+        public double QuadtreeBlockResolution { get; set; } = 3;
     }
     
     public void Execute(IPipelineContext context)
@@ -42,13 +42,14 @@ public class DetectTextBlocksStep: IPipelineStep
         var blockCountWithHorizontal = 0;
         foreach (var page in context.Document.Pages)
         {
-            // find blocks by connecting lines
+            // find blocks
             _blockDetector.FindBlocks(
                 page,
                 context.Document.FontSizes,
                 settings.NewBlockDistanceDiff,
                 settings.BlockOverlapDistanceDiff,
-                detectLinesSettings.BaseLineMatchingRange);
+                detectLinesSettings.BaseLineMatchingRange,
+                settings.QuadtreeBlockResolution);
             blockCount += page.Blocks.Count;
         }
 
