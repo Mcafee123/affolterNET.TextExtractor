@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
+using affolterNET.TextExtractor.Core.Services.Interfaces;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Models;
@@ -7,6 +9,7 @@ public class PdfTextBlock: IPdfTextBlock
 {
     private static int _blockIdx = 0;
     private PdfLines _lines = new();
+    private List<IWordOnPage> _words = new();
 
     public PdfTextBlock(IPdfPage page)
     {
@@ -15,36 +18,69 @@ public class PdfTextBlock: IPdfTextBlock
     }
 
     public int Id { get; private set; }
-    public List<IWordOnPage> Words => _lines.Words.ToList();
+    public IEnumerable<IWordOnPage> Words => _words;
     public PdfLines Lines => _lines;
     public double TopDistance { get; set; } = LineOnPage.DefaultTopDistance;
     public IPdfPage Page { get; }
     public int PageNr => Page.Nr;
-    public PdfRectangle BoundingBox => _lines.BoundingBox;
+    public PdfRectangle BoundingBox { get; private set; } = new(0, 0, 0, 0);
     public LineOnPage? FirstLine => _lines.FirstOrDefault();
-    public double FontSizeAvg => _lines.Average(w => w.FontSizeAvg);
+    public double FontSizeAvg => Words.Average(w => w.FontSizeAvg);
     public List<PdfRectangle> VerticalGaps { get; set; } = new();
     public List<PdfRectangle> HorizontalGaps { get; set; } = new();
-    public BlockNodes BlockNodes { get; set; }
+    public BlockNodes? BlockNodes { get; set; }
+    public FontSizeSettings? FontSizes { get; set; }
+    public double SpaceDistance => _lines.WordSpaceAvg ?? GetSpaceFromFontSize();
 
-    public void SetLines(PdfLines lines)
+    public void AddWords(params IWordOnPage[] words)
     {
-        _lines = lines;
+        _words.AddRange(words);
+        if (_lines.Count > 0)
+        {
+            Debug.WriteLine($"Words added to block. LINES CLEARED!");
+        }
+        _lines.Clear();
+        Refresh();
     }
     
-    public void AddLines(List<LineOnPage> lines)
+    public void RemoveWord(IWordOnPage word)
     {
-        _lines.AddRange(lines);
+        _words.Remove(word);
+        if (_lines.Count > 0)
+        {
+            Debug.WriteLine($"Word removed from block: {word.Text}. LINES CLEARED!");
+        }
+        _lines.Clear();
+        Refresh();
+    }
+    
+    public void AddLines(params LineOnPage[] lines)
+    {
+        _lines.AddRange(lines.ToList());
+        _words = _lines.SelectMany(l => l).ToList();
+        Refresh();
     }
     
     public void AddLine(LineOnPage line)
     {
-        _lines.AddRange(new List<LineOnPage> { line });
+        _lines.AddRange([line]);
+        _words = _lines.SelectMany(l => l).ToList();
+        Refresh();
     }
 
     public bool RemoveLine(LineOnPage line)
     {
-        return _lines.Remove(line);
+        var result = _lines.Remove(line);
+        _words = _lines.SelectMany(l => l).ToList();
+        Refresh();
+        return result;
+    }
+
+    public void DetectLines(ILineDetector lineDetector, double baseLineMatchingRange)
+    {
+        _lines.Clear();
+        var lines = lineDetector.DetectLines(_words, baseLineMatchingRange);
+        _lines.AddRange(lines.ToList());
     }
 
     public bool Any(Func<LineOnPage, bool> predicate)
@@ -61,9 +97,30 @@ public class PdfTextBlock: IPdfTextBlock
     {
         return _lines.GetText(null, "");
     }
-
-    public void RemoveWord(IWordOnPage word)
+    
+    private void Refresh()
     {
-        _lines.RemoveWord(word);
+        _words = _words.Count > 0
+            ? _words.OrderBy(w => w.PageNr).ThenByDescending(w => w.BaseLineY).ToList()
+            : _words;
+        var top = _words.Count > 0 ? _words.Max(w => w.BoundingBox.Top) : 0;
+        var left = _words.Count > 0 ? _words.Min(w => w.BoundingBox.Left) : 0;
+        var bottom = _words.Count > 0 ? _words.Min(w => w.BoundingBox.Bottom) : 0;
+        var right = _words.Count > 0 ? _words.Max(w => w.BoundingBox.Right) : 0;
+        var bottomLeft = new PdfPoint(left, bottom);
+        var topRight = new PdfPoint(right, top);
+        BoundingBox = new PdfRectangle(bottomLeft, topRight);
+        FontSizes = new FontSizeSettings(_words);
+    }
+
+    private double GetSpaceFromFontSize()
+    {
+        var fontSize = FontSizes?.MaxBy(fs => fs.MaxFontSize);
+        if (fontSize == null)
+        {
+            throw new InvalidOperationException("no font size found");
+        }
+
+        return fontSize.MaxFontSize / 2;
     }
 }

@@ -9,7 +9,7 @@ using UglyToad.PdfPig.Content;
 
 namespace affolterNET.TextExtractor.Core.Services;
 
-public class WordCleaner: IWordCleaner
+public class WordCleaner : IWordCleaner
 {
     private readonly IOutput _log;
 
@@ -17,78 +17,88 @@ public class WordCleaner: IWordCleaner
     {
         _log = log;
     }
-    
+
     public void SeparatePunctuation(IPipelineContext context, char[] startPunctuationChars, char[] endPunctuationChars)
     {
         // start punctuation
         foreach (var page in context.Document!.Pages)
         {
-            var words = page.Words
-                .Where(w => w.HasText)
-                .Select(w =>
-                {
-                    var first = w.Letters.First();
-                    var others = w.Letters.Where(l => l != first).ToList();
-                    return new { First = first, Others = others, Word = w };
-                })
-                .Where(fo => startPunctuationChars.Contains(fo.First.Value.First()) && fo.Others.Count > 0)
-                .ToList();
-            foreach (var fo in words)
+            foreach (var block in page.Blocks.TextBlocks)
             {
-                SeparatePunctuationWord(fo.Word, page, fo.First, fo.Others);
+                var words = block.Words
+                    .Where(w => w.HasText)
+                    .Select(w =>
+                    {
+                        var first = w.Letters.First();
+                        var others = w.Letters.Where(l => l != first).ToList();
+                        return new { First = first, Others = others, Word = w };
+                    })
+                    .Where(fo => startPunctuationChars.Contains(fo.First.Value.First()) && fo.Others.Count > 0)
+                    .ToList();
+                foreach (var fo in words)
+                {
+                    SeparatePunctuationWord(fo.Word, block, fo.First, fo.Others);
+                }
             }
         }
-        
+
         // end punctuation
         foreach (var page in context.Document!.Pages)
         {
-            var words = page.Words
-                .Where(w => w.HasText)
-                .Select(w =>
-                {
-                    var last = w.Letters.Last();
-                    var others = w.Letters.Where(l => l != last).ToList();
-                    return new { Last = last, Others = others, Word = w };
-                })
-                .Where(fo => endPunctuationChars.Contains(fo.Last.Value.First()) && fo.Others.Count > 0)
-                .ToList();
-            foreach (var fo in words)
+            foreach (var block in page.Blocks.TextBlocks)
             {
-                SeparatePunctuationWord(fo.Word, page, fo.Last, fo.Others);
+                var words = block.Words
+                    .Where(w => w.HasText)
+                    .Select(w =>
+                    {
+                        var last = w.Letters.Last();
+                        var others = w.Letters.Where(l => l != last).ToList();
+                        return new { Last = last, Others = others, Word = w };
+                    })
+                    .Where(fo => endPunctuationChars.Contains(fo.Last.Value.First()) && fo.Others.Count > 0)
+                    .ToList();
+                foreach (var fo in words)
+                {
+                    SeparatePunctuationWord(fo.Word, block, fo.Last, fo.Others);
+                }
             }
         }
     }
 
-    private void SeparatePunctuationWord(IWordOnPage word, IPdfPage page, Letter singleLetter, List<Letter> others)
+    private void SeparatePunctuationWord(IWordOnPage word, IPdfTextBlock block, Letter singleLetter,
+        List<Letter> others)
     {
-        page.RemoveWord(word);
+        block.RemoveWord(word);
         var punct = word.Clone();
         punct.ChangeWord([singleLetter]);
-        page.AddWord(punct);
-        
+        block.AddWords(punct);
+
         var other = word.Clone();
         other.ChangeWord(others);
-        page.AddWord(other);
+        block.AddWords(other);
     }
 
     public void FixMixedBaselineWords(IPipelineContext context, double minBaseLineDiff)
     {
         foreach (var page in context.Document!.Pages)
         {
-            var words = page.Words
-                .Where(w => w.HasText)
-                .Where(w => w.BaseLineGroups.MinMaxDiff > minBaseLineDiff)
-                .ToList();
-            foreach (var word in words)
+            foreach (var block in page.Blocks.TextBlocks)
             {
-                FixMixedBaselineWord(word, page);
+                var words = block.Words
+                    .Where(w => w.HasText)
+                    .Where(w => w.BaseLineGroups.MinMaxDiff > minBaseLineDiff)
+                    .ToList();
+                foreach (var word in words)
+                {
+                    FixMixedBaselineWord(word, block);
+                }
             }
         }
     }
 
-    private void FixMixedBaselineWord(IWordOnPage word, IPdfPage page)
+    private void FixMixedBaselineWord(IWordOnPage word, IPdfTextBlock block)
     {
-        page.RemoveWord(word);
+        block.RemoveWord(word);
         var grpId = -1;
         var letterGroups = new List<List<Letter>>();
         foreach (var letter in word.Letters)
@@ -102,12 +112,12 @@ public class WordCleaner: IWordCleaner
             grpId = newGroup.GroupId;
             letterGroups.Last().Add(letter);
         }
-        
+
         foreach (var group in letterGroups)
         {
             var newWord = word.Clone();
             newWord.ChangeWord(group);
-            page.AddWord(newWord);
+            block.AddWords(newWord);
         }
     }
 
@@ -115,26 +125,29 @@ public class WordCleaner: IWordCleaner
     {
         foreach (var page in context.Document!.Pages)
         {
-            var words = page.Words
-                .Where(w => w.HasText)
-                .Where(w =>
-                {
-                    bool hasNumberOrStar = w.Letters.Any(l => l.Value.IsNumericOrStar());
-                    bool hasOther =
-                        w.Letters.Any(l => !string.IsNullOrWhiteSpace(l.Value) && !l.Value.IsNumericOrStar());
-                    return hasNumberOrStar && hasOther;
-                })
-                .ToList();
-            foreach (var word in words)
+            foreach (var block in page.Blocks.TextBlocks)
             {
-                FixMixedLetterTypeWord(word, page);
+                var words = block.Words
+                    .Where(w => w.HasText)
+                    .Where(w =>
+                    {
+                        bool hasNumberOrStar = w.Letters.Any(l => l.Value.IsNumericOrStar());
+                        bool hasOther =
+                            w.Letters.Any(l => !string.IsNullOrWhiteSpace(l.Value) && !l.Value.IsNumericOrStar());
+                        return hasNumberOrStar && hasOther;
+                    })
+                    .ToList();
+                foreach (var word in words)
+                {
+                    FixMixedLetterTypeWord(word, block);
+                }
             }
         }
     }
 
-    private void FixMixedLetterTypeWord(IWordOnPage word, IPdfPage page)
+    private void FixMixedLetterTypeWord(IWordOnPage word, IPdfTextBlock block)
     {
-        page.RemoveWord(word);
+        block.RemoveWord(word);
         var firstPart = new List<Letter>();
         foreach (var letter in word.Letters)
         {
@@ -142,6 +155,7 @@ public class WordCleaner: IWordCleaner
             {
                 break;
             }
+
             firstPart.Add(letter);
         }
 
@@ -149,7 +163,7 @@ public class WordCleaner: IWordCleaner
         {
             var firstWord = word.Clone();
             firstWord.ChangeWord(firstPart);
-            page.AddWord(firstWord);
+            block.AddWords(firstWord);
         }
 
         var numbersPart = new List<Letter>();
@@ -159,13 +173,14 @@ public class WordCleaner: IWordCleaner
             {
                 break;
             }
+
             numbersPart.Add(letter);
         }
 
         var numbersWord = word.Clone();
         numbersWord.ChangeWord(numbersPart);
-        page.AddWord(numbersWord);
-            
+        block.AddWords(numbersWord);
+
         var lastPart = new List<Letter>();
         foreach (var letter in word.Letters.Skip(firstPart.Count + numbersPart.Count))
         {
@@ -173,6 +188,7 @@ public class WordCleaner: IWordCleaner
             {
                 break;
             }
+
             lastPart.Add(letter);
         }
 
@@ -180,7 +196,7 @@ public class WordCleaner: IWordCleaner
         {
             var lastWord = word.Clone();
             lastWord.ChangeWord(lastPart);
-            page.AddWord(lastWord);
+            block.AddWords(lastWord);
         }
     }
 
@@ -189,17 +205,21 @@ public class WordCleaner: IWordCleaner
         var removedTotal = 0;
         foreach (var page in context.Document!.Pages)
         {
-            var wordsToRemove = page.Words.Where(w =>
-                string.IsNullOrWhiteSpace(w.Text) && w.Letters.Count == 1 &&
-                w.Letters.Any(l => l.PointSize > settings.BigSpacesSize))
-                .ToList();
-            foreach (var word in wordsToRemove)
+            foreach (var block in page.Blocks.TextBlocks)
             {
-                page.RemoveWord(word);
+                var wordsToRemove = block.Words.Where(w =>
+                        string.IsNullOrWhiteSpace(w.Text) && w.Letters.Count == 1 &&
+                        w.Letters.Any(l => l.PointSize > settings.BigSpacesSize))
+                    .ToList();
+                foreach (var word in wordsToRemove)
+                {
+                    block.RemoveWord(word);
+                }
+
+                removedTotal += wordsToRemove.Count;
             }
-            removedTotal += wordsToRemove.Count;
         }
-        
+
         if (removedTotal > 0)
         {
             _log.Write(EnumLogLevel.Debug, $"Big spaces removed: {removedTotal}");

@@ -229,40 +229,40 @@ const renderPage = (boxesOnly: boolean = false) => {
   for (let b = 0; b < props.page.blocks.length; b++) {
     const block = props.page.blocks[b]
     let drawBlock = false
-    for (let l = 0; l < block.lines.length; l++) {
-      const line = block.lines[l]
-      let drawLine = false
-      for (let w = 0; w < line.words.length; w++) {
-        const word = line.words[w]
-        if (!showFootnotes.value && props.footnoteWordIds.indexOf(word.id) > -1) {
-          continue;
+    for (let w = 0; w < block.words.length; w++) {
+      const word = block.words[w]
+      if (!showFootnotes.value && props.footnoteWordIds.indexOf(word.id) > -1) {
+        continue;
+      }
+      drawBlock = true
+      // drawLine = true
+      const fontName = word.fontName
+      // box around each word
+      if (showWordBorders.value) {
+        drawBox(boxesCtx.value, word.boundingBox, 'green', 0.6)
+      }
+      for (let le = 0; le < word.letters.length; le++) {
+        const letter = word.letters[le]
+        boxesCtx.value.beginPath()
+        boxesCtx.value.lineWidth = 0.3
+        boxesCtx.value.strokeStyle = 'violet'
+        const width = makeLetterRect(boxesCtx.value, letter)
+        // box around each letter
+        if (showLetterBorders.value) {
+          boxesCtx.value.stroke()
         }
-        drawBlock = true
-        drawLine = true
-        const fontName = word.fontName
-        // box around each word
-        if (showWordBorders.value) {
-          drawBox(boxesCtx.value, word.boundingBox, 'green', 0.6)
-        }
-        for (let le = 0; le < word.letters.length; le++) {
-          const letter = word.letters[le]
-          boxesCtx.value.beginPath()
-          boxesCtx.value.lineWidth = 0.3
-          boxesCtx.value.strokeStyle = 'violet'
-          const width = makeLetterRect(boxesCtx.value, letter)
-          // box around each letter
-          if (showLetterBorders.value) {
-            boxesCtx.value.stroke()
-          }
-          // letter
-          if (!boxesOnly) {
-            letterCtx.value.font = getFont(fontName, letter.fontSize)
-            letterCtx.value.fillText(letter.text, letter.startBaseLine.X * scale, getY(letter.startBaseLine.Y) * scale, width)
-          }
+        // letter
+        if (!boxesOnly) {
+          letterCtx.value.font = getFont(fontName, letter.fontSize)
+          letterCtx.value.fillText(letter.text, letter.startBaseLine.X * scale, getY(letter.startBaseLine.Y) * scale, width)
         }
       }
+    }
+    for (let l = 0; l < block.lines.length; l++) {
+      const line = block.lines[l]
+      // let drawLine = false
       // box around each line
-      if (showLineBorders.value && drawLine) {
+      if (showLineBorders.value) { //} && drawLine) {
         drawBox(boxesCtx.value, line.boundingBox, 'blue', 1)
       }
     }

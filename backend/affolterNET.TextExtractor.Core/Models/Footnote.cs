@@ -14,11 +14,9 @@ public class Footnote
     {
         Id = inlineWord.Text;
         InlineWords.Add(inlineWord);
-        FootnoteWords.Add(footnoteWord);
         BottomContents = new PdfTextBlock(page);
     }
-
-    public List<IWordOnPage> FootnoteWords { get; set; } = new();
+    
     public List<IWordOnPage> InlineWords { get; set; } = new();
     public string Id { get; }
     public IPdfTextBlock BottomContents { get; }

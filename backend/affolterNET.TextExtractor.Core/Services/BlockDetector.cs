@@ -3,6 +3,7 @@ using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
+using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Services;
@@ -18,31 +19,41 @@ public class BlockDetector : IBlockDetector
         _log = log;
     }
 
-    public FontSizeSettings FontSizes { get; private set; } = new([]);
-    public double NewBlockDistDiff { get; private set; }
+    // public FontSizeSettings FontSizes { get; private set; } = new([]);
+    public double VerticalBlockDistanceDiffFactor { get; private set; }
     public double BaseLineMatchingRange { get; private set; }
 
-    public void FindBlocks(IPdfPage page, FontSizeSettings fontSizeSettings, double horizontalDistDiff,
+    public void FindBlocks(IPdfPage page, double verticalBlockDistanceDiffFactor,
         double blockOverlapDistanceDiff, double baseLineMatchingRange, double quadtreeBlockResolution)
     {
         // block list
         var blockList = new List<IPdfTextBlock>();
-        
+
         // first, one block per page
-        var mainPageBlock = new PdfTextBlock(page);
-        mainPageBlock.SetLines(page.Lines);
+        var mainPageBlock = page.Blocks.TextBlocks.FirstOrDefault();
+        if (mainPageBlock == null)
+        {
+            throw new InvalidOperationException(
+                "Pages must have at least one main block. Run DetectTextBlocksStep first.");
+        }
+
         blockList.Add(mainPageBlock);
-        
+        page.Blocks.Remove(
+            mainPageBlock); // remove main block from list, it will be re-added even if there are no sub-blocks
+
         // create quadtree
         var tree = new Quadtree(mainPageBlock.BoundingBox, quadtreeBlockResolution);
         foreach (var word in mainPageBlock.Words)
         {
-            tree.Insert(word.BoundingBox);
+            if (word.HasText)
+            {
+                tree.Insert(word.BoundingBox);
+            }
         }
-        
+
         // get settings
-        FontSizes = fontSizeSettings;
-        NewBlockDistDiff = horizontalDistDiff;
+        // FontSizes = fontSizeSettings;
+        VerticalBlockDistanceDiffFactor = verticalBlockDistanceDiffFactor;
         BaseLineMatchingRange = baseLineMatchingRange;
 
         // separate into smaller blocks in a loop.
@@ -60,19 +71,21 @@ public class BlockDetector : IBlockDetector
             var toAdd = new List<IPdfTextBlock>();
             foreach (var block in blockList)
             {
-                if (block.Words.Count < 2)
+                if (block.Words.Count() < 2)
                 {
                     // no need to separate blocks with less than 2 words
                     continue;
                 }
-                if (block.FontSizeAvg / 2 < tree.DeepestLevelNodeHeight)
+
+                if (block.BoundingBox.Width / block.BoundingBox.Height < 0.5)
                 {
                     // for blocks with small text, use a quadtree with lower resolution
-                    var smallTree = new Quadtree(block.BoundingBox, block.FontSizeAvg / 2);
+                    var smallTree = new Quadtree(block.BoundingBox, quadtreeBlockResolution / 2);
                     foreach (var word in block.Words)
                     {
                         smallTree.Insert(word.BoundingBox);
                     }
+
                     block.BlockNodes = smallTree.GetRowsAndColumns(block.BoundingBox);
                     block.HorizontalGaps = smallTree.GetHorizontalGaps(block.BlockNodes);
                     block.VerticalGaps = smallTree.GetVerticalGaps(block.BlockNodes);
@@ -84,6 +97,7 @@ public class BlockDetector : IBlockDetector
                     block.HorizontalGaps = tree.GetHorizontalGaps(block.BlockNodes);
                     block.VerticalGaps = tree.GetVerticalGaps(block.BlockNodes);
                 }
+
                 var newBlocks = SeparateBlocks(block);
                 if (newBlocks.Count > 0)
                 {
@@ -101,8 +115,15 @@ public class BlockDetector : IBlockDetector
             runs++;
         } while (lastBlockCount != blockList.Count);
 
-        _log.Write(EnumLogLevel.Debug, $"Detected {blockList.Count} Blocks in {runs} runs. Duration: {sw.ElapsedMilliseconds} ms");
+        _log.Write(EnumLogLevel.Debug,
+            $"Page {page.Nr}: Detected {blockList.Count} Blocks in {runs} runs. Duration: {sw.ElapsedMilliseconds} ms");
         page.Blocks.AddRange(blockList);
+
+        // detect lines again
+        foreach (var block in page.Blocks.TextBlocks)
+        {
+            block.DetectLines(_lineDetector, BaseLineMatchingRange);
+        }
     }
 
     private List<IPdfTextBlock> SeparateBlocks(IPdfTextBlock block)
@@ -121,7 +142,7 @@ public class BlockDetector : IBlockDetector
 
         return new List<IPdfTextBlock>();
     }
-    
+
     private List<IPdfTextBlock> GetHorizontalBlocks(IPdfTextBlock block)
     {
         var blocksAdded = false;
@@ -145,29 +166,11 @@ public class BlockDetector : IBlockDetector
 
             // remember the last gap
             lastGap = gap;
-
-            // // get the line above the gap
-            // var upperLines = block.Lines.Where(l => l.BoundingBox.Centroid.Y > gap.Top).ToList();
-            // if (!upperLines.Any())
-            // {
-            //     continue;
-            // }
-            //
-            // var line = upperLines.MinBy(l => l.BoundingBox.Bottom);
-            // if (line == null)
-            // {
-            //     continue;
-            // }
-            //
-            // // check if gap is bigger than the common line spacing
-            // var spacing = FontSizes.GetCommonLineSpacing(line.FontSizeAvg);
-            // // if topdistance is bigger, add new block
-            // if (gap.Height > spacing)
-            // {
-                blocksAdded = true;
-                newBlock = new PdfTextBlock(block.Page);
-                horizontalBlocks.Add(newBlock);
-            //}
+            
+            // create new block (comes after gap)
+            blocksAdded = true;
+            newBlock = new PdfTextBlock(block.Page);
+            horizontalBlocks.Add(newBlock);
         }
 
         if (lastGap != null)
@@ -181,7 +184,7 @@ public class BlockDetector : IBlockDetector
 
         if (blocksAdded)
         {
-            if (blockWords.Count != 0)
+            if (blockWords.Any(w => w.HasText && w.TextOrientation == TextOrientation.Horizontal))
             {
                 throw new InvalidOperationException("BlockDetector: Not all words were assigned to a new block.");
             }
@@ -205,7 +208,7 @@ public class BlockDetector : IBlockDetector
         {
             // add the words left of the gap
             var leftWords = blockWords.Where(w => w.BoundingBox.Right <= gap.Left).ToList();
-            if (leftWords.Count < 1)
+            if (leftWords.Count < 1 || leftWords.All(w => !w.HasText))
             {
                 continue;
             }
@@ -216,27 +219,27 @@ public class BlockDetector : IBlockDetector
             // remember the last gap
             lastGap = gap;
 
-            var verticalDistDiff = 2 * (newBlock.Lines.WordSpaceAvg ?? 0);
-            if (gap.Width > verticalDistDiff + NewBlockDistDiff)
+            var spaceDistance = newBlock.SpaceDistance;
+            if (gap.Width > spaceDistance * VerticalBlockDistanceDiffFactor)
             {
                 blocksAdded = true;
                 newBlock = new PdfTextBlock(block.Page);
                 verticalBlocks.Add(newBlock);
             }
         }
-        
+
         if (lastGap != null)
         {
             var rightWords = blockWords.Where(w => w.BoundingBox.Left >= lastGap.Value.Right).ToList();
-            if (rightWords.Count > 0)
+            if (rightWords.Count > 0 || rightWords.Any(w => w.HasText))
             {
                 WordsToBlock(blockWords, newBlock, rightWords);
             }
         }
-        
+
         if (blocksAdded)
         {
-            if (blockWords.Count != 0)
+            if (blockWords.Any(w => w.HasText && w.TextOrientation == TextOrientation.Horizontal))
             {
                 throw new InvalidOperationException("BlockDetector: Not all words were assigned to a new block.");
             }
@@ -249,12 +252,11 @@ public class BlockDetector : IBlockDetector
 
     private void WordsToBlock(List<IWordOnPage> blockWords, IPdfTextBlock newBlock, List<IWordOnPage> words)
     {
-        foreach (var word in words)
+        var lines = _lineDetector.DetectLines(words, BaseLineMatchingRange);
+        newBlock.AddLines(lines.ToArray());
+        foreach (var word in newBlock.Words)
         {
             blockWords.Remove(word);
         }
-
-        var lines = _lineDetector.DetectLines(words, BaseLineMatchingRange);
-        newBlock.AddLines(lines.ToList());
     }
 }

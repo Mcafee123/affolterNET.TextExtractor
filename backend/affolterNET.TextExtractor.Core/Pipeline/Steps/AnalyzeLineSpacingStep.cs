@@ -22,8 +22,12 @@ public class AnalyzeLineSpacingStep: IPipelineStep
             throw new NullReferenceException(
                 $"context.Document not initialized. Run {nameof(ReadPagesStep)} before this step");
         }
-        
-        context.Document.FontSizes = new FontSizeSettings(context.Document.Words);
+
+        var words = context.Document.Pages
+            .SelectMany(p => p.Blocks.TextBlocks
+                .SelectMany(b => b.Lines
+                    .SelectMany(l => l))).ToList();
+        context.Document.FontSizes = new FontSizeSettings(words);
         var lineGroups = GetLineGroupsByFontSize(context.Document);
         foreach (var groupId in lineGroups.Keys)
         {
@@ -48,7 +52,8 @@ public class AnalyzeLineSpacingStep: IPipelineStep
 
         foreach (var page in doc.Pages)
         {
-            foreach (var line in page.Lines)
+            // foreach (var line in page.Lines)
+            foreach (var line in page.Blocks.TextBlocks.SelectMany(b => b.Lines))
             {
                 var group = doc.FontSizes.GetGroup(line.FontSizeAvg);
                 lineGroups[group.GroupId].Add(line);

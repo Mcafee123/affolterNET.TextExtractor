@@ -6,6 +6,5 @@ namespace affolterNET.TextExtractor.Core.Services.Interfaces;
 
 public interface IFootnoteDetector
 {
-    List<Footnote> DetectBottomFootnotes(IPdfPage page, List<Footnote> fn, double mainFontSize, DetectFootnotesStep.DetectFootnotesStepSettings settings);
-    List<Footnote> DetectInlineFootnotes(IPdfTextBlock block, double mainFontSize, double minBaseLineDiff);
+    List<Footnote> DetectFootnotes(IPdfDoc document, double minBaselineDiff);
 }

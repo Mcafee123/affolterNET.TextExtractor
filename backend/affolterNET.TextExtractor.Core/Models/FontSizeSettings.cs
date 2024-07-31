@@ -26,6 +26,13 @@ public class FontSizeSettings : List<FontSizeSettings.FontSizeSetting>
         }
     }
 
+    public FontSizeSetting? GetMainFontSetting()
+    {
+        var maxWordCount = this.Max(fs => fs.WordCount);
+        var mainFontSetting = this.Where(fs => fs.WordCount == maxWordCount).MaxBy(fs => fs.AvgFontSize);
+        return mainFontSetting;
+    }
+
     public new FontSizeSetting this[int groupId]
     {
         get => this.First(fs => fs.GroupId == groupId);

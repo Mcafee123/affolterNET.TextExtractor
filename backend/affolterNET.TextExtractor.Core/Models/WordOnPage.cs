@@ -6,11 +6,13 @@ namespace affolterNET.TextExtractor.Core.Models;
 
 public class WordOnPage: IWordOnPage
 {
+    private static int _wordId = 0;
     private Word _word;
     private readonly double _baseLineGroupRange;
 
     public WordOnPage(int pageNr, Word word, double baseLineGroupRange)
     {
+        Id = _wordId++;
         PageNr = pageNr;
         _word = word;
         _baseLineGroupRange = baseLineGroupRange;
@@ -47,7 +49,7 @@ public class WordOnPage: IWordOnPage
         BaseLineY = BaseLineGroups.First().First().Value;
     }
 
-    public int Id { get; set; }
+    public int Id { get; } = -1;
     public LineOnPage? Line { get; set; }
     // public Footnote? Footnote { get; set; }
     public int PageNr { get; }
@@ -110,7 +112,7 @@ public class WordOnPage: IWordOnPage
 
 public interface IWordOnPage
 {
-    int Id { get; set; }
+    int Id { get; }
     int PageNr { get; }
     string Text { get; }
     bool HasText { get; }

@@ -5,7 +5,6 @@ using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Util;
-using UglyToad.PdfPig.XObjects;
 
 namespace affolterNET.TextExtractor.Core.Pipeline.Steps;
 
@@ -61,13 +60,17 @@ public class ReadPagesStep : IPipelineStep
         context.OriginalImages.Clear();
         foreach (var page in context.Document!.Pages)
         {
+            var mainBlock = new PdfTextBlock(page);
+            page.Blocks.Add(mainBlock);
             var words = GetWords(page);
             context.OriginalWords.AddRange(words);
+            var wordList = new List<IWordOnPage>();
             foreach (var word in words)
             {
                 var wop = new WordOnPage(page.Nr, word, settings.BaseLineGroupRange);
-                page.AddWord(wop);
+                wordList.Add(wop);
             }
+            mainBlock.AddWords(wordList.ToArray());
             
             var images = GetImages(page);
             context.OriginalImages.AddRange(images);

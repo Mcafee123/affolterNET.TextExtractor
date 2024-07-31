@@ -269,6 +269,11 @@ public class PdfTextBlockJson
     public PdfTextBlockJson(IPdfTextBlock block, IOutput log)
     {
         BoundingBox = block.BoundingBox;
+        foreach (var word in block.Words)
+        {
+            Words.Add(new WordOnPageJson(word, log));
+        }
+
         foreach (var line in block.Lines)
         {
             Lines.Add(new PdfLineJson(line, log));
@@ -277,6 +282,7 @@ public class PdfTextBlockJson
 
     public PdfRectangle BoundingBox { get; set; }
     public List<PdfLineJson> Lines { get; set; } = new();
+    public List<WordOnPageJson> Words { get; set; } = new();
 }
 
 public class PdfImageBlockJson

@@ -33,11 +33,11 @@ public class CleanWordsStep: IPipelineStep
                 $"context.Document not initialized. Run {nameof(ReadPagesStep)} before this step");
         }
 
-        var w = context.Document.Words.Where(w => w.Text.Length > 1 && w.Text.StartsWith(" ")).ToList();
-        if (w.Any())
-        {
-            _log.Write(EnumLogLevel.Warning, $"{w.Count} words starting with space detected");
-        }
+        // var w = context.Document.Words.Where(w => w.Text.Length > 1 && w.Text.StartsWith(" ")).ToList();
+        // if (w.Any())
+        // {
+        //     _log.Write(EnumLogLevel.Warning, $"{w.Count} words starting with space detected");
+        // }
         
         // remove useless big spaces (Fedlex-Laws)
         _wordCleaner.RemoveBigSpaces(context, settings);

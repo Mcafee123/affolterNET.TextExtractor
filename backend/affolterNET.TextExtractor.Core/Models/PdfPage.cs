@@ -7,46 +7,22 @@ namespace affolterNET.TextExtractor.Core.Models;
 
 public class PdfPage : IPdfPageAccess
 {
+#pragma warning disable CS0414 // Field is assigned but its value is never used
     private static int _id = 0;
-    private List<IWordOnPage> _words = new();
-    public PdfPage(Page page)
+#pragma warning restore CS0414 // Field is assigned but its value is never used
+    public PdfPage(Page page, IPdfDoc doc)
     {
         Page = page;
+        Document = doc;
     }
 
+    public IPdfDoc Document { get; }
     public Page Page { get; }
     public PdfRectangle BoundingBox => Page.CropBox.Bounds;
     public Page.Experimental ExperimentalAccess => Page.ExperimentalAccess;
     public CropBox CropBox => Page.CropBox;
     public int Nr => Page.Number;
-    public IEnumerable<IWordOnPage> Words {
-        get
-        {
-            if (Blocks.TextBlocks.Count  > 0)
-            {
-                return Blocks.TextBlocks.SelectMany(b => b.Words).ToList();
-            }
-            if (Lines.Count > 0)
-            {
-                return Lines.Words.ToList();
-            }
-
-            return _words;
-        }
-    }
-    public PdfLines Lines { get; } = new();
     public PdfBlocks Blocks { get; set; } = new();
-
-    public void AddWord(IWordOnPage word)
-    {
-        word.Id = _id++;
-        _words.Add(word);
-    }
-
-    public bool RemoveWord(IWordOnPage word)
-    {
-        return _words.Remove(word);
-    }
     
      public bool VerifyBlocks(out string message)
      {

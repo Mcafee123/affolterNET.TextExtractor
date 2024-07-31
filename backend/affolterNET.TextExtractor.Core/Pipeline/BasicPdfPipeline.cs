@@ -10,7 +10,7 @@ public class BasicPdfPipeline : IBasicPdfPipeline
     private readonly IOutput _log;
     private readonly ProcessingPipeline _pipeline;
 
-    public BasicPdfPipeline(ReadPagesStep readPagesStep, CleanWordsStep cleanWordsStep, DetectLinesStep detectLinesStep,
+    public BasicPdfPipeline(ReadPagesStep readPagesStep, CleanWordsStep cleanWordsStep,
         AnalyzeLineSpacingStep analyzeLineSpacingStep, DetectTextBlocksStep detectBlocksStep,
         DetectFootnotesStep detectFootnotesStep, ExtractTextStep extractTextStep, IOutput log)
     {
@@ -18,9 +18,8 @@ public class BasicPdfPipeline : IBasicPdfPipeline
         _pipeline = new ProcessingPipeline();
         _pipeline.AddStep(readPagesStep);
         _pipeline.AddStep(cleanWordsStep);
-        _pipeline.AddStep(detectLinesStep);
-        _pipeline.AddStep(analyzeLineSpacingStep);
         _pipeline.AddStep(detectBlocksStep);
+        _pipeline.AddStep(analyzeLineSpacingStep);
         _pipeline.AddStep(detectFootnotesStep);
         // _pipeline.AddStep(extractTextStep);
     }

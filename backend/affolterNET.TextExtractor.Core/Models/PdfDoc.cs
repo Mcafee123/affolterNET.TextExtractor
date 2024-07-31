@@ -18,9 +18,9 @@ public class PdfDoc : IPdfDoc
     
     public string Filename { get; }
     public List<IPdfPage> Pages { get; set; } = new();
-    public List<IWordOnPage> Words => Pages.SelectMany(p => p.Words).ToList();
+    // public List<IWordOnPage> Words => Pages.SelectMany(p => p.Words).ToList();
     public List<Footnote> Footnotes { get; set; } = new();
-    public List<Footnote> FootnotesWithoutInlineWords { get; set; } = new();
+    // public List<Footnote> FootnotesWithoutInlineWords { get; set; } = new();
     public FontSizeSettings? FontSizes { get; set; }
 
     public void GetPages()
@@ -29,7 +29,7 @@ public class PdfDoc : IPdfDoc
         var pages = _document.GetPages().ToList();
         foreach (var page in pages)
         {
-            var pg = new PdfPage(page);
+            var pg = new PdfPage(page, this);
             Pages.Add(pg);
         }
     }
@@ -162,10 +162,10 @@ public interface IPdfDoc : IDisposable
 {
     string Filename { get; }
     List<IPdfPage> Pages { get; set; }
-    List<IWordOnPage> Words { get; }
+    // List<IWordOnPage> Words { get; }
     FontSizeSettings? FontSizes { get; set; }
     List<Footnote> Footnotes { get; set; }
-    List<Footnote> FootnotesWithoutInlineWords { get; set; }
+    // List<Footnote> FootnotesWithoutInlineWords { get; set; }
     void GetPages();
     void ToJson(string path, IOutput log);
     bool Verify(out string message);

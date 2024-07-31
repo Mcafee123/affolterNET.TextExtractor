@@ -92,6 +92,10 @@ public class LineDetector: ILineDetector
             var line = ReadLineHorizontal(clone, 0, baseLineMatchingRange);
             if (line.Any(w => !string.IsNullOrWhiteSpace(w.Text)))
             {
+                while (line.Count > 0 && string.IsNullOrWhiteSpace(line.First().Text))
+                {
+                    line.Remove(line.First());
+                }
                 lines.Add(line);
             }
         }

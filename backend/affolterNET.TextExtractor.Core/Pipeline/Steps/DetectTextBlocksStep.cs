@@ -16,27 +16,27 @@ public class DetectTextBlocksStep: IPipelineStep
     }
     public class DetectTextBlocksStepSettings: IStepSettings
     {
-        public double NewBlockDistanceDiff { get; set; } = 1;
+        public double VerticalBlockDistanceDiffFactor { get; set; } = 1.8;
         public double BlockOverlapDistanceDiff { get; set; } = 0.4;
         public double QuadtreeBlockResolution { get; set; } = 3;
+        public double BaseLineMatchingRange { get; set; } = 0.2;
     }
     
     public void Execute(IPipelineContext context)
     {
         _log.Write(EnumLogLevel.Info, "Detecting textblocks");
         var settings = context.GetSettings<DetectTextBlocksStepSettings>();
-        var detectLinesSettings = context.GetSettings<DetectLinesStep.DetectLinesStepSettings>();
         if (context.Document == null)
         {
             throw new NullReferenceException(
                 $"context.Document not initialized. Run {nameof(ReadPagesStep)} before this step");
         }
         
-        if (context.Document.FontSizes == null)
-        {
-            throw new NullReferenceException(
-                $"context.Document.FontSizes not initialized. Run {nameof(AnalyzeLineSpacingStep)} before this step");
-        }
+        // if (context.Document.FontSizes == null)
+        // {
+        //     throw new NullReferenceException(
+        //         $"context.Document.FontSizes not initialized. Run {nameof(AnalyzeLineSpacingStep)} before this step");
+        // }
 
         var blockCount = 0;
         var blockCountWithHorizontal = 0;
@@ -45,10 +45,9 @@ public class DetectTextBlocksStep: IPipelineStep
             // find blocks
             _blockDetector.FindBlocks(
                 page,
-                context.Document.FontSizes,
-                settings.NewBlockDistanceDiff,
+                settings.VerticalBlockDistanceDiffFactor,
                 settings.BlockOverlapDistanceDiff,
-                detectLinesSettings.BaseLineMatchingRange,
+                settings.BaseLineMatchingRange,
                 settings.QuadtreeBlockResolution);
             blockCount += page.Blocks.Count;
         }
