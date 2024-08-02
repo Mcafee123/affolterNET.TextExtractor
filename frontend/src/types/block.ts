@@ -3,6 +3,7 @@ import type { Line } from "./line";
 import type { Word } from "./word";
 
 export interface Block {
+    id: number,
     boundingBox: Box,
     text: string,
     lines: Line[],

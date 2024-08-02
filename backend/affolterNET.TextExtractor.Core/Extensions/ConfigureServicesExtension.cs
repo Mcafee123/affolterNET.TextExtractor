@@ -17,11 +17,13 @@ public static class ConfigureServicesExtension
         services.AddTransient<ILineDetector, LineDetector>();
         services.AddTransient<IBlockDetector, BlockDetector>();
         services.AddTransient<IFootnoteDetector, FootnoteDetector>();
+        services.AddTransient<IPageNumberService, PageNumberService>();
         services.AddTransient<ReadPagesStep>();
         services.AddTransient<CleanWordsStep>();
         services.AddTransient<AnalyzeLineSpacingStep>();
         services.AddTransient<DetectFootnotesStep>();
         services.AddTransient<DetectTextBlocksStep>();
+        services.AddTransient<DetectPageNumberStep>();
         services.AddTransient<ExtractTextStep>();
         services.AddTransient<BasicPdfPipeline>();
     }

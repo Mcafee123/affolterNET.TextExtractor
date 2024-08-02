@@ -241,6 +241,7 @@ public class PdfPageJson
     public PdfPageJson(IPdfPage page, IOutput log)
     {
         Nr = page.Nr;
+        PageNumberBlockId = page.PageNumberBlock?.Id;
         BoundingBox = page.BoundingBox;
         foreach (var block in page.Blocks.TextBlocks)
         {
@@ -251,6 +252,8 @@ public class PdfPageJson
             ImageBlocks.Add(new PdfImageBlockJson(block, log));
         }
     }
+
+    public int? PageNumberBlockId { get; set; }
 
     public List<PdfImageBlockJson> ImageBlocks { get; set; } = new();
 
@@ -268,6 +271,7 @@ public class PdfTextBlockJson
 
     public PdfTextBlockJson(IPdfTextBlock block, IOutput log)
     {
+        Id = block.Id;
         BoundingBox = block.BoundingBox;
         foreach (var word in block.Words)
         {
@@ -280,6 +284,7 @@ public class PdfTextBlockJson
         }
     }
 
+    public int Id { get; set; }
     public PdfRectangle BoundingBox { get; set; }
     public List<PdfLineJson> Lines { get; set; } = new();
     public List<WordOnPageJson> Words { get; set; } = new();

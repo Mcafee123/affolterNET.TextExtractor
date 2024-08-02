@@ -1,5 +1,4 @@
 using affolterNET.TextExtractor.Core.Helpers;
-using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 
@@ -16,16 +15,9 @@ public class DetectFootnotesStep: IPipelineStep
         _log = log;
     }
     
-    public class DetectFootnotesStepSettings: IStepSettings
-    {
-        public double MaxDistFromLeft { get; set; } = 1;
-        public double LeftBorderGroupRange { get; set; } = 10;
-    }
-    
     public void Execute(IPipelineContext context)
     {
         _log.Write(EnumLogLevel.Info, "Detecting footnotes");
-        var settings = context.GetSettings<DetectFootnotesStepSettings>();
         var cleanWordsSettings = context.GetSettings<CleanWordsStep.CleanWordsStepSettings>();
         if (context.Document == null)
         {

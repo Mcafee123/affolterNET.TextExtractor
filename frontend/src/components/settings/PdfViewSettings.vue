@@ -30,6 +30,12 @@
       i close 
       i done
     span Fussnoten
+  label.checkbox.icon
+    input(type="checkbox" v-model="showPageNumbers")
+    span
+      i close 
+      i done
+    span Seitenzahlen
 </template>
 
 <script lang="ts" setup>
@@ -37,7 +43,7 @@
 import { useViewSettings } from '@/composables/useViewSettings'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, showFootnotes } = useViewSettings()
+const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, showFootnotes, showPageNumbers } = useViewSettings()
 
 </script>
 

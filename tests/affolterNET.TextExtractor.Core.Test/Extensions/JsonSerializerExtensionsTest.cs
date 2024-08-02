@@ -24,14 +24,16 @@ public class JsonSerializerExtensionsTest
         var lineDetector = new LineDetector(_log);
         var blockDetector = new BlockDetector(lineDetector, _log);
         var footnoteDetector = new FootnoteDetector(_log);
+        var pageNumberService = new PageNumberService(_log);
         var wordCleaner = new WordCleaner(_log);
         var readStep = new ReadPagesStep(wordExtractor, _log);
         var cleanWordsStep = new CleanWordsStep(wordCleaner, _log);
         var analyzeLinesStep = new AnalyzeLineSpacingStep(_log);
         var blocksStep = new DetectTextBlocksStep(blockDetector, _log);
         var footnotesStep = new DetectFootnotesStep(footnoteDetector, _log);
+        var detectPageNumberStep = new DetectPageNumberStep(pageNumberService, _log);
         var extractTextStep = new ExtractTextStep(_log);
-        var pipeline = new BasicPdfPipeline(readStep, cleanWordsStep, analyzeLinesStep, blocksStep, footnotesStep, extractTextStep, _log);
+        var pipeline = new BasicPdfPipeline(readStep, cleanWordsStep, analyzeLinesStep, blocksStep, footnotesStep, detectPageNumberStep, extractTextStep, _log);
         // var path = "/Users/martin/Downloads/Verfuegung_Nr_23-24_24846_3.pdf";
         var path = "/Users/martin/Downloads/nov-wingo-17463269.pdf";
         var context = new PipelineContext(path);

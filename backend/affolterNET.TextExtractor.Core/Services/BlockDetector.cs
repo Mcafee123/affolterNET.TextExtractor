@@ -188,7 +188,7 @@ public class BlockDetector : IBlockDetector
             {
                 throw new InvalidOperationException("BlockDetector: Not all words were assigned to a new block.");
             }
-
+            RemoveEmptyBlocks(horizontalBlocks);
             return horizontalBlocks;
         }
 
@@ -243,11 +243,20 @@ public class BlockDetector : IBlockDetector
             {
                 throw new InvalidOperationException("BlockDetector: Not all words were assigned to a new block.");
             }
-
+            RemoveEmptyBlocks(verticalBlocks);
             return verticalBlocks;
         }
 
         return new List<IPdfTextBlock>();
+    }
+
+    private void RemoveEmptyBlocks(List<IPdfTextBlock> blockList)
+    {
+        var emptyBlocks = blockList.Where(b => !b.Words.Any()).ToList();
+        foreach (var emptyBlock in emptyBlocks)
+        {
+            blockList.Remove(emptyBlock);
+        }
     }
 
     private void WordsToBlock(List<IWordOnPage> blockWords, IPdfTextBlock newBlock, List<IWordOnPage> words)

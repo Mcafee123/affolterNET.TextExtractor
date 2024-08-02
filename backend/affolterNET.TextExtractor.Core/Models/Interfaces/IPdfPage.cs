@@ -11,4 +11,6 @@ public interface IPdfPage
     int Nr { get; }
     PdfBlocks Blocks { get; set; }
     bool VerifyBlocks(out string message);
+    void SetPageNumberBlock(IPdfTextBlock block);
+    IPdfTextBlock? PageNumberBlock { get; }
 }

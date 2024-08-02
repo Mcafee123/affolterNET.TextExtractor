@@ -8,7 +8,7 @@ namespace affolterNET.TextExtractor.Core.Models;
 public class PdfTextBlock: IPdfTextBlock
 {
     private static int _blockIdx = 0;
-    private PdfLines _lines = new();
+    protected PdfLines _lines = new();
     private List<IWordOnPage> _words = new();
 
     public PdfTextBlock(IPdfPage page)
@@ -17,7 +17,7 @@ public class PdfTextBlock: IPdfTextBlock
         Id = _blockIdx++;
     }
 
-    public int Id { get; private set; }
+    public int Id { get; protected set; }
     public IEnumerable<IWordOnPage> Words => _words;
     public PdfLines Lines => _lines;
     public double TopDistance { get; set; } = LineOnPage.DefaultTopDistance;

@@ -10,6 +10,7 @@ public class PdfPage : IPdfPageAccess
 #pragma warning disable CS0414 // Field is assigned but its value is never used
     private static int _id = 0;
 #pragma warning restore CS0414 // Field is assigned but its value is never used
+    private int _pageNumberBlock = -1;
     public PdfPage(Page page, IPdfDoc doc)
     {
         Page = page;
@@ -23,8 +24,27 @@ public class PdfPage : IPdfPageAccess
     public CropBox CropBox => Page.CropBox;
     public int Nr => Page.Number;
     public PdfBlocks Blocks { get; set; } = new();
-    
-     public bool VerifyBlocks(out string message)
+
+    public IPdfTextBlock? PageNumberBlock
+    {
+        get
+        {
+            if (_pageNumberBlock == -1)
+            {
+                return null;
+            }
+
+            var pgNrBlock = Blocks.TextBlocks.FirstOrDefault(b => b.Id == _pageNumberBlock);
+            if (pgNrBlock != null)
+            {
+                return pgNrBlock;
+            }
+
+            return null;
+        }
+    }
+
+    public bool VerifyBlocks(out string message)
      {
          var success = true;
          var sb = new StringBuilder(); 
@@ -39,5 +59,10 @@ public class PdfPage : IPdfPageAccess
      
          message = sb.ToString();
          return success;
+     }
+
+     public void SetPageNumberBlock(IPdfTextBlock block)
+     {
+         _pageNumberBlock = block.Id;
      }
 }
