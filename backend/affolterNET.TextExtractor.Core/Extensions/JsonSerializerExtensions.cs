@@ -242,6 +242,7 @@ public class PdfPageJson
     {
         Nr = page.Nr;
         PageNumberBlockId = page.PageNumberBlock?.Id;
+        HeaderBlockIds = page.HeaderBlockIds;
         BoundingBox = page.BoundingBox;
         foreach (var block in page.Blocks.TextBlocks)
         {
@@ -252,6 +253,8 @@ public class PdfPageJson
             ImageBlocks.Add(new PdfImageBlockJson(block, log));
         }
     }
+
+    public List<int> HeaderBlockIds { get; set; }
 
     public int? PageNumberBlockId { get; set; }
 

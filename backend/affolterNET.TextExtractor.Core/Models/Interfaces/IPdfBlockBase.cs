@@ -6,5 +6,5 @@ public interface IPdfBlockBase
 {
     double TopDistance { get; set; }
     PdfRectangle BoundingBox { get; }
-    public int PageNr { get; }
+    int PageNr { get; }
 }

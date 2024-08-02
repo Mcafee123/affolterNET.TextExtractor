@@ -5,6 +5,7 @@ import type { ImageBlock } from "./image"
 export interface Page {
     nr: number,
     pageNumberBlockId: number | null,
+    headerBlockIds: number[],
     boundingBox: Box,
     blocks: Block[],
     imageBlocks: ImageBlock[],

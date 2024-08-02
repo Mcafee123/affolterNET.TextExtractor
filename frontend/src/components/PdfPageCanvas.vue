@@ -58,7 +58,7 @@ const clearCanvas = (mode?: 'letter' | 'boxes' | 'custombox') => {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, showFootnotes, showPageNumbers, blockJson, lineJson, wordJson, letterJson, hexToRgb, customBox, customBoxIsSet } = useViewSettings()
+const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, showFootnotes, showPageNumbers, showPageHeaders, blockJson, lineJson, wordJson, letterJson, hexToRgb, customBox, customBoxIsSet } = useViewSettings()
 const prim = hexToRgb('--primary')
 let primarycoloralpha = 'rgba(134, 217, 146, 0.5)'
 if (prim) {
@@ -118,6 +118,11 @@ watch(() => showFootnotes.value, () => {
 })
 
 watch(() => showPageNumbers.value, () => {
+  clearCanvas()
+  renderPage()
+})
+
+watch(() => showPageHeaders.value, () => {
   clearCanvas()
   renderPage()
 })
@@ -233,8 +238,11 @@ const renderPage = (boxesOnly: boolean = false) => {
   }
   for (let b = 0; b < props.page.blocks.length; b++) {
     const block = props.page.blocks[b]
-    if (props.page.pageNumberBlockId === block.id && !showPageNumbers.value) {
+    if (!showPageNumbers.value && props.page.pageNumberBlockId === block.id) {
       continue
+    }
+    if (!showPageHeaders.value && props.page.headerBlockIds.indexOf(block.id) > -1) {
+        continue
     }
     let drawBlock = false
     for (let w = 0; w < block.words.length; w++) {

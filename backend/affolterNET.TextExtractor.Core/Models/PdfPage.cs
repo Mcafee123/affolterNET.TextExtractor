@@ -44,6 +44,10 @@ public class PdfPage : IPdfPageAccess
         }
     }
 
+    public List<int> HeaderBlockIds { get; } = new();
+
+    public IEnumerable<IPdfTextBlock> HeaderBlocks => Blocks.TextBlocks.Where(b => HeaderBlockIds.Contains(b.Id));
+    
     public bool VerifyBlocks(out string message)
      {
          var success = true;

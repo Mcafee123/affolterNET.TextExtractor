@@ -13,6 +13,7 @@ const showLineBorders = ref(getFromStorage('showLineBorders', 'false') === 'true
 const showBlockBorders = ref(getFromStorage('showBlockBorders', 'false') === 'true')
 const showFootnotes = ref(getFromStorage('showFootnotes', 'false') === 'true')
 const showPageNumbers = ref(getFromStorage('showPageNumbers', 'false') === 'true')
+const showPageHeaders = ref(getFromStorage('showPageHeaders', 'false') === 'true')
 
 const blockJson = ref<blockType | null>(null)
 const lineJson = ref<lineType | null>(null)
@@ -65,6 +66,11 @@ export function useViewSettings() {
     setToStorage('showPageNumbers', value ? 'true' : 'false')
   })
 
+  // showPageHeaders
+  watch(showPageHeaders, (value: boolean) => {
+    setToStorage('showPageHeaders', value ? 'true' : 'false')
+  })
+
   const getCssVar = (cssvar: string, element: HTMLElement = document.body) => {
     const val = element.style.getPropertyValue(cssvar)
     return val
@@ -102,6 +108,7 @@ export function useViewSettings() {
     showBlockBorders,
     showFootnotes,
     showPageNumbers,
+    showPageHeaders,
     blockJson, 
     lineJson, 
     wordJson, 

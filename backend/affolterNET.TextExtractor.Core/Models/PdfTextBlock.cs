@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 using UglyToad.PdfPig.Core;
@@ -96,6 +97,32 @@ public class PdfTextBlock: IPdfTextBlock
     public override string ToString()
     {
         return _lines.GetText(null, "");
+    }
+    
+    public bool IsSameBlock(IPdfTextBlock otherBlock, double tolerance = 1)
+    {
+        if (otherBlock.Id == Id)
+        {
+            throw new InvalidOperationException("comparing the same block");
+        }
+
+        var myText = string.Join("", Words.Where(w => w.HasText).Select(w => w.Text));
+        var otherText = string.Join("", otherBlock.Words.Where(w => w.HasText).Select(w => w.Text));
+        if (myText != otherText)
+        {
+            return false;
+        }
+
+        if (!BoundingBox.Overlaps(otherBlock.BoundingBox) || 
+            Math.Abs(BoundingBox.Top - otherBlock.BoundingBox.Top) > tolerance ||
+            Math.Abs(BoundingBox.Bottom - otherBlock.BoundingBox.Bottom) > tolerance ||
+            Math.Abs(BoundingBox.Left - otherBlock.BoundingBox.Left) > tolerance ||
+            Math.Abs(BoundingBox.Right - otherBlock.BoundingBox.Right) > tolerance)
+        {
+            return false;
+        }
+
+        return true;
     }
     
     private void Refresh()

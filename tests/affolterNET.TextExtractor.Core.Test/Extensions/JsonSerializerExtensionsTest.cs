@@ -25,6 +25,7 @@ public class JsonSerializerExtensionsTest
         var blockDetector = new BlockDetector(lineDetector, _log);
         var footnoteDetector = new FootnoteDetector(_log);
         var pageNumberService = new PageNumberService(_log);
+        var headerService = new HeaderService(_log);
         var wordCleaner = new WordCleaner(_log);
         var readStep = new ReadPagesStep(wordExtractor, _log);
         var cleanWordsStep = new CleanWordsStep(wordCleaner, _log);
@@ -32,8 +33,9 @@ public class JsonSerializerExtensionsTest
         var blocksStep = new DetectTextBlocksStep(blockDetector, _log);
         var footnotesStep = new DetectFootnotesStep(footnoteDetector, _log);
         var detectPageNumberStep = new DetectPageNumberStep(pageNumberService, _log);
+        var detectHeadersStep = new DetectHeadersStep(headerService, _log);
         var extractTextStep = new ExtractTextStep(_log);
-        var pipeline = new BasicPdfPipeline(readStep, cleanWordsStep, analyzeLinesStep, blocksStep, footnotesStep, detectPageNumberStep, extractTextStep, _log);
+        var pipeline = new BasicPdfPipeline(readStep, cleanWordsStep, analyzeLinesStep, blocksStep, footnotesStep, detectPageNumberStep, detectHeadersStep, extractTextStep, _log);
         // var path = "/Users/martin/Downloads/Verfuegung_Nr_23-24_24846_3.pdf";
         var path = "/Users/martin/Downloads/nov-wingo-17463269.pdf";
         var context = new PipelineContext(path);

@@ -13,4 +13,6 @@ public interface IPdfPage
     bool VerifyBlocks(out string message);
     void SetPageNumberBlock(IPdfTextBlock block);
     IPdfTextBlock? PageNumberBlock { get; }
+    List<int> HeaderBlockIds { get; }
+    IEnumerable<IPdfTextBlock> HeaderBlocks { get; }
 }

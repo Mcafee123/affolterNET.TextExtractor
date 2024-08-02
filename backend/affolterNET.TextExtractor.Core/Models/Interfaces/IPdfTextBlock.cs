@@ -20,4 +20,5 @@ public interface IPdfTextBlock: IPdfBlock
     void RemoveWord(IWordOnPage word);
     FontSizeSettings? FontSizes { get; }
     void DetectLines(ILineDetector lineDetector, double baseLineMatchingRange);
+    bool IsSameBlock(IPdfTextBlock otherBlock, double tolerance = 1);
 }
