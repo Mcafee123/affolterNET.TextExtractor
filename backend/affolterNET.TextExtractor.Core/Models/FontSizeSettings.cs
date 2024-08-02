@@ -28,6 +28,11 @@ public class FontSizeSettings : List<FontSizeSettings.FontSizeSetting>
 
     public FontSizeSetting? GetMainFontSetting()
     {
+        if (Count < 1)
+        {
+            return null;
+        }
+
         var maxWordCount = this.Max(fs => fs.WordCount);
         var mainFontSetting = this.Where(fs => fs.WordCount == maxWordCount).MaxBy(fs => fs.AvgFontSize);
         return mainFontSetting;

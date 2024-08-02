@@ -24,16 +24,23 @@ public class FootnoteDetector : IFootnoteDetector
         {
             foreach (var block in page.Blocks.TextBlocks)
             {
-                var mainFontSize = (double)9;
-                var mainFontSetting = block.FontSizes?.GetMainFontSetting();
-                if (mainFontSetting != null)
+                try
                 {
-                    mainFontSize = mainFontSetting.AvgFontSize;
-                }
+                    var mainFontSize = (double)9;
+                    var mainFontSetting = block.FontSizes?.GetMainFontSetting();
+                    if (mainFontSetting != null)
+                    {
+                        mainFontSize = mainFontSetting.AvgFontSize;
+                    }
 
-                // detect the inline footnotes
-                var footnotes = DetectInlineFootnotes(block, mainFontSize, minBaselineDiff);
-                document.Footnotes.AddRange(footnotes);
+                    // detect the inline footnotes
+                    var footnotes = DetectInlineFootnotes(block, mainFontSize, minBaselineDiff);
+                    document.Footnotes.AddRange(footnotes);
+                }
+                catch (Exception ex)
+                {
+                    _log.Write(EnumLogLevel.Error, $"Error detecting footnotes on page {page.Nr}: {ex.Message}");
+                }
             }
         }
 
