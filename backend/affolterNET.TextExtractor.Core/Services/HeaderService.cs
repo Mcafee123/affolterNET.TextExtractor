@@ -16,7 +16,7 @@ public class HeaderService: IHeaderService
     
     public int DetectHeaders(IPdfDoc doc)
     {
-        var allBlocks = doc.Pages.SelectMany(p => p.Blocks.TextBlocks).ToList();
+        var allBlocks = doc.Pages.SelectMany(p => p.Blocks.TextBlocks.Take(5)).ToList();
         var sameBlocks = new Dictionary<IPdfTextBlock, List<IPdfTextBlock>>();
         foreach (var block in allBlocks)
         {

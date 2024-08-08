@@ -13,7 +13,8 @@ public class BasicPdfPipeline : IBasicPdfPipeline
     public BasicPdfPipeline(ReadPagesStep readPagesStep, CleanWordsStep cleanWordsStep,
         AnalyzeLineSpacingStep analyzeLineSpacingStep, DetectTextBlocksStep detectBlocksStep,
         DetectFootnotesStep detectFootnotesStep, DetectPageNumberStep detectPageNumberStep, 
-        DetectHeadersStep detectHeadersStep, ExtractTextStep extractTextStep, IOutput log)
+        DetectHeadersStep detectHeadersStep, FixSpacesStep fixSpacesStep, 
+        ExtractTextStep extractTextStep, IOutput log)
     {
         _log = log;
         _pipeline = new ProcessingPipeline();
@@ -21,9 +22,10 @@ public class BasicPdfPipeline : IBasicPdfPipeline
         _pipeline.AddStep(cleanWordsStep);
         _pipeline.AddStep(detectBlocksStep);
         _pipeline.AddStep(analyzeLineSpacingStep);
-        _pipeline.AddStep(detectFootnotesStep);
         _pipeline.AddStep(detectPageNumberStep);
         _pipeline.AddStep(detectHeadersStep);
+        _pipeline.AddStep(detectFootnotesStep);
+        _pipeline.AddStep(fixSpacesStep);
         // _pipeline.AddStep(extractTextStep);
     }
 

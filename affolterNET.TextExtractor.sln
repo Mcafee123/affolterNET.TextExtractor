@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "affolterNET.TextExtractor.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "api", "api\api.csproj", "{4E84A3B3-AEB8-4565-AF46-4EDDAC1ED6F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "affolterNET.TextExtractor.Storage", "backend\affolterNET.TextExtractor.Storage\affolterNET.TextExtractor.Storage.csproj", "{8F812D4E-9E58-4477-9052-FE347B9ACAB8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{4E84A3B3-AEB8-4565-AF46-4EDDAC1ED6F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E84A3B3-AEB8-4565-AF46-4EDDAC1ED6F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E84A3B3-AEB8-4565-AF46-4EDDAC1ED6F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F812D4E-9E58-4477-9052-FE347B9ACAB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F812D4E-9E58-4477-9052-FE347B9ACAB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F812D4E-9E58-4477-9052-FE347B9ACAB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F812D4E-9E58-4477-9052-FE347B9ACAB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FA7C4B0C-2330-41EC-A5AF-9D838831B2CC} = {E1D584FE-9724-4D2E-9E28-9D90CB0F1F7E}

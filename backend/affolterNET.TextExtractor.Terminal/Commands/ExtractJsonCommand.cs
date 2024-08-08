@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
 using affolterNET.TextExtractor.Core.Pipeline.Steps;
@@ -8,15 +9,17 @@ using Spectre.Console.Cli;
 
 namespace affolterNET.TextExtractor.Terminal.Commands;
 
-public class DetectTextCommand: AsyncCommand<DetectTextCommand.Settings>
+public class ExtractJsonCommand: AsyncCommand<ExtractJsonCommand.Settings>
 {
     private readonly BasicPdfPipeline _pipeline;
+    private readonly IExtractorFileService _extractorFileService;
     private readonly IOutput _log;
 
     public class Settings : CommandSettings
     {
         [CommandOption("-f|--file")]
-        [DefaultValue("/Users/martin/Source/SocialContractData/AuswahlZollrecht/02_BAZG-VG_DE_verabschiedet BR.pdf")]
+        //[DefaultValue("/Users/martin/Source/SocialContractData/AuswahlZollrecht/02_BAZG-VG_DE_verabschiedet BR.pdf")]
+        [DefaultValue("/Users/martin/Source/SocialContractData/AuswahlZollrecht/Bundesgesetz/ZG.pdf")]
         public string? Filename { get; set; }
 
         [CommandOption("-o|--output")]
@@ -46,9 +49,10 @@ public class DetectTextCommand: AsyncCommand<DetectTextCommand.Settings>
         }
     }
 
-    public DetectTextCommand(BasicPdfPipeline pipeline, IOutput log)
+    public ExtractJsonCommand(BasicPdfPipeline pipeline, IExtractorFileService extractorFileService, IOutput log)
     {
         _pipeline = pipeline;
+        _extractorFileService = extractorFileService;
         _log = log;
     }
 
@@ -57,7 +61,7 @@ public class DetectTextCommand: AsyncCommand<DetectTextCommand.Settings>
         try
         {
             var pipelineContext = new PipelineContext(settings.Filename!);
-            _pipeline.AddStep(new SerializeToJsonStep(settings.OutputFolder!, _log));
+            _pipeline.AddStep(new SerializeToBlobStorage(_extractorFileService, _log));
             _pipeline.Execute(pipelineContext);
         }
         catch (Exception ex)

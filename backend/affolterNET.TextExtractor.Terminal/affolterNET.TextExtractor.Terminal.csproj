@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <UserSecretsId>6e5ca5b7-dfea-4433-bdcc-e1d10f3d6c2f</UserSecretsId>
     </PropertyGroup>
     
     <ItemGroup>
@@ -23,6 +24,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\affolterNET.TextExtractor.Core\affolterNET.TextExtractor.Core.csproj" />
+      <ProjectReference Include="..\affolterNET.TextExtractor.Storage\affolterNET.TextExtractor.Storage.csproj" />
     </ItemGroup>
 
     <ItemGroup>

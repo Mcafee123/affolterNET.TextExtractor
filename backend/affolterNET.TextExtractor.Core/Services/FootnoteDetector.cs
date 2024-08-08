@@ -128,7 +128,9 @@ public class FootnoteDetector : IFootnoteDetector
 
     public void DetectBottomFootnotes(IPdfPage page, IPdfDoc document)
     {
-        var allLines = page.Blocks.TextBlocks.SelectMany(b => b.Lines).ToList();
+        var allLines = page.Blocks.TextBlocks
+            .Where(b => b.Id != page.PageNumberBlock?.Id && !page.HeaderBlockIds.ToList().Contains(b.Id)) // exclude header blocks and page numbers
+            .SelectMany(b => b.Lines).ToList();
         // all lines with captions or stars
         var potentialFootnoteCaptions = allLines
             .Where(l => l.FirstWordWithText?.Text.IsNumericOrStar() ?? false)
@@ -169,6 +171,7 @@ public class FootnoteDetector : IFootnoteDetector
             {
                 _log.Write(EnumLogLevel.Warning,
                     $"Multiple words in caption line {potFn.Key} (page: {page.Nr})");
+                continue;
             }
 
             var bottomFootnoteCaption = potFn.Key.FirstWordWithText!;
@@ -188,6 +191,12 @@ public class FootnoteDetector : IFootnoteDetector
             fn.BottomContents.AddLines(potFn.Value.ToArray());
             addedCaptions.Add(bottomFootnoteCaption.Text);
             AddAdditionalBottomContentLines(fn, page);
+            
+            // break on page 1 if footnote nr. 1 is reached
+            if (page.Nr == 1 && potFn.Key.FirstWordWithText?.Text == "1")
+            {
+                break;
+            }
         }
     }
 

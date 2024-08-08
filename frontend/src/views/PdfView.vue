@@ -1,8 +1,6 @@
 <template lang="pug">
 .grid
   .s9.m9.l9
-    article(v-if="!page" class="center upload")
-      PdfUpload(@uploadFile="uploadFile")
     .pdfview(v-if="page")
       .backcol(v-if="pdfdata.pages.length > 1" :class="{ invisible: !hasLeft() }" @click="goLeft")
         button.circle.transparent.left
@@ -62,52 +60,52 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue"
+import { ref, watch } from "vue";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PdfPageCanvas from "@/components/PdfPageCanvas.vue"
+import PdfPageCanvas from "@/components/PdfPageCanvas.vue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PdfUpload from "@/components/settings/PdfUpload.vue"
+import PdfUpload from "@/components/settings/PdfUpload.vue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PdfViewSettings from "@/components/settings/PdfViewSettings.vue"
+import PdfViewSettings from "@/components/settings/PdfViewSettings.vue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PdfBlockJson from "@/components/settings/PdfBlockJson.vue"
+import PdfBlockJson from "@/components/settings/PdfBlockJson.vue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PdfLineJson from "@/components/settings/PdfLineJson.vue"
+import PdfLineJson from "@/components/settings/PdfLineJson.vue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PdfWordJson from "@/components/settings/PdfWordJson.vue"
+import PdfWordJson from "@/components/settings/PdfWordJson.vue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PdfLetterJson from "@/components/settings/PdfLetterJson.vue"
+import PdfLetterJson from "@/components/settings/PdfLetterJson.vue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PdfPart from "@/components/settings/PdfPart.vue"
+import PdfPart from "@/components/settings/PdfPart.vue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import PdfBox from "@/components/settings/PdfBox.vue"
+import PdfBox from "@/components/settings/PdfBox.vue";
 
-import type { PdfDocument } from "@/types/pdfDocument"
-import type { Page } from "@/types/page"
+import type { Doc } from "@/types/doc";
+import type { Page } from "@/types/page";
 
-import { loaderService } from "affolternet-vue3-library"
-import { toastService } from 'affolternet-vue3-library'
+import { loaderService } from "affolternet-vue3-library";
+import { toastService } from "affolternet-vue3-library";
 
-const pdfdata = ref<PdfDocument | null>(null)
-const footnoteWordIds = ref<number[]>([])
-const page = ref<Page | null>(null)
-const currentPage = ref<number>(0)
-const pdfFile = ref<File | null>(null)
+const pdfdata = ref<Doc | null>(null);
+const footnoteWordIds = ref<number[]>([]);
+const page = ref<Page | null>(null);
+const currentPage = ref<number>(0);
+const pdfFile = ref<File | null>(null);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const refreshView = () => {
   if (!pdfFile.value) {
-    console.error('no pdf loaded')
-    return
+    console.error("no pdf loaded");
+    return;
   }
-  uploadFile(pdfFile.value as File)
+  uploadFile(pdfFile.value as File);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const uploadFile = async (pdf: File) => {
-  loaderService.showLoader()
-  pdfFile.value = pdf
+  loaderService.showLoader();
+  pdfFile.value = pdf;
   try {
     const formData = new FormData();
     formData.append("file", pdf);
@@ -115,72 +113,73 @@ const uploadFile = async (pdf: File) => {
       method: "POST",
       body: formData,
     };
-    const response = await fetch("/api/upload", options)
+    const response = await fetch("/api/upload", options);
     if (response.status !== 200) {
-      toastService.showError(`parsing pdf failed, response.status = ${response.status}`)
-      return
+      toastService.showError(`parsing pdf failed, response.status = ${response.status}`);
+      return;
     }
-    const json = await response.json()
-    pdfdata.value = json as PdfDocument
-    footnoteWordIds.value = getFootnoteWords()
-    currentPage.value = 1
-    setPage(0)
+    const json = await response.json();
+    pdfdata.value = json as Doc;
+    footnoteWordIds.value = getFootnoteWords();
+    currentPage.value = 1;
+    setPage(0);
   } catch (error) {
-    console.error(error)
+    console.error(error);
   } finally {
-    loaderService.hideLoader()
+    loaderService.hideLoader();
   }
-}
+};
 
 const getFootnoteWords = (): number[] => {
-  const footnoteWords: number[] = []
+  const footnoteWords: number[] = [];
   if (pdfdata.value) {
     for (let fn = 0; fn < pdfdata.value.footnotes.length; fn++) {
-      const footnote = pdfdata.value.footnotes[fn]
+      const footnote = pdfdata.value.footnotes[fn];
       for (let bcw = 0; bcw < footnote.bottomContentsCaption?.words?.length || 0; bcw++) {
-        footnoteWords.push(footnote.bottomContentsCaption.words[bcw].id)
+        footnoteWords.push(footnote.bottomContentsCaption.words[bcw].id);
       }
       for (let iw = 0; iw < footnote.inlineWords.length; iw++) {
-        footnoteWords.push(footnote.inlineWords[iw].id)
+        footnoteWords.push(footnote.inlineWords[iw].id);
       }
       for (let bl = 0; bl < footnote.bottomContents.lines.length; bl++) {
-        const line = footnote.bottomContents.lines[bl]
+        const line = footnote.bottomContents.lines[bl];
         for (let w = 0; w < line.words.length; w++) {
-          footnoteWords.push(line.words[w].id)
+          footnoteWords.push(line.words[w].id);
         }
       }
     }
   }
-  return footnoteWords
-}
+  return footnoteWords;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const downloadJson = () => {
   if (!pdfdata.value) {
-    console.error("no pdf loaded")
-    return
+    console.error("no pdf loaded");
+    return;
   }
-  const filename = pdfdata.value.filename + ".json"
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pdfdata.value))
-  const link = document.createElement('a')
-  link.setAttribute('href', dataStr)
-  link.setAttribute('download', filename)
-  link.click()
-}
+  const filename = pdfdata.value.filename + ".json";
+  const dataStr =
+    "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pdfdata.value));
+  const link = document.createElement("a");
+  link.setAttribute("href", dataStr);
+  link.setAttribute("download", filename);
+  link.click();
+};
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const downloadText = () => {
   if (!pdfdata.value) {
-    console.error("no pdf loaded")
-    return
+    console.error("no pdf loaded");
+    return;
   }
-  const filename = pdfdata.value.filename + ".txt"
-  const dataStr = "data:text/plain;charset=utf-8," + pdfdata.value.textContent
-  const link = document.createElement('a')
-  link.setAttribute('href', dataStr)
-  link.setAttribute('download', filename)
-  link.click()
-}
+  const filename = pdfdata.value.filename + ".txt";
+  const dataStr = "data:text/plain;charset=utf-8," + pdfdata.value.textContent;
+  const link = document.createElement("a");
+  link.setAttribute("href", dataStr);
+  link.setAttribute("download", filename);
+  link.click();
+};
 
 watch(currentPage, (index) => {
   setPage(index - 1);
@@ -188,39 +187,39 @@ watch(currentPage, (index) => {
 
 const setPage = (index: number) => {
   if (!pdfdata.value) {
-    console.error("no pdf loaded")
+    console.error("no pdf loaded");
     return;
   }
   if (index < 0 || index > pdfdata.value.pages.length - 1) {
     console.log("invalid index", index);
-    return
+    return;
   }
-  page.value = pdfdata.value.pages[index]
+  page.value = pdfdata.value.pages[index];
 };
 
 const hasLeft = () => {
-  return currentPage.value > 1
+  return currentPage.value > 1;
 };
 
 const hasRight = () => {
   if (!pdfdata.value) {
-    console.error("no pdf loaded")
+    console.error("no pdf loaded");
     return;
   }
-  return currentPage.value < pdfdata.value.pages.length
+  return currentPage.value < pdfdata.value.pages.length;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const goLeft = () => {
   if (hasLeft()) {
-    currentPage.value--
+    currentPage.value--;
   }
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const goRight = () => {
   if (hasRight()) {
-    currentPage.value++
+    currentPage.value++;
   }
 };
 </script>

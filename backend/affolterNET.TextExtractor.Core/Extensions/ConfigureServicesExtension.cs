@@ -19,6 +19,7 @@ public static class ConfigureServicesExtension
         services.AddTransient<IFootnoteDetector, FootnoteDetector>();
         services.AddTransient<IPageNumberService, PageNumberService>();
         services.AddTransient<IHeaderService, HeaderService>();
+        services.AddTransient<IFixSpacesService, FixSpacesService>();
         services.AddTransient<ReadPagesStep>();
         services.AddTransient<CleanWordsStep>();
         services.AddTransient<AnalyzeLineSpacingStep>();
@@ -26,6 +27,7 @@ public static class ConfigureServicesExtension
         services.AddTransient<DetectTextBlocksStep>();
         services.AddTransient<DetectPageNumberStep>();
         services.AddTransient<DetectHeadersStep>();
+        services.AddTransient<FixSpacesStep>();
         services.AddTransient<ExtractTextStep>();
         services.AddTransient<BasicPdfPipeline>();
     }

@@ -2,8 +2,10 @@
 using System.Text.Json;
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Storage.Extensions;
 using api.Helpers;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -15,6 +17,10 @@ var host = new HostBuilder()
         {
             jsonSerializerOptions.ConfigureJsonSerializerOptions();
         });
+    })
+    .ConfigureAppConfiguration(cfg =>
+    {
+        cfg.AddUserSecrets<Program>();
     })
     .ConfigureServices((ctx, services) =>
     {
@@ -29,6 +35,7 @@ var host = new HostBuilder()
         
         services.AddTransient<IOutput, FunctionsLogger>();
         services.AddTextExtractorCoreServices(ctx.Configuration);
+        services.AddTextExtractorStorageServices(ctx.Configuration);
     })
     .ConfigureLogging((hostingContext, logging) =>
     {

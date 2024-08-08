@@ -42,7 +42,14 @@ public class LineOnPage : IList<IWordOnPage>, ILineOnPage
             var spaces = _words.Where(w => w.Text == " ").ToList();
             if (spaces.Count < 1)
             {
-                return null;
+                // if there are no spaces, calculate the average width of all letters
+                var letters = _words.SelectMany(w => w.Letters).ToList();
+                if (letters.Count < 1)
+                {
+                    return null;
+                }
+
+                return letters.Average(l => l.Width);
             }
 
             return spaces.Average(s => s.BoundingBox.Width);

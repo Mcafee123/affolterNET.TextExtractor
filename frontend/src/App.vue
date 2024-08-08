@@ -7,6 +7,9 @@ header.fill
     RouterLink(to="/pdf")
       i picture_as_pdf 
       div PDF
+    RouterLink(to="/upload")
+      i cloud_upload
+      div Upload
     h5(class="max center-align") ...
     button(class="circle transparent")
       img.responsive(src="/favicon-32x32.png")

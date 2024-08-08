@@ -1,6 +1,7 @@
 using System.Net;
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Models.JsonModels;
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
 using HttpMultipartParser;
@@ -57,7 +58,7 @@ public class UploadTrigger
         // =============================
         // pipelineContext.AddSettings(new CleanWordsStep.CleanWordsStepSettings() { BigSpacesSize = 120 });
         _pipeline.Execute(pipelineContext);
-        var pdfDocJson =  new PdfDocJson(pipelineContext.Document!, pipelineContext.TextContent, _log);
+        var pdfDocJson =  new PdfDocJson(pipelineContext.Document!, pipelineContext.TextContent, true, _log);
         var response = req.CreateResponse(HttpStatusCode.OK);
         await response.WriteAsJsonAsync(pdfDocJson);
         return response;

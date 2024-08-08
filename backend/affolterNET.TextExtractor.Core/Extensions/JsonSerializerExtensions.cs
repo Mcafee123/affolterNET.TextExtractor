@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
-using UglyToad.PdfPig.Content;
+using affolterNET.TextExtractor.Core.Models.JsonModels;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Extensions;
@@ -33,23 +33,30 @@ public static class JsonSerializerExtensions
         return obj!;
     }
     
-    public static void Serialize(this IPdfDoc pdfDoc, string path, IOutput log)
+    public static void SerializePdfDoc(this IPdfDoc pdfDoc, string path, IOutput log)
     {
-        var toSerialize = new PdfDocJson(pdfDoc, null, log);
-        toSerialize.Serialize(path);
+        var toSerialize = new PdfDocJson(pdfDoc, null, true, log);
+        toSerialize.SerializeAndSave(path);
     }
     
-    public static string Serialize(this IPdfDoc pdfDoc, IOutput log)
+    public static void SerializePdfPage(this IPdfPage pdfPage, string path, IOutput log)
     {
-        var toSerialize = new PdfDocJson(pdfDoc, null, log);
+        var toSerialize = new PdfPageJson(pdfPage, log);
+        toSerialize.SerializeAndSave(path);
+    }
+    
+    public static void SerializeAndSave<T>(this T toSerialize, string path) where T: IJsonSaveable
+    {
         var json = JsonSerializer.Serialize(toSerialize, Options);
-        return json;
+        File.WriteAllTextAsync(path, json).GetAwaiter().GetResult();
     }
     
-    private static void Serialize(this object obj, string path)
+    public static Stream Serialize<T>(this T toSerialize) where T: IJsonSaveable
     {
-        var json = JsonSerializer.Serialize(obj, Options);
-        File.WriteAllTextAsync(path, json).GetAwaiter().GetResult();
+        var stream = new MemoryStream();
+        JsonSerializer.Serialize(stream, toSerialize, Options);
+        stream.Seek(0, SeekOrigin.Begin);
+        return stream;
     }
 }
 
@@ -162,238 +169,4 @@ public class PdfRectangleConverter : JsonConverter<PdfRectangle>
         writer.WriteNumber(TopRightY, value.TopRight.Y);
         writer.WriteEndObject();
     }
-}
-
-public class PdfDocJson
-{
-    public PdfDocJson()
-    {
-        
-    }
-
-    public PdfDocJson(IPdfDoc pdfDoc, string? textContent, IOutput log)
-    {
-        Filename = pdfDoc.Filename;
-        FontNames = string.Join(", ", pdfDoc.FontSizes?.AllFontNames ?? new List<string>());
-        FontGroups = pdfDoc.FontSizes?
-            .Select(fs => $"{fs.GroupId + 1}: {Math.Round(fs.AvgFontSize, 2):##.00} (Words: {fs.WordCount}, Min: {Math.Round(fs.MinFontSize, 2):##.00}, Max: {Math.Round(fs.MaxFontSize, 2):##.00})")
-            .ToList() ?? new List<string>();
-        TextContent = textContent;
-        foreach (var page in pdfDoc.Pages)
-        {
-            Pages.Add(new PdfPageJson(page, log));
-        }
-
-        foreach (var footnote in pdfDoc.Footnotes)
-        {
-            Footnotes.Add(new PdfFootnoteJson(footnote, log));
-        }
-    }
-
-    public string? TextContent { get; set; }
-
-    public List<string> FontGroups { get; set; } = new();
-    public string Filename { get; set; } = null!;
-    public string FontNames { get; set; } = null!;
-    public List<PdfPageJson> Pages { get; set; } = new();
-    public List<PdfFootnoteJson> Footnotes { get; set; } = new();
-}
-
-public class PdfFootnoteJson
-{
-    public PdfFootnoteJson()
-    {
-        
-    }
-
-    public PdfFootnoteJson(Footnote footnote, IOutput log)
-    {
-        Id = footnote.Id;
-        foreach (var w in footnote.InlineWords)
-        {
-            InlineWords.Add(new WordOnPageJson(w, log));
-        }
-
-        BottomContents = new PdfTextBlockJson(footnote.BottomContents, log);
-        if (footnote.BottomContentsCaption != null)
-        {
-            BottomContentsCaption = new PdfLineJson(footnote.BottomContentsCaption, log);
-        }
-        else
-        {
-            log.Write(EnumLogLevel.Error, $"Footnote {footnote.Id}: BottomContentsCaption is null, page: {InlineWords.FirstOrDefault()?.PageNr}");
-        }
-    }
-
-    public string Id { get; set; } = null!;
-    public List<WordOnPageJson> InlineWords { get; set; } = new();
-    public PdfTextBlockJson BottomContents { get; set; } = new();
-    public PdfLineJson? BottomContentsCaption { get; set; }
-}
-
-public class PdfPageJson
-{
-    public PdfPageJson()
-    {
-        
-    }
-
-    public PdfPageJson(IPdfPage page, IOutput log)
-    {
-        Nr = page.Nr;
-        PageNumberBlockId = page.PageNumberBlock?.Id;
-        HeaderBlockIds = page.HeaderBlockIds;
-        BoundingBox = page.BoundingBox;
-        foreach (var block in page.Blocks.TextBlocks)
-        {
-            Blocks.Add(new PdfTextBlockJson(block, log));
-        }
-        foreach (var block in page.Blocks.ImageBlocks)
-        {
-            ImageBlocks.Add(new PdfImageBlockJson(block, log));
-        }
-    }
-
-    public List<int> HeaderBlockIds { get; set; }
-
-    public int? PageNumberBlockId { get; set; }
-
-    public List<PdfImageBlockJson> ImageBlocks { get; set; } = new();
-
-    public int Nr { get; set; }
-    public PdfRectangle BoundingBox { get; set; }
-    public List<PdfTextBlockJson> Blocks { get; set; } = new();
-}
-
-public class PdfTextBlockJson
-{
-    public PdfTextBlockJson()
-    {
-        
-    }
-
-    public PdfTextBlockJson(IPdfTextBlock block, IOutput log)
-    {
-        Id = block.Id;
-        BoundingBox = block.BoundingBox;
-        foreach (var word in block.Words)
-        {
-            Words.Add(new WordOnPageJson(word, log));
-        }
-
-        foreach (var line in block.Lines)
-        {
-            Lines.Add(new PdfLineJson(line, log));
-        }
-    }
-
-    public int Id { get; set; }
-    public PdfRectangle BoundingBox { get; set; }
-    public List<PdfLineJson> Lines { get; set; } = new();
-    public List<WordOnPageJson> Words { get; set; } = new();
-}
-
-public class PdfImageBlockJson
-{
-    public PdfImageBlockJson()
-    {
-        
-    }
-
-    public PdfImageBlockJson(IPdfImageBlock block, IOutput log)
-    {
-        BoundingBox = block.BoundingBox;
-        Base64Image = block.Base64Image;
-    }
-
-    public string Base64Image { get; set; } = null!;
-
-    public PdfRectangle BoundingBox { get; set; }
-}
-
-public class PdfLineJson
-{
-    public PdfLineJson()
-    {
-        
-    }
-    
-    public PdfLineJson(LineOnPage line, IOutput log)
-    {
-        foreach (var word in line)
-        {
-            Words.Add(new WordOnPageJson(word, log));
-        }
-
-        BoundingBox = line.BoundingBox;
-        FontSizeAvg = line.FontSizeAvg;
-        TopDistance = line.TopDistance;
-        BaseLineY = line.BaseLineY;
-    }
-
-    public double BaseLineY { get; set; }
-    public double TopDistance { get; set; }
-    public double FontSizeAvg { get; set; }
-    public PdfRectangle BoundingBox { get; set; }
-    public List<WordOnPageJson> Words { get; set; } = new();
-}
-
-public class WordOnPageJson
-{
-    public WordOnPageJson()
-    {
-        
-    }
-    
-    public WordOnPageJson(IWordOnPage word, IOutput log)
-    {
-        Id = word.Id;
-        BoundingBox = word.BoundingBox;
-        BaseLineY = word.BaseLineY;
-        Text = word.Text;
-        FontName = word.FontName;
-        Orientation = word.TextOrientation.ToString();
-        foreach (var letter in word.Letters)
-        {
-            Letters.Add(new LetterJson(letter, log));
-        }
-    }
-
-    public int Id { get; set; }
-    public double BaseLineY { get; set; }
-    public PdfRectangle BoundingBox { get; set; }
-    public string Text { get; set; } = null!;
-    public int PageNr { get; set; }
-    public string FontName { get; set; } = null!;
-    public string? Orientation { get; set; }
-    public List<LetterJson> Letters { get; set; } = new();
-}
-
-public class LetterJson
-{
-    public LetterJson()
-    {
-        
-    }
-
-    public LetterJson(Letter letter, IOutput log)
-    {
-        GlyphRectangle = letter.GlyphRectangle;
-        StartBaseLine = letter.StartBaseLine;
-        EndBaseLine = letter.EndBaseLine;
-        Text = letter.Value;
-        FontSize = letter.PointSize;
-        IsBold = letter.Font.IsBold;
-        IsItalic = letter.Font.IsItalic;
-        Orientation = letter.TextOrientation.ToString();
-    }
-
-    public PdfPoint EndBaseLine { get; set; }
-    public PdfPoint StartBaseLine { get; set; }
-    public bool IsItalic { get; set; }
-    public bool IsBold { get; set; }
-    public string? Orientation { get; set; }
-    public PdfRectangle GlyphRectangle { get; set; }
-    public string Text { get; set; } = null!;
-    public double FontSize { get; set; }
 }

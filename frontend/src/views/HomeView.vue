@@ -1,9 +1,6 @@
 <template lang="pug">
-.grid
-  .s12.m12.l6
-    h3 Extract Text from PDF
-  .s12.m12.l6
-    h3 {{ msg }}
+h4 Extract Text from PDF
+h6 {{ msg }}
 
 </template>
 

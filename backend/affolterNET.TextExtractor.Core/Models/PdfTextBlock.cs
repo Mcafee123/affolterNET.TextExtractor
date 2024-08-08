@@ -9,8 +9,8 @@ namespace affolterNET.TextExtractor.Core.Models;
 public class PdfTextBlock: IPdfTextBlock
 {
     private static int _blockIdx = 0;
-    protected PdfLines _lines = new();
-    private List<IWordOnPage> _words = new();
+    private readonly PdfLines _lines = [];
+    private List<IWordOnPage> _words = [];
 
     public PdfTextBlock(IPdfPage page)
     {

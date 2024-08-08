@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-using affolterNET.TextExtractor.Core;
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Storage.Extensions;
 using affolterNET.TextExtractor.Terminal;
 using affolterNET.TextExtractor.Terminal.Commands;
 using Microsoft.Extensions.Configuration;
@@ -60,17 +60,18 @@ try
             services.AddTransient<AnsiConsoleWrapper>(_ => new AnsiConsoleWrapper(enmLogLevel));
             services.AddTransient<IOutput, AnsiConsoleOutputter>();
             services.AddTextExtractorCoreServices(ctx.Configuration);
-            services.AddTransient<DetectTextCommand>();
+            services.AddTextExtractorStorageServices(ctx.Configuration);
+            services.AddTransient<ExtractJsonCommand>();
         })
         .UseConsoleLifetime()
-        .UseSpectreConsole<DetectTextCommand>(config =>
+        .UseSpectreConsole<ExtractJsonCommand>(config =>
         {
             config.PropagateExceptions();
 
             const string lawsAlias = "parse";
-            config.AddCommand<DetectTextCommand>("parse-pdf")
+            config.AddCommand<ExtractJsonCommand>("parse-pdf")
                 .WithAlias(lawsAlias)
-                .WithDescription("get text and textblocks from pdf files")
+                .WithDescription("get text and textblocks from pdf files and store the resulting json to blob storage")
                 .WithExample($"dotnet {Assembly.GetExecutingAssembly().GetName().Name}.dll", lawsAlias,
                     "[-f|--file <FILE-PATH>]");
         })
