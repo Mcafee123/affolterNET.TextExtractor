@@ -60,6 +60,14 @@ public class ExtractorFileService : IExtractorFileService
         return pdfDoc;
     }
 
+    public async Task<PdfPageJson> GetPage(string folder, string fileNumber)
+    {
+        var docName = folder.Substring(22);
+        var pageFullName = $"{folder}/{docName}__page_{fileNumber}.json";
+        var page = await _blobStorageService.GetStringBlob(ContainerName, pageFullName);
+        return page.DeserializeFromString<PdfPageJson>();
+    }
+
     public async Task UploadDocument(Document doc)
     {
         if (doc.Content == null)

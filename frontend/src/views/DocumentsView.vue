@@ -1,12 +1,13 @@
 <template lang="pug">
-.test {{ showDate("2024-05-08T20:58:33") }}
 .grid 
   .s12.m9.l6
     article(v-if="docs")
       nav.no-space(v-for="doc in docs" :key="doc.foldername")
         button.border.left-round.fill(@click="openPdf(doc.foldername)")
           i picture_as_pdf
-        button.border.no-round.max(@click="openPdf(doc.foldername)") {{ doc.filename }}
+        button.border.no-round.max(@click="openPdf(doc.foldername)")
+          span {{ doc.filename }}
+          .badge.none added: {{ showDate(doc.created) }}
         button.border.right-round(@click="console.log('delete')")
           i delete
 </template>
@@ -44,7 +45,7 @@ const showDate = (dateString: string) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const openPdf = (doc: string) => {
-  router.push({ name: 'pdf', params: { folder: doc } })
+  router.push({ name: 'pdf', params: { folder: doc, pageno: 1 } })
 }
 
 </script>

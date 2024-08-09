@@ -18,7 +18,7 @@ const router = createRouter({
       component: () => import('../views/DocumentsView.vue')
     },
     {
-      path: '/pdf/:folder?',
+      path: '/pdf/:folder/:pageno',
       name: 'pdf',
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
