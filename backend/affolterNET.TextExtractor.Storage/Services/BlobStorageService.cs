@@ -32,6 +32,19 @@ public class BlobStorageService
         return list;
     }
 
+    public async Task<List<BlobHierarchyItem>> GetFolders(string containerName)
+    {
+        var folders = new List<BlobHierarchyItem>();
+        var container = _blobServiceClient.GetBlobContainerClient(containerName);
+        var resultSegment = container.GetBlobsByHierarchyAsync(delimiter: "/").AsPages(default, 100);
+        await foreach (Azure.Page<BlobHierarchyItem> blobPage in resultSegment)
+        {
+            folders.AddRange(blobPage.Values.Where(bhi => bhi.IsPrefix));
+        }
+
+        return folders;
+    }
+
     public async Task<List<BlobHierarchyItem>> GetBlobs(string containerName, string prefix = "")
     {
         var blobs = new List<BlobHierarchyItem>();
@@ -39,10 +52,31 @@ public class BlobStorageService
         var resultSegment = container.GetBlobsByHierarchyAsync(prefix: prefix, delimiter: "/").AsPages(default, 100);
         await foreach (Azure.Page<BlobHierarchyItem> blobPage in resultSegment)
         {
-            blobs.AddRange(blobPage.Values);
+            foreach (var bhi in blobPage.Values)
+            {
+                if (bhi.IsPrefix)
+                {
+                    var files = await GetBlobs(containerName, bhi.Prefix);
+                    blobs.AddRange(files);
+                }
+                else
+                {
+                    blobs.Add(bhi);
+                }
+            }
         }
 
         return blobs;
+    }
+
+    public async Task<string> GetStringBlob(string containerName, string blobName)
+    {
+        var container = _blobServiceClient.GetBlobContainerClient(containerName);
+        var blobclient = container.GetBlobClient(blobName);
+        var downloadInfo = await blobclient.DownloadAsync();
+        using var streamReader = new StreamReader(downloadInfo.Value.Content);
+        var jsonContent = await streamReader.ReadToEndAsync();
+        return jsonContent;
     }
 
     public async Task<bool> DeleteBlobAsync(string containerName, string blobName)
@@ -62,18 +96,18 @@ public class BlobStorageService
         return result;
     }
 
-    public async Task DeleteByHierarchy(string containerName, string dateFolderName)
-    {
-        var container = _blobServiceClient.GetBlobContainerClient(containerName);
-        var resultSegment = container.GetBlobsByHierarchyAsync(BlobTraits.None, BlobStates.None, "/", $"{dateFolderName}/").AsPages(default, 100);
-            
-        await foreach (Azure.Page<BlobHierarchyItem> blobPage in resultSegment)
-        {
-            foreach (var hierarchyItem in blobPage.Values)
-            {
-                await container.DeleteBlobAsync(hierarchyItem.Blob.Name);
-                _log.Write(EnumLogLevel.Debug, $"Blob name: {hierarchyItem.Blob.Name} deleted");
-            }
-        }
-    }
+    // public async Task DeleteByHierarchy(string containerName, string dateFolderName)
+    // {
+    //     var container = _blobServiceClient.GetBlobContainerClient(containerName);
+    //     var resultSegment = container.GetBlobsByHierarchyAsync(BlobTraits.None, BlobStates.None, "/", $"{dateFolderName}/").AsPages(default, 100);
+    //         
+    //     await foreach (Azure.Page<BlobHierarchyItem> blobPage in resultSegment)
+    //     {
+    //         foreach (var hierarchyItem in blobPage.Values)
+    //         {
+    //             await container.DeleteBlobAsync(hierarchyItem.Blob.Name);
+    //             _log.Write(EnumLogLevel.Debug, $"Blob name: {hierarchyItem.Blob.Name} deleted");
+    //         }
+    //     }
+    // }
 }

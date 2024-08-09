@@ -4,7 +4,7 @@ header.fill
     RouterLink(to="/")
       i home
       div Home
-    RouterLink(to="/pdf")
+    RouterLink(to="/documents")
       i picture_as_pdf 
       div PDF
     RouterLink(to="/upload")

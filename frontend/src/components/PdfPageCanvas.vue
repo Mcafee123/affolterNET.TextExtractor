@@ -39,6 +39,25 @@ const props = defineProps({
   }
 })
 
+onMounted(() => {
+  window.addEventListener('resize', resize)
+  letterCtx.value = letterCanvas.value?.getContext('2d') as CanvasRenderingContext2D
+  boxesCtx.value = boxesCanvas.value?.getContext('2d') as CanvasRenderingContext2D
+  selectionCtx.value = selectionCanvas.value?.getContext('2d') as CanvasRenderingContext2D
+  hoveringCtx.value = hoveringCanvas.value?.getContext('2d') as CanvasRenderingContext2D
+  customBoxCtx.value = customBoxCanvas.value?.getContext('2d') as CanvasRenderingContext2D
+  resize()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', resize)
+  letterCtx.value = undefined
+  boxesCtx.value = undefined
+  hoveringCtx.value = undefined
+  selectionCtx.value = undefined
+  customBoxCtx.value = undefined
+})
+
 const clearCanvas = (mode?: 'letter' | 'boxes' | 'custombox') => {
   if (!letterCanvas.value || !letterCtx.value || !boxesCtx.value || !hoveringCtx.value || ! customBoxCtx.value || !selectionCtx.value) {
     console.error('no canvas or no contexts')
@@ -145,25 +164,6 @@ watch(() => customBox.value, () => {
     shadowBox.topRightY += 5
     drawBox(ctx, shadowBox, 'violet', 3)
   }
-})
-
-onMounted(() => {
-  window.addEventListener('resize', resize)
-  letterCtx.value = letterCanvas.value?.getContext('2d') as CanvasRenderingContext2D
-  boxesCtx.value = boxesCanvas.value?.getContext('2d') as CanvasRenderingContext2D
-  selectionCtx.value = selectionCanvas.value?.getContext('2d') as CanvasRenderingContext2D
-  hoveringCtx.value = hoveringCanvas.value?.getContext('2d') as CanvasRenderingContext2D
-  customBoxCtx.value = customBoxCanvas.value?.getContext('2d') as CanvasRenderingContext2D
-  resize()
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', resize)
-  letterCtx.value = undefined
-  boxesCtx.value = undefined
-  hoveringCtx.value = undefined
-  selectionCtx.value = undefined
-  customBoxCtx.value = undefined
 })
 
 const resize = () => {

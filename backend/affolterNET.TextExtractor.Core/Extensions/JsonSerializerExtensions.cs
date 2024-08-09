@@ -33,6 +33,12 @@ public static class JsonSerializerExtensions
         return obj!;
     }
     
+    public static T DeserializeFromString<T>(this string content)
+    {
+        var obj = JsonSerializer.Deserialize<T>(content, Options);
+        return obj!;
+    }
+    
     public static void SerializePdfDoc(this IPdfDoc pdfDoc, string path, IOutput log)
     {
         var toSerialize = new PdfDocJson(pdfDoc, null, true, log);
@@ -86,14 +92,13 @@ public class PdfPointConverter : JsonConverter<PdfPoint>
             {
                 var propertyName = reader.GetString();
                 reader.Read();
-                switch (propertyName)
+                if (propertyName == X)
                 {
-                    case nameof(X):
-                        x = reader.GetDouble();
-                        break;
-                    case nameof(Y):
-                        y = reader.GetDouble();
-                        break;
+                    x = reader.GetDouble();
+                }
+                else if (propertyName == Y)
+                {
+                    y = reader.GetDouble();
                 }
             }
         }
@@ -139,20 +144,21 @@ public class PdfRectangleConverter : JsonConverter<PdfRectangle>
             {
                 var propertyName = reader.GetString();
                 reader.Read();
-                switch (propertyName)
+                if (propertyName == BottomLeftX)
                 {
-                    case nameof(BottomLeftX):
-                        bottomLeftX = reader.GetDouble();
-                        break;
-                    case nameof(BottomLeftY):
-                        bottomLeftY = reader.GetDouble();
-                        break;
-                    case nameof(TopRightX):
-                        topRightX = reader.GetDouble();
-                        break;
-                    case nameof(TopRightY):
-                        topRightY = reader.GetDouble();
-                        break;
+                    bottomLeftX = reader.GetDouble();
+                }
+                else if (propertyName == BottomLeftY)
+                {
+                    bottomLeftY = reader.GetDouble();
+                }
+                else if (propertyName == TopRightX)
+                {
+                    topRightX = reader.GetDouble();
+                }
+                else if (propertyName == TopRightY)
+                {
+                    topRightY = reader.GetDouble();
                 }
             }
         }

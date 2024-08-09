@@ -1,6 +1,7 @@
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Interfaces;
+using affolterNET.TextExtractor.Core.Models.JsonModels;
 using affolterNET.TextExtractor.Core.Models.StorageModels;
 
 namespace affolterNET.TextExtractor.Storage.Services;
@@ -19,7 +20,7 @@ public class ExtractorFileService : IExtractorFileService
 
     public async Task<List<Document>> ListDocuments()
     {
-        var blobs = await _blobStorageService.GetBlobs(ContainerName);
+        var blobs = await _blobStorageService.GetFolders(ContainerName);
         var docs = new List<Document>();
         foreach (var b in blobs)
         {
@@ -46,6 +47,19 @@ public class ExtractorFileService : IExtractorFileService
         return docs;
     }
 
+    public async Task<PdfDocJson> GetDocument(string folder)
+    {
+        var docName = folder.Substring(22);
+        var docFullName = $"{folder}/{docName}.json";
+        var doc = await _blobStorageService.GetStringBlob(ContainerName, docFullName);
+        var pdfDoc = doc.DeserializeFromString<PdfDocJson>();
+        var page1FullName = $"{folder}/{docName}__page_1.json";
+        var page1 = await _blobStorageService.GetStringBlob(ContainerName, page1FullName);
+        var pdfPage1 = page1.DeserializeFromString<PdfPageJson>();
+        pdfDoc.Pages.Add(pdfPage1);
+        return pdfDoc;
+    }
+
     public async Task UploadDocument(Document doc)
     {
         if (doc.Content == null)
@@ -70,8 +84,8 @@ public class ExtractorFileService : IExtractorFileService
         }
     }
 
-    public async Task DeleteDocument(string dateFolderName)
-    {
-        await _blobStorageService.DeleteByHierarchy(ContainerName, dateFolderName);
-    }
+    // public async Task DeleteDocument(string dateFolderName)
+    // {
+    //     await _blobStorageService.DeleteByHierarchy(ContainerName, dateFolderName);
+    // }
 }

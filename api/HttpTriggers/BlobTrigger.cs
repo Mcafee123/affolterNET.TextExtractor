@@ -29,4 +29,22 @@ public class BlobTrigger
         await response.WriteAsJsonAsync(extracts);
         return response;
     }
+    
+    [Function(nameof(GetDocument))]
+    public async Task<HttpResponseData> GetDocument([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
+        FunctionContext executionContext)
+    {
+        var folder = req.Query["folder"];
+        if (string.IsNullOrWhiteSpace(folder))
+        {
+            var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
+            await badRequest.WriteStringAsync("folder query parameter is required");
+            return badRequest;
+        }
+
+        var document = await _extractorFileService.GetDocument(folder);
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        await response.WriteAsJsonAsync(document);
+        return response;
+    }
 }
