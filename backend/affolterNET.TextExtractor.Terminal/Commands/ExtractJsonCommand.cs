@@ -4,6 +4,7 @@ using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
 using affolterNET.TextExtractor.Core.Pipeline.Steps;
+using affolterNET.TextExtractor.Terminal.Extensions;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -18,31 +19,34 @@ public class ExtractJsonCommand: AsyncCommand<ExtractJsonCommand.Settings>
     public class Settings : CommandSettings
     {
         [CommandOption("-f|--file")]
-        //[DefaultValue("/Users/martin/Source/SocialContractData/AuswahlZollrecht/02_BAZG-VG_DE_verabschiedet BR.pdf")]
-        [DefaultValue("/Users/martin/Source/SocialContractData/AuswahlZollrecht/Bundesgesetz/ZG.pdf")]
-        public string? Filename { get; set; }
+        // [DefaultValue("/Users/martin/Source/SocialContractData/AuswahlZollrecht/02_BAZG-VG_DE_verabschiedet BR.pdf")]
+        // [DefaultValue("/Users/martin/Source/SocialContractData/AuswahlZollrecht/Bundesgesetz/ZG.pdf")]
+        public string? FileName { get; set; }
 
-        [CommandOption("-o|--output")]
-        [DefaultValue("/Users/martin/Source/SocialContractData/Output/BAZG-VG")]
-        public string? OutputFolder { get; set; }
+        [CommandOption("-d|--dir")]
+        [DefaultValue("/Users/martin/Source/SocialContractData/AuswahlZollrecht")]
+        public string? FolderName { get; set; }
 
         public override ValidationResult Validate()
         {
-            if (!File.Exists(Filename))
+            if (string.IsNullOrWhiteSpace(FileName) && string.IsNullOrWhiteSpace(FolderName))
             {
-                return ValidationResult.Error($"file does not exist: {Filename}");
+                return ValidationResult.Error("either FileName or FolderName must be provided");    
+            }
+            
+            if (!string.IsNullOrWhiteSpace(FileName) && !string.IsNullOrWhiteSpace(FolderName))
+            {
+                return ValidationResult.Error("either FileName or FolderName must be provided");    
             }
 
-            if (!Directory.Exists(OutputFolder))
+            if (!string.IsNullOrWhiteSpace(FileName) && !File.Exists(FileName))
             {
-                try
-                {
-                    Directory.CreateDirectory(OutputFolder!);
-                }
-                catch (Exception ex)
-                {
-                    return ValidationResult.Error($"output folder does not exist and could not be created: {OutputFolder}");
-                }
+                return ValidationResult.Error($"file does not exist: {FileName}");
+            }
+            
+            if (!string.IsNullOrWhiteSpace(FolderName) && !Directory.Exists(FolderName))
+            {
+                return ValidationResult.Error($"folder does not exist: {FolderName}");
             }
 
             return base.Validate();
@@ -60,9 +64,25 @@ public class ExtractJsonCommand: AsyncCommand<ExtractJsonCommand.Settings>
     {
         try
         {
-            var pipelineContext = new PipelineContext(settings.Filename!);
+            // add blob file extractor to the pipeline
             _pipeline.AddStep(new SerializeToBlobStorage(_extractorFileService, _log));
-            _pipeline.Execute(pipelineContext);
+            if (!string.IsNullOrWhiteSpace(settings.FolderName))
+            {
+                _log.Write(EnumLogLevel.Info, $"Collecting pdf-files in directory subtree: {settings.FolderName}...");
+                var filesInDirectorySubtree = settings.FolderName.GetFilesInAllDirectories();
+                foreach (var file in filesInDirectorySubtree)
+                {
+                    LogFileName($"Parsing file: {file.FullName}");
+                    var pipelineContext = new PipelineContext(file.FullName);
+                    _pipeline.Execute(pipelineContext);
+                }
+            }
+            else
+            {
+                LogFileName($"Parsing file: {settings.FileName}");
+                var pipelineContext = new PipelineContext(settings.FileName!);
+                _pipeline.Execute(pipelineContext);
+            }
         }
         catch (Exception ex)
         {
@@ -71,5 +91,13 @@ public class ExtractJsonCommand: AsyncCommand<ExtractJsonCommand.Settings>
         }
 
         return Task.FromResult(0);
+    }
+
+    private void LogFileName(string msg)
+    {
+        var line = string.Empty.PadRight(msg.Length, '-');
+        _log.Write(EnumLogLevel.Info, line);
+        _log.Write(EnumLogLevel.Info, msg);
+        _log.Write(EnumLogLevel.Info, line);
     }
 }

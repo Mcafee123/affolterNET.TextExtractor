@@ -4,6 +4,7 @@ using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models.JsonModels;
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
+using api.Extensions;
 using HttpMultipartParser;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -24,8 +25,9 @@ public class UploadTrigger
         _logger = logger;
     }
 
-    [Function(nameof(Upload))]
-    public async Task<HttpResponseData> Upload([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req,
+    [Function(nameof(upload))]
+    // ReSharper disable once InconsistentNaming
+    public async Task<HttpResponseData> upload([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req,
         FunctionContext executionContext)
     {
         var traceEnabled = _logger.IsEnabled(LogLevel.Trace);

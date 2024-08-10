@@ -29,7 +29,7 @@ public class BasicPdfPipeline : IBasicPdfPipeline
         // _pipeline.AddStep(extractTextStep);
     }
 
-    public void Execute(IPipelineContext context)
+    public async Task Execute(IPipelineContext context)
     {
         _pipeline.ExecutePipeline(context);
         _log.Write(EnumLogLevel.Warning, "[blue]", "Pipeline finished", "[/]");

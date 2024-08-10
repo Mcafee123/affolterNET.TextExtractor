@@ -20,7 +20,7 @@ const uploadFile = async (pdf: File) => {
   try {
     const formData = new FormData();
     formData.append("file", pdf);
-    const options = {
+    const options: RequestInit = {
       method: "POST",
       body: formData,
     };

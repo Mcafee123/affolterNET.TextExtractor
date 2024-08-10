@@ -1,5 +1,4 @@
 using affolterNET.TextExtractor.Core.Helpers;
-using affolterNET.TextExtractor.Core.Models.StorageModels;
 using affolterNET.TextExtractor.Storage.Models;
 using Azure.Storage;
 using Azure.Storage.Blobs;
@@ -96,18 +95,25 @@ public class BlobStorageService
         return result;
     }
 
-    // public async Task DeleteByHierarchy(string containerName, string dateFolderName)
-    // {
-    //     var container = _blobServiceClient.GetBlobContainerClient(containerName);
-    //     var resultSegment = container.GetBlobsByHierarchyAsync(BlobTraits.None, BlobStates.None, "/", $"{dateFolderName}/").AsPages(default, 100);
-    //         
-    //     await foreach (Azure.Page<BlobHierarchyItem> blobPage in resultSegment)
-    //     {
-    //         foreach (var hierarchyItem in blobPage.Values)
-    //         {
-    //             await container.DeleteBlobAsync(hierarchyItem.Blob.Name);
-    //             _log.Write(EnumLogLevel.Debug, $"Blob name: {hierarchyItem.Blob.Name} deleted");
-    //         }
-    //     }
-    // }
+    public async Task DeleteByHierarchy(string containerName, string folder)
+    {
+        var container = _blobServiceClient.GetBlobContainerClient(containerName);
+        var resultSegment = container.GetBlobsByHierarchyAsync(prefix: folder, delimiter:"/").AsPages(default, 100);
+            
+        await foreach (Azure.Page<BlobHierarchyItem> blobPage in resultSegment)
+        {
+            foreach (var bhi in blobPage.Values)
+            {
+                if (bhi.IsPrefix)
+                {
+                    await DeleteByHierarchy(containerName, bhi.Prefix);
+                }
+                else
+                {
+                    await container.DeleteBlobAsync(bhi.Blob.Name);
+                    _log.Write(EnumLogLevel.Debug, $"Blob name: {bhi.Blob.Name} deleted");
+                }
+            }
+        }
+    }
 }

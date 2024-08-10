@@ -1,4 +1,5 @@
 using System.Net;
+using api.Extensions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -14,8 +15,9 @@ public class InfoTrigger
         _logger = logger;
     }
 
-    [Function(nameof(Info))]
-    public async Task<HttpResponseData> Info([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
+    [Function(nameof(info))]
+    // ReSharper disable once InconsistentNaming
+    public async Task<HttpResponseData> info([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
         FunctionContext executionContext)
     {
         var traceEnabled = _logger.IsEnabled(LogLevel.Trace);

@@ -16,11 +16,11 @@ public class ProcessingPipeline
         _steps.Add(step);
     }
 
-    public void ExecutePipeline(IPipelineContext context)
+    public async Task ExecutePipeline(IPipelineContext context)
     {
         foreach (var step in _steps)
         {
-            step.Execute(context);
+            await step.Execute(context);
         }
     } 
 }

@@ -9,4 +9,5 @@ public interface IExtractorFileService
     Task<List<Document>> ListDocuments();
     Task<PdfDocJson> GetDocument(string folder);
     Task<PdfPageJson> GetPage(string folder, string fileNumber);
+    Task DeleteDocument(string folder);
 }

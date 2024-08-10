@@ -20,8 +20,9 @@ public class BlobTrigger
         _log = log;
     }
 
-    [Function(nameof(ListExtracts))]
-    public async Task<HttpResponseData> ListExtracts([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
+    [Function(nameof(listDocuments))]
+    // ReSharper disable once InconsistentNaming
+    public async Task<HttpResponseData> listDocuments([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
         FunctionContext executionContext)
     {
         var extracts = await _extractorFileService.ListDocuments();
@@ -30,8 +31,9 @@ public class BlobTrigger
         return response;
     }
     
-    [Function(nameof(GetDocument))]
-    public async Task<HttpResponseData> GetDocument([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
+    [Function(nameof(getDocument))]
+    // ReSharper disable once InconsistentNaming
+    public async Task<HttpResponseData> getDocument([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
         FunctionContext executionContext)
     {
         var folder = req.Query["folder"];
@@ -48,8 +50,9 @@ public class BlobTrigger
         return response;
     }
     
-    [Function(nameof(GetPage))]
-    public async Task<HttpResponseData> GetPage([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
+    [Function(nameof(getPage))]
+    // ReSharper disable once InconsistentNaming
+    public async Task<HttpResponseData> getPage([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
         FunctionContext executionContext)
     {
         var folder = req.Query["folder"];
@@ -70,6 +73,18 @@ public class BlobTrigger
         var document = await _extractorFileService.GetPage(folder, file);
         var response = req.CreateResponse(HttpStatusCode.OK);
         await response.WriteAsJsonAsync(document);
+        return response;
+    }
+
+    [Function(nameof(deleteDocument))]
+    // ReSharper disable once InconsistentNaming
+    public async Task<HttpResponseData> deleteDocument(
+        [HttpTrigger(AuthorizationLevel.Function, "delete", Route = nameof(deleteDocument) + "/{folder}")] HttpRequestData req,
+        FunctionContext executionContext,
+        string folder)
+    {
+        await _extractorFileService.DeleteDocument(folder);
+        var response = req.CreateResponse(HttpStatusCode.OK);
         return response;
     }
 }

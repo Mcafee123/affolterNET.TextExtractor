@@ -105,7 +105,7 @@ watch(() => route.params.pageno, () => {
   }
 );
 
-const timeouts: NodeJS.Timeout[] = []
+const timeouts: any[] = []
 watch(currentPage, () => {
   if (!currentPage.value) {
     return;
@@ -145,7 +145,7 @@ const getData = async () => {
   let doc = docstore.getDoc(folder.value);
   if (doc === null) {
     try {
-      const doc = await (await fetch(`/api/getdocument?folder=${folder.value}`)).json();
+      const doc = await (await fetch(`/api/getDocument?folder=${folder.value}`)).json();
       docstore.addDoc(folder.value, doc);
     } catch (e: any) {
       console.log(e);
@@ -178,7 +178,7 @@ const getData = async () => {
 const getPage = async (nr: number): Promise<Page | null> => {
   try {
     const page = await (
-      await fetch(`/api/getpage?folder=${folder.value}&file=${nr}`)
+      await fetch(`/api/getPage?folder=${folder.value}&file=${nr}`)
     ).json();
     return page as Page;
   } catch (e: any) {

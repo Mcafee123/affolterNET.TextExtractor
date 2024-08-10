@@ -92,8 +92,8 @@ public class ExtractorFileService : IExtractorFileService
         }
     }
 
-    // public async Task DeleteDocument(string dateFolderName)
-    // {
-    //     await _blobStorageService.DeleteByHierarchy(ContainerName, dateFolderName);
-    // }
+    public async Task DeleteDocument(string folder)
+    {
+        await _blobStorageService.DeleteByHierarchy(ContainerName, folder);
+    }
 }
