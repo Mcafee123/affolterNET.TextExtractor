@@ -16,7 +16,8 @@ public class ServiceFactory
     {
         var loggerContextProvider = GetService<LoggerContextProvider>();
         loggerContextProvider.AddContext(fileName);
-        return GetService<IBasicPdfPipeline>();
+        var pipeline = GetService<IBasicPdfPipeline>();
+        return pipeline;
     }
 
     public T GetService<T>() where T: class

@@ -22,8 +22,8 @@ public class ExtractJsonParallelCommand : AsyncCommand<ExtractJsonParallelComman
         public string? FolderName { get; set; }
 
         [CommandOption("-b |--batch-size")]
-        [DefaultValue(2)]
-        public int BatchSize { get; set; } = 10;
+        [DefaultValue(10)]
+        public int BatchSize { get; set; }
 
         public override ValidationResult Validate()
         {
@@ -36,9 +36,10 @@ public class ExtractJsonParallelCommand : AsyncCommand<ExtractJsonParallelComman
         }
     }
 
-    public ExtractJsonParallelCommand(ServiceFactory serviceFactory)
+    public ExtractJsonParallelCommand(ServiceFactory serviceFactory, IOutput log)
     {
         _serviceFactory = serviceFactory;
+        _log = log;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -46,17 +47,19 @@ public class ExtractJsonParallelCommand : AsyncCommand<ExtractJsonParallelComman
         try
         {
             var tasks = new List<Task>();
-            var fileEnumerable = settings.FolderName!.GetFilesInAllDirectories().ToList();
+            var loggerContextProvider = _serviceFactory.GetService<LoggerContextProvider>();
+            _log.Write(EnumLogLevel.Debug, "gettings files...");
+            var fileEnumerable = settings.FolderName!.GetFilesInAllDirectories();
             foreach (var fi in fileEnumerable)
             {
                 var pipeline = _serviceFactory.CreatePipeline(fi.FullName);
-                _log = _serviceFactory.GetService<IOutput>();
+                var serializeToBlobStorageStep = _serviceFactory.GetService<SerializeToBlobStorageStep>();
+                pipeline.AddStep(serializeToBlobStorageStep);
+                loggerContextProvider.ResetContext();
+                LogFileName($"adding task for file: {fi.FullName}");
                 tasks.Add(Task.Run(async () =>
                 {
-                    var serializeToBlobStorageStep = _serviceFactory.GetService<SerializeToBlobStorageStep>();
-                    pipeline.AddStep(serializeToBlobStorageStep);
                     var pipelineContext = new PipelineContext(fi.FullName);
-                    LogFileName($"Parsing file: {fi.FullName}");
                     await pipeline.Execute(pipelineContext);
                 }));
                 if (tasks.Count >= settings.BatchSize)
@@ -78,10 +81,13 @@ public class ExtractJsonParallelCommand : AsyncCommand<ExtractJsonParallelComman
 
     private async Task ExecuteTasks(List<Task> tasks)
     {
-        _log.Write(EnumLogLevel.Debug, $"Waiting for {tasks.Count} tasks to finish...");
-        await Task.WhenAll(tasks);
-        _log.Write(EnumLogLevel.Debug, $"{tasks.Count} tasks finished");
-        tasks.Clear();
+        if (tasks.Count > 0)
+        {
+            _log.Write(EnumLogLevel.Debug, $"Waiting for {tasks.Count} tasks to finish...");
+            await Task.WhenAll(tasks);
+            _log.Write(EnumLogLevel.Debug, $"{tasks.Count} tasks finished");
+            tasks.Clear();
+        }
     }
 
     private void LogFileName(string msg)

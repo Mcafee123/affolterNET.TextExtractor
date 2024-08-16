@@ -145,7 +145,7 @@ public class PdfTextBlock: IPdfTextBlock
         var fontSize = FontSizes?.MaxBy(fs => fs.MaxFontSize);
         if (fontSize == null)
         {
-            throw new InvalidOperationException("no font size found");
+            return 9;
         }
 
         return fontSize.MaxFontSize / 2;
