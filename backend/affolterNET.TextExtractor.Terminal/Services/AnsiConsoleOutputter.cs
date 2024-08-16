@@ -1,8 +1,8 @@
-using affolterNET.TextExtractor.Core;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using Spectre.Console;
 
-namespace affolterNET.TextExtractor.Terminal;
+namespace affolterNET.TextExtractor.Terminal.Services;
 
 public class AnsiConsoleOutputter: IOutput
 {

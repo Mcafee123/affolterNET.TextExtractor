@@ -22,28 +22,26 @@ public static class DirectoryExtensions
             throw new DirectoryNotFoundException($"directory \"{di.FullName}\" does not exist");
         }
 
-        return di.GetFilesInAllDirectories(folderNamePredicate, pattern);
-    }
-    
-    public static IEnumerable<FileInfo> GetFilesInAllDirectories(this DirectoryInfo folder, Func<List<DirectoryInfo>, List<DirectoryInfo>>? folderNamePredicate = null, 
-        string pattern = "*.pdf")
-    {
-        foreach (var fi in folder.GetFiles(pattern))
+        var folders = di.GetFolders(folderNamePredicate);
+        foreach (var fo in folders)
         {
-            yield return fi;
-        }   
-
-        var selected = folder.GetDirectories().ToList();
-        if (folderNamePredicate != null)
-        {
-            selected = folderNamePredicate(selected);
-        }
-        foreach (var di in selected)
-        {
-            foreach (var fi in di.GetFilesInAllDirectories(folderNamePredicate, pattern))
+            foreach (var fi in fo.GetFiles(pattern))
             {
                 yield return fi;
             }
         }
+    }
+
+    public static List<DirectoryInfo> GetFolders(this DirectoryInfo root, Func<List<DirectoryInfo>, List<DirectoryInfo>>? folderNamePredicate = null)
+    {
+        
+        var list = new List<DirectoryInfo> { root };
+        var selected = root.GetDirectories().ToList();
+        if (folderNamePredicate != null)
+        {
+            selected = folderNamePredicate(selected);
+        }
+        list.AddRange(selected);
+        return list;
     }
 }

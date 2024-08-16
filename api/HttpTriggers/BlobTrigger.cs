@@ -1,5 +1,4 @@
 using System.Net;
-using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;

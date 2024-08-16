@@ -1,4 +1,4 @@
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 

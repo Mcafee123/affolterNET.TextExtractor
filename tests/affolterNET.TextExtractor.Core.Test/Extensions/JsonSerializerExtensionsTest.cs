@@ -2,7 +2,7 @@ using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
 using affolterNET.TextExtractor.Core.Pipeline.Steps;
-using affolterNET.TextExtractor.Core.Services;
+using affolterNET.TextExtractor.Core.Services.Detectors;
 using Xunit.Abstractions;
 
 namespace affolterNET.TextExtractor.Core.Test.Extensions;

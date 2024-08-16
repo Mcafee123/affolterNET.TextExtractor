@@ -1,9 +1,10 @@
 ﻿using System.Reflection;
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Storage.Extensions;
-using affolterNET.TextExtractor.Terminal;
 using affolterNET.TextExtractor.Terminal.Commands;
+using affolterNET.TextExtractor.Terminal.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -58,18 +59,18 @@ try
                 }
             }
             services.AddTransient<AnsiConsoleWrapper>(_ => new AnsiConsoleWrapper(enmLogLevel));
-            services.AddTransient<IOutput, AnsiConsoleOutputter>();
+            services.AddTransient<AnsiConsoleOutputter>();
+            services.AddTransient<IOutput, FileOutputter>();
             services.AddTextExtractorCoreServices(ctx.Configuration);
             services.AddTextExtractorStorageServices(ctx.Configuration);
-            services.AddTransient<ExtractJsonCommand>();
         })
         .UseConsoleLifetime()
-        .UseSpectreConsole<ExtractJsonCommand>(config =>
+        .UseSpectreConsole<ExtractJsonParallelCommand>(config =>
         {
             config.PropagateExceptions();
 
             const string lawsAlias = "parse";
-            config.AddCommand<ExtractJsonCommand>("parse-pdf")
+            config.AddCommand<ExtractJsonParallelCommand>("parse-pdf")
                 .WithAlias(lawsAlias)
                 .WithDescription("get text and textblocks from pdf files and store the resulting json to blob storage")
                 .WithExample($"dotnet {Assembly.GetExecutingAssembly().GetName().Name}.dll", lawsAlias,

@@ -1,4 +1,5 @@
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 
 namespace affolterNET.TextExtractor.Core.Models.JsonModels;
 

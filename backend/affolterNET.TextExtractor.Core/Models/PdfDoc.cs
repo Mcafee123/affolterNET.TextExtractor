@@ -1,6 +1,5 @@
 using System.Text;
 using affolterNET.TextExtractor.Core.Extensions;
-using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 using UglyToad.PdfPig;
 

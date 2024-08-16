@@ -1,5 +1,6 @@
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
@@ -7,12 +8,12 @@ using affolterNET.TextExtractor.Core.Pipeline.Steps;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 using UglyToad.PdfPig.Content;
 
-namespace affolterNET.TextExtractor.Core.Services;
+namespace affolterNET.TextExtractor.Core.Services.Detectors;
 
 public class WordCleaner : IWordCleaner
 {
     private readonly IOutput _log;
-
+    
     public WordCleaner(IOutput log)
     {
         _log = log;

@@ -1,4 +1,3 @@
-using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 
 namespace affolterNET.TextExtractor.Core.Services.Interfaces;

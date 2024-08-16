@@ -1,4 +1,5 @@
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
 using affolterNET.TextExtractor.Core.Pipeline.Steps;
@@ -28,10 +29,10 @@ public class BasicPdfPipeline : IBasicPdfPipeline
         _pipeline.AddStep(fixSpacesStep);
         // _pipeline.AddStep(extractTextStep);
     }
-
+    
     public async Task Execute(IPipelineContext context)
     {
-        _pipeline.ExecutePipeline(context);
+        await Task.Run(() => _pipeline.ExecutePipeline(context));
         _log.Write(EnumLogLevel.Warning, "[blue]", "Pipeline finished", "[/]");
     }
 

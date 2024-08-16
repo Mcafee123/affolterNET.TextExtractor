@@ -1,9 +1,9 @@
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.WordExtractor;
 using UglyToad.PdfPig.Util;
 
-namespace affolterNET.TextExtractor.Core.Services;
+namespace affolterNET.TextExtractor.Core.Services.Detectors;
 
 public class PdfWordExtractor: IWordExtractor
 {

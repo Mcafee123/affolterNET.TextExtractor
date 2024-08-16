@@ -1,24 +1,23 @@
-using System.Reflection.Metadata;
 using affolterNET.TextExtractor.Core.Extensions;
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 
-namespace affolterNET.TextExtractor.Core.Services;
+namespace affolterNET.TextExtractor.Core.Services.Detectors;
 
 public class FixSpacesService : IFixSpacesService
 {
     private readonly ILineDetector _lineDetector;
     private readonly IOutput _log;
-
+    
     public FixSpacesService(ILineDetector lineDetector, IOutput log)
     {
         _lineDetector = lineDetector;
         _log = log;
     }
-
+    
     public int FixSpaces(IPdfDoc doc, double baseLineMatchingRange)
     {
         var missingSpacesCount = 0;

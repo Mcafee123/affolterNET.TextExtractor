@@ -1,7 +1,7 @@
 
 using System.Text.Json;
 using affolterNET.TextExtractor.Core.Extensions;
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Storage.Extensions;
 using api.Helpers;
 using Microsoft.Azure.Functions.Worker;

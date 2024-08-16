@@ -1,10 +1,9 @@
 using System.Net;
-using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models.JsonModels;
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
-using api.Extensions;
 using HttpMultipartParser;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -59,7 +58,7 @@ public class UploadTrigger
         // add custom settings this way:
         // =============================
         // pipelineContext.AddSettings(new CleanWordsStep.CleanWordsStepSettings() { BigSpacesSize = 120 });
-        _pipeline.Execute(pipelineContext);
+        await _pipeline.Execute(pipelineContext);
         var pdfDocJson =  new PdfDocJson(pipelineContext.Document!, pipelineContext.TextContent, true, _log);
         var response = req.CreateResponse(HttpStatusCode.OK);
         await response.WriteAsJsonAsync(pdfDocJson);

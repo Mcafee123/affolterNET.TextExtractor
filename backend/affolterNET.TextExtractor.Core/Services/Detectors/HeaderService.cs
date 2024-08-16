@@ -1,14 +1,14 @@
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 
-namespace affolterNET.TextExtractor.Core.Services;
+namespace affolterNET.TextExtractor.Core.Services.Detectors;
 
 public class HeaderService: IHeaderService
 {
     private readonly IOutput _log;
-
+    
     public HeaderService(IOutput log)
     {
         _log = log;

@@ -1,4 +1,4 @@
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 using UglyToad.PdfPig.Core;
 
@@ -27,7 +27,7 @@ public class PdfPageJson: IJsonSaveable
         }
     }
 
-    public List<int> HeaderBlockIds { get; set; }
+    public List<int> HeaderBlockIds { get; set; } = new();
 
     public int? PageNumberBlockId { get; set; }
 

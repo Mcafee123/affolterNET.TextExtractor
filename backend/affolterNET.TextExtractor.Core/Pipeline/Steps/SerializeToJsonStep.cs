@@ -1,5 +1,5 @@
 using affolterNET.TextExtractor.Core.Extensions;
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models.JsonModels;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
 

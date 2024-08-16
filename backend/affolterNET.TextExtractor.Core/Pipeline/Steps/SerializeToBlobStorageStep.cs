@@ -4,17 +4,20 @@ using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models.JsonModels;
 using affolterNET.TextExtractor.Core.Models.StorageModels;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
+using affolterNET.TextExtractor.Core.Services;
 
 namespace affolterNET.TextExtractor.Core.Pipeline.Steps;
 
-public class SerializeToBlobStorage : IPipelineStep
+public class SerializeToBlobStorageStep : IPipelineStep
 {
     private readonly IExtractorFileService _extractorFileService;
+    private readonly LoggerContextProvider _loggerContextProvider;
     private readonly IOutput _log;
 
-    public SerializeToBlobStorage(IExtractorFileService extractorFileService, IOutput log)
+    public SerializeToBlobStorageStep(IExtractorFileService extractorFileService, LoggerContextProvider loggerContextProvider, IOutput log)
     {
         _extractorFileService = extractorFileService;
+        _loggerContextProvider = loggerContextProvider;
         _log = log;
     }
 
@@ -38,10 +41,32 @@ public class SerializeToBlobStorage : IPipelineStep
             var pageJsonStream = pdfPage.Serialize();
             doc.Pages.Add(new Page(filename, pageJsonStream));
         }
-
+        
+        // collect logs
+        var logName = Path.Combine($"{prefix}__log.txt");
+        var logPage = WriteLogFile(context.Filename, logName);
+        doc.Pages.Add(logPage);
+        
+        // create doc
         var docJsonStream = toSerialize.Serialize();
         doc.Content = docJsonStream;
         _extractorFileService.UploadDocument(doc).GetAwaiter().GetResult();
         _log.Write(EnumLogLevel.Info, $"Documents uploaded: {doc.Pages.Count + 1}");
+    }
+
+    private Page WriteLogFile(string fileName, string logName)
+    {
+        // create text stream
+        var ms = new MemoryStream(); 
+        var sr = new StreamWriter(ms);
+        var logList = _loggerContextProvider[fileName];
+        foreach (var log in logList)
+        {
+            sr.WriteLine(log);
+        }
+
+        ms.Seek(0, SeekOrigin.Begin);
+        var logPage = new Page(logName, ms);
+        return logPage;
     }
 }

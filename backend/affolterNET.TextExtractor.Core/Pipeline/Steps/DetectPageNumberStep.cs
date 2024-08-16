@@ -1,4 +1,5 @@
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 

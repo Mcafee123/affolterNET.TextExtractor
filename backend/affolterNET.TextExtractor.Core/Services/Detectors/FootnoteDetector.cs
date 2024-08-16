@@ -1,18 +1,17 @@
 using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
-using affolterNET.TextExtractor.Core.Pipeline.Steps;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 using UglyToad.PdfPig.Core;
-using UglyToad.PdfPig.PdfFonts;
 
-namespace affolterNET.TextExtractor.Core.Services;
+namespace affolterNET.TextExtractor.Core.Services.Detectors;
 
 public class FootnoteDetector : IFootnoteDetector
 {
     private readonly IOutput _log;
-
+    
     public FootnoteDetector(IOutput log)
     {
         _log = log;

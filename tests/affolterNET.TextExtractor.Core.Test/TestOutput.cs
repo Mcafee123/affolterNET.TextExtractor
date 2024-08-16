@@ -1,4 +1,5 @@
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using Xunit.Abstractions;
 
 namespace affolterNET.TextExtractor.Core.Test;

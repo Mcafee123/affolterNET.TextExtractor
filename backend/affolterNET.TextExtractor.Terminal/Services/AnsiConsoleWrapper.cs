@@ -2,7 +2,7 @@ using System.Globalization;
 using affolterNET.TextExtractor.Core.Helpers;
 using Spectre.Console;
 
-namespace affolterNET.TextExtractor.Terminal;
+namespace affolterNET.TextExtractor.Terminal.Services;
 
 public class AnsiConsoleWrapper
 {

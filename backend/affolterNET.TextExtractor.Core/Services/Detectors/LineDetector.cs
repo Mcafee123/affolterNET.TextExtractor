@@ -1,15 +1,15 @@
 using affolterNET.TextExtractor.Core.Extensions;
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 using UglyToad.PdfPig.Content;
 
-namespace affolterNET.TextExtractor.Core.Services;
+namespace affolterNET.TextExtractor.Core.Services.Detectors;
 
 public class LineDetector: ILineDetector
 {
     private readonly IOutput _log;
-
+    
     public LineDetector(IOutput log)
     {
         _log = log;

@@ -1,25 +1,25 @@
 using System.Diagnostics;
 using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 
-namespace affolterNET.TextExtractor.Core.Services;
+namespace affolterNET.TextExtractor.Core.Services.Detectors;
 
 public class BlockDetector : IBlockDetector
 {
     private readonly ILineDetector _lineDetector;
     private readonly IOutput _log;
-
+    
     public BlockDetector(ILineDetector lineDetector, IOutput log)
     {
         _lineDetector = lineDetector;
         _log = log;
     }
 
-    // public FontSizeSettings FontSizes { get; private set; } = new([]);
     public double VerticalBlockDistanceDiffFactor { get; private set; }
     public double BaseLineMatchingRange { get; private set; }
 

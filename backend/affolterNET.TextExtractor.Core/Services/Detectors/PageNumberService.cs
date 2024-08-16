@@ -1,13 +1,13 @@
 using System.Text.RegularExpressions;
 using affolterNET.TextExtractor.Core.Extensions;
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Models;
 using affolterNET.TextExtractor.Core.Models.Interfaces;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 
-namespace affolterNET.TextExtractor.Core.Services;
+namespace affolterNET.TextExtractor.Core.Services.Detectors;
 
-public class PageNumberService: IPageNumberService
+public class PageNumberService : IPageNumberService
 {
     private readonly IOutput _log;
     private readonly double _pgNumMaxY;
@@ -19,7 +19,7 @@ public class PageNumberService: IPageNumberService
         _pgNumMaxY = pgNumMaxY;
         _pageNrAndTotalRx = new Regex(@"[\d]+\s*\/\s*[\d]+");
     }
-    
+
     public int DetectPageNumberBlocks(IPdfDoc doc)
     {
         var pgNrCount = 0;
@@ -44,12 +44,12 @@ public class PageNumberService: IPageNumberService
         {
             throw new InvalidOperationException($"no lines or no words on last line found on page {tb.Page?.Nr}");
         }
-            
+
         if (lastLine!.BoundingBox.Top > _pgNumMaxY)
         {
             return false;
         }
-        
+
         // page number and page count?
         var ma = _pageNrAndTotalRx.Match(lastLine.ToString());
         if (ma.Success)

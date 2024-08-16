@@ -1,4 +1,4 @@
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using UglyToad.PdfPig.Core;
 
 namespace affolterNET.TextExtractor.Core.Models.JsonModels;

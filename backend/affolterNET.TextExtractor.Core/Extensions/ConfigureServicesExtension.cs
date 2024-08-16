@@ -1,6 +1,8 @@
 using affolterNET.TextExtractor.Core.Pipeline;
+using affolterNET.TextExtractor.Core.Pipeline.Interfaces;
 using affolterNET.TextExtractor.Core.Pipeline.Steps;
 using affolterNET.TextExtractor.Core.Services;
+using affolterNET.TextExtractor.Core.Services.Detectors;
 using affolterNET.TextExtractor.Core.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +31,10 @@ public static class ConfigureServicesExtension
         services.AddTransient<DetectHeadersStep>();
         services.AddTransient<FixSpacesStep>();
         services.AddTransient<ExtractTextStep>();
-        services.AddTransient<BasicPdfPipeline>();
+        services.AddTransient<SerializeToBlobStorageStep>();
+        services.AddTransient<IBasicPdfPipeline, BasicPdfPipeline>();
+
+        services.AddSingleton<LoggerContextProvider>();
+        services.AddSingleton<ServiceFactory>();
     }
 }

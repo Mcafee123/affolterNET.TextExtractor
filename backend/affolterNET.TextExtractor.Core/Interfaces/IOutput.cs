@@ -1,4 +1,6 @@
-namespace affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Helpers;
+
+namespace affolterNET.TextExtractor.Core.Interfaces;
 
 public interface IOutput
 {

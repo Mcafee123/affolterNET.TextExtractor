@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using affolterNET.TextExtractor.Core.Helpers;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Core.Pipeline;
 using affolterNET.TextExtractor.Core.Pipeline.Core;
 using affolterNET.TextExtractor.Core.Pipeline.Steps;
@@ -36,7 +36,7 @@ public class DetectTextCommand: AsyncCommand<DetectTextCommand.Settings>
                 {
                     Directory.CreateDirectory(OutputFolder!);
                 }
-                catch (Exception ex)
+                catch
                 {
                     return ValidationResult.Error($"output folder does not exist and could not be created: {OutputFolder}");
                 }
