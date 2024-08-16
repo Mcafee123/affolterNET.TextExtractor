@@ -35,3 +35,5 @@ app/cypress/videos/*
 app/cypress/screenshots/*
 app/cypress/report/*
 zipdata
+
+.env

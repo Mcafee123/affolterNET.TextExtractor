@@ -1,0 +1,17 @@
+{
+  "configurations": {
+    "my-app": {
+      "appLocation": "./",
+      "apiLocation": "./../api",
+      "outputLocation": "dist",
+      "start": {
+        "outputLocation": "dist"
+      },
+      "deploy": {
+        "outputLocation": "dist"
+      },
+      "appName": "affolternet-textextractor-prod-swa",
+      "resourceGroup": "rg_affolternet_textextractor_prod"
+    }
+  }
+}

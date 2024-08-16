@@ -6,7 +6,7 @@
 # brew tap azure/functions
 # brew install azure-functions-core-tools@4
 
-# DEPLOY INFRASTRUCTURE FOR TICKET APP
+# DEPLOY INFRASTRUCTURE FOR EXT APP
 set -e
 
 env=${1:-prod}
@@ -65,15 +65,22 @@ echo
 # echo "export APPINSIGHTS_INSTRUMENTATIONKEY=\"$instrumentationKey\"" > __${env}_insights.sh
 # echo
 
-# swa
+# swa (GITHUB-INTEGRATION)
+# url="$(az staticwebapp create \
+#   --branch "$branch_name" \
+#   --location "$location" \
+#   --name "$swaAppName" \
+#   --resource-group "$resourceGroup" \
+#   --source "$static_site_repo" \
+#   --sku Free \
+#   --login-with-github \
+#   --query defaultHostname)"
+
 url="$(az staticwebapp create \
-  --branch "$branch_name" \
   --location "$location" \
   --name "$swaAppName" \
   --resource-group "$resourceGroup" \
-  --source "$static_site_repo" \
   --sku Free \
-  --login-with-github \
   --query defaultHostname)"
 
 echo "url: $url"
