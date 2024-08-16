@@ -11,8 +11,8 @@
       "/css/*.css",
       "/js/*.js"
     ]
-  },
+  },  
   "platform": {
-    "apiRuntime": "dotnet-isolated:8.0"
+    "apiRuntime": "dotnetisolated:8.0"
   }
 }

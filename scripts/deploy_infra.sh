@@ -66,22 +66,22 @@ echo
 # echo
 
 # swa (GITHUB-INTEGRATION)
-# url="$(az staticwebapp create \
-#   --branch "$branch_name" \
-#   --location "$location" \
-#   --name "$swaAppName" \
-#   --resource-group "$resourceGroup" \
-#   --source "$static_site_repo" \
-#   --sku Free \
-#   --login-with-github \
-#   --query defaultHostname)"
-
 url="$(az staticwebapp create \
+  --branch "$branch_name" \
   --location "$location" \
   --name "$swaAppName" \
   --resource-group "$resourceGroup" \
+  --source "$static_site_repo" \
   --sku Free \
+  --login-with-github \
   --query defaultHostname)"
+
+# url="$(az staticwebapp create \
+#   --location "$location" \
+#   --name "$swaAppName" \
+#   --resource-group "$resourceGroup" \
+#   --sku Free \
+#   --query defaultHostname)"
 
 echo "url: $url"
 echo "echo \"create CNAME entry '$application_url' for $url\"" > __url.sh

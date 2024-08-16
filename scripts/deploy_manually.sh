@@ -19,6 +19,9 @@ pushd .
 
 cd ../frontend
 npm run build
-swa deploy
+# swa deploy --env prod --api-language csharp --api-version 8.0
+swa deploy affolternet-textextractor \
+  --env preview \
+  -V silly
 
 popd

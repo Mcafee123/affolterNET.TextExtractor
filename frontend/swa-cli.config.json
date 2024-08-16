@@ -1,8 +1,9 @@
 {
   "configurations": {
-    "my-app": {
+    "affolternet-textextractor": {
       "appLocation": "./",
-      "apiLocation": "./../api",
+      "apiLocation": "../api/publish",
+      "apiBuildCommand": "dotnet publish -c Release -o publish",
       "outputLocation": "dist",
       "start": {
         "outputLocation": "dist"
