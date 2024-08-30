@@ -37,3 +37,6 @@ app/cypress/report/*
 zipdata
 
 .env
+
+.aws-sam
+.terraform*
