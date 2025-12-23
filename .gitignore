@@ -40,3 +40,8 @@ zipdata
 
 .aws-sam
 .terraform*
+
+# affolterNET.TextExtractor.Web specific
+backend/affolterNET.TextExtractor.Web/wwwroot/
+backend/affolterNET.TextExtractor.Web/logs/
+backend/affolterNET.TextExtractor.Web/.secrets/*.json

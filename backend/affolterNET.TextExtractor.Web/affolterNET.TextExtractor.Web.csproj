@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- affolterNET.Web BFF package -->
+    <PackageReference Include="affolterNET.Web.Bff" Version="0.3.13" />
+
+    <!-- Logging and monitoring -->
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+
+    <!-- OpenAPI/Swagger -->
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Existing TextExtractor libraries -->
+    <ProjectReference Include="../affolterNET.TextExtractor.Core/affolterNET.TextExtractor.Core.csproj" />
+    <ProjectReference Include="../affolterNET.TextExtractor.Storage/affolterNET.TextExtractor.Storage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+    <Folder Include=".secrets\" />
+    <Folder Include="logs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Copy secrets if they exist -->
+    <Content Include=".secrets\affolterNET.TextExtractor.json" Condition="Exists('.secrets\affolterNET.TextExtractor.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".secrets\affolterNET.TextExtractor.development.json" Condition="Exists('.secrets\affolterNET.TextExtractor.development.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include=".secrets\affolterNET.TextExtractor.production.json" Condition="Exists('.secrets\affolterNET.TextExtractor.production.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>
