@@ -2,6 +2,7 @@ using affolterNET.TextExtractor.Core.Extensions;
 using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Storage.Extensions;
 using affolterNET.TextExtractor.Web.Services;
+using Microsoft.AspNetCore.Http;
 using Serilog;
 using affolterNET.Web.Bff.Extensions;
 using affolterNET.Web.Core.Models;
@@ -74,6 +75,15 @@ var bffOptions = builder.Services.AddBffServices(appSettings, builder.Configurat
         bffOptions.EnableHttpsRedirection = !isRunningInContainer;
     };
 });
+
+// Configure antiforgery for container environments (HTTP behind reverse proxy)
+if (isRunningInContainer)
+{
+    builder.Services.Configure<Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions>(options =>
+    {
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    });
+}
 
 Log.Logger.Information("Bff Configuration: {0}", bffOptions.ToJson());
 bffOptions.ValidateConfiguration();
