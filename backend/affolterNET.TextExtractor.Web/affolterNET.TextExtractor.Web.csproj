@@ -15,7 +15,7 @@
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
 
     <!-- OpenAPI/Swagger -->
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
   </ItemGroup>
 

@@ -12,7 +12,7 @@
     <ItemGroup>
         <PackageReference Include="Spectre.Console" Version="0.48.0" />
         <PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
         <PackageReference Include="Spectre.Console.Extensions.Hosting" Version="0.2.0" />
     </ItemGroup>
 
