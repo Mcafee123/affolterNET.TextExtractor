@@ -1,5 +1,7 @@
 using affolterNET.TextExtractor.Core.Extensions;
+using affolterNET.TextExtractor.Core.Interfaces;
 using affolterNET.TextExtractor.Storage.Extensions;
+using affolterNET.TextExtractor.Web.Services;
 using Serilog;
 using affolterNET.Web.Bff.Extensions;
 using affolterNET.Web.Core.Models;
@@ -62,8 +64,9 @@ builder.Services.Configure<RouteOptions>(options =>
 });
 builder.Services.AddRazorPages();
 
-// Configure BFF authentication with Keycloak
-var appSettings = new AppSettings(isDev, AuthenticationMode.Authenticate, true);
+// Configure BFF authentication - using None mode for testing (no auth)
+// TODO: Switch to AuthenticationMode.Authenticate when Keycloak is configured
+var appSettings = new AppSettings(isDev, AuthenticationMode.None, true);
 var bffOptions = builder.Services.AddBffServices(appSettings, builder.Configuration, options =>
 {
     options.ConfigureBff = bffOptions =>
@@ -74,6 +77,9 @@ var bffOptions = builder.Services.AddBffServices(appSettings, builder.Configurat
 
 Log.Logger.Information("Bff Configuration: {0}", bffOptions.ToJson());
 bffOptions.ValidateConfiguration();
+
+// Register IOutput for TextExtractor pipeline logging
+builder.Services.AddTransient<IOutput, LoggerOutput>();
 
 // Add TextExtractor services
 builder.Services.AddTextExtractorCoreServices(builder.Configuration);
