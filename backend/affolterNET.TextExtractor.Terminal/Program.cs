@@ -25,16 +25,6 @@ try
                 { "--connectionstring", "POSTGRES_CONNSTRING" },
                 { "-e", "FedlexSparqlEndpoint" },
                 { "--endpoint", "FedlexSparqlEndpoint" },
-                { "-r", "AWS_REGION" },
-                { "--awsregion", "AWS_REGION" },
-                { "-b", "AWS_BUCKET" },
-                { "--awsbucket", "AWS_BUCKET" },
-                { "-k", "AWS_KEY" },
-                { "--awskey", "AWS_KEY" },
-                { "-s", "AWS_SECRET" },
-                { "--awssecret", "AWS_SECRET" },
-                { "-u", "AWS_SQSURL" },
-                { "--awssqsurl", "AWS_SQSURL" },
                 { "-l", "LogLevel" },
                 { "--loglevel", "LogLevel" },
             });
@@ -65,12 +55,12 @@ try
             services.AddTextExtractorStorageServices(ctx.Configuration);
         })
         .UseConsoleLifetime()
-        .UseSpectreConsole<ExtractJsonParallelCommand>(config =>
+        .UseSpectreConsole<ExtractJsonCommand>(config =>
         {
             config.PropagateExceptions();
 
             const string lawsAlias = "parse";
-            config.AddCommand<ExtractJsonParallelCommand>("parse-pdf")
+            config.AddCommand<ExtractJsonCommand>("parse-pdf")
                 .WithAlias(lawsAlias)
                 .WithDescription("get text and textblocks from pdf files and store the resulting json to blob storage")
                 .WithExample($"dotnet {Assembly.GetExecutingAssembly().GetName().Name}.dll", lawsAlias,

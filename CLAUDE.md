@@ -4,13 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-affolterNET.TextExtractor is a PDF text extraction system that uses a pipeline architecture to extract, analyze, and structure text from PDF documents. The system is deployed as Azure Functions with AWS infrastructure managed by Terraform.
+affolterNET.TextExtractor is a PDF text extraction system that uses a pipeline architecture to extract, analyze, and structure text from PDF documents. The system is deployed as Azure Functions.
 
 **Key components:**
 - **Backend (.NET 8)**: Core text extraction engine with pipeline-based processing
 - **API (Azure Functions)**: HTTP triggers for document upload and processing
 - **Frontend (Vue 3 + Vite)**: Web UI for document upload and management
-- **Infrastructure**: AWS deployment via Terraform (Cognito, Amplify, IAM, S3)
 
 ## Build and Run Commands
 
@@ -85,20 +84,6 @@ npm run start  # Uses local API
 npm run debug  # Uses API at localhost:7071
 ```
 
-### Infrastructure (Terraform)
-
-Deploy infrastructure:
-```bash
-cd tf
-./create.sh [env]  # Default env is 'dev'
-```
-
-Destroy infrastructure:
-```bash
-cd tf
-./destroy.sh
-```
-
 ## Architecture
 
 ### Processing Pipeline
@@ -158,11 +143,6 @@ The core text extraction uses a sequential pipeline pattern where each step proc
 - Vue Router for routing
 - Uses affolternet-vue3-library and beercss
 - Configured for Azure Static Web Apps deployment
-
-**tf/** - Terraform infrastructure
-- AWS-based deployment (Cognito, Amplify, S3, IAM)
-- Remote state management via Terraform Cloud
-- Main resources: `cognito.tf`, `amplify.tf`, `iam.tf`
 
 ### Dependency Injection
 
@@ -234,7 +214,6 @@ Current test setup:
 **Current state:**
 - Most Azure Functions are disabled (only InfoTrigger is active)
 - ExtractTextStep is commented out in BasicPdfPipeline (line 30)
-- Project is transitioning from Azure to AWS infrastructure
 - Git workflow uses `main` branch for PRs, currently on `develop` branch
 
 **When modifying pipelines:**
