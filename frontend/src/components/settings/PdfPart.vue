@@ -14,7 +14,7 @@ article
 import { ref, watch} from 'vue'
 import { useStorage } from '@/composables/useStorage'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const props = defineProps({
   title: {
     type: String,

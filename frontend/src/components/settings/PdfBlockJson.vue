@@ -18,7 +18,7 @@ import BoundingBox from '@/components/settings/BoundingBox.vue'
 import { useViewSettings } from '@/composables/useViewSettings'
 import type { Box } from '@/types/boundingBox'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const { blockJson, customBox } = useViewSettings()
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

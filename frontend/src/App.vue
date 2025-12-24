@@ -37,7 +37,7 @@ import { useViewSettings } from '@/composables/useViewSettings'
 
 const { getCssVar } = useViewSettings()
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const loadercolor = ref<string>('#4a8df8')
 
 onMounted(async () => {

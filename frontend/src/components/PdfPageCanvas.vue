@@ -27,7 +27,7 @@ const selectionCtx = ref<CanvasRenderingContext2D>()
 const customBoxCtx = ref<CanvasRenderingContext2D>()
 const hoveringCtx = ref<CanvasRenderingContext2D>()
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const props = defineProps({
   page: {
     required: true,
@@ -76,7 +76,7 @@ const clearCanvas = (mode?: 'letter' | 'boxes' | 'custombox') => {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const { showBlockBorders, showLineBorders, showWordBorders, showLetterBorders, showFootnotes, showPageNumbers, showPageHeaders, blockJson, lineJson, wordJson, letterJson, hexToRgb, customBox, customBoxIsSet } = useViewSettings()
 const prim = hexToRgb('--primary')
 let primarycoloralpha = 'rgba(134, 217, 146, 0.5)'

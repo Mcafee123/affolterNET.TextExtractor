@@ -161,7 +161,7 @@ const getData = async () => {
   footnoteWordIds.value = getFootnoteWords();
   let filteredPage = doc.pages.filter((p) => p.nr === pageNumber);
   if (filteredPage.length === 0) {
-    var pg = await getPage(pageNumber);
+    const pg = await getPage(pageNumber);
     if (pg === null) {
       toastService.showError(`page ${pageNumber} could not be loaded`);
       return;
