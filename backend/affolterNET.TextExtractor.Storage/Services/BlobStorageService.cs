@@ -1,9 +1,10 @@
+using affolterNET.TextExtractor.Core.Configuration;
 using affolterNET.TextExtractor.Core.Helpers;
 using affolterNET.TextExtractor.Core.Interfaces;
-using affolterNET.TextExtractor.Storage.Models;
-using Azure.Storage;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Microsoft.Extensions.Options;
 
 namespace affolterNET.TextExtractor.Storage.Services;
 
@@ -12,12 +13,38 @@ public class BlobStorageService
     private readonly IOutput _log;
     private readonly BlobServiceClient _blobServiceClient;
 
-    public BlobStorageService(StorageAccountName storageAccountName, StorageAccountKey storageAccountKey, IOutput log)
+    public BlobStorageService(IOptions<StorageOptions> storageOptions, IOutput log)
     {
         _log = log;
-        var credential = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
-        var uri = $"https://{storageAccountName.ToString()}.blob.core.windows.net";
-        _blobServiceClient = new BlobServiceClient(new Uri(uri), credential);
+        var options = storageOptions.Value;
+
+        // Priority 1: Connection string (local development with Azurite or production connection string)
+        if (!string.IsNullOrEmpty(options.ConnectionString))
+        {
+            _log.Write(EnumLogLevel.Debug, $"Using connection string authentication for blob storage");
+            _blobServiceClient = new BlobServiceClient(options.ConnectionString);
+        }
+        // Priority 2: Managed Identity with specific client ID
+        else if (!string.IsNullOrEmpty(options.StorageAccountName) && !string.IsNullOrEmpty(options.StorageClientId))
+        {
+            _log.Write(EnumLogLevel.Debug, $"Using managed identity authentication with client ID for storage account: {options.StorageAccountName}");
+            var uri = new Uri($"https://{options.StorageAccountName}.blob.core.windows.net");
+            var credential = new ManagedIdentityCredential(options.StorageClientId);
+            _blobServiceClient = new BlobServiceClient(uri, credential);
+        }
+        // Priority 3: Default Azure Credential (Azure CLI, VS, managed identity without specific client ID)
+        else if (!string.IsNullOrEmpty(options.StorageAccountName))
+        {
+            _log.Write(EnumLogLevel.Debug, $"Using default Azure credential for storage account: {options.StorageAccountName}");
+            var uri = new Uri($"https://{options.StorageAccountName}.blob.core.windows.net");
+            var credential = new DefaultAzureCredential();
+            _blobServiceClient = new BlobServiceClient(uri, credential);
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                "Storage configuration is invalid. Either ConnectionString or StorageAccountName must be configured.");
+        }
     }
 
     public async Task<List<string>> ListBlobContainersAsync()
