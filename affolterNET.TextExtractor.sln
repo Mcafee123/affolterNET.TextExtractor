@@ -10,8 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "affolterNET.TextExtractor.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "affolterNET.TextExtractor.Storage", "backend\affolterNET.TextExtractor.Storage\affolterNET.TextExtractor.Storage.csproj", "{8F812D4E-9E58-4477-9052-FE347B9ACAB8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend", "backend", "{1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "affolterNET.TextExtractor.Web", "backend\affolterNET.TextExtractor.Web\affolterNET.TextExtractor.Web.csproj", "{F6AA1ED2-97A6-4742-8CE3-5DDD7471E007}"
 EndProject
 Global
@@ -90,6 +88,5 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FA7C4B0C-2330-41EC-A5AF-9D838831B2CC} = {E1D584FE-9724-4D2E-9E28-9D90CB0F1F7E}
-		{F6AA1ED2-97A6-4742-8CE3-5DDD7471E007} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
 	EndGlobalSection
 EndGlobal
