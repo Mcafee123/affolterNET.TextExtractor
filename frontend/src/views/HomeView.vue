@@ -10,6 +10,7 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { loaderService } from 'affolternet-vue3-library'
+import { api } from '@/services/api'
 
 const router = useRouter()
 
@@ -23,12 +24,12 @@ const msg = ref<string>('')
 onMounted(async () => {
   loaderService.showLoader()
   try {
-  const { text } = await( await fetch(`/api/info`)).json();
-  msg.value = text
+    const { text } = await api.get<{ text: string }>('/api/info')
+    msg.value = text
   }
   finally {
     loaderService.hideLoader()
-  } 
+  }
 })
 
 </script>

@@ -86,6 +86,7 @@ import { loaderService } from "affolternet-vue3-library";
 import { toastService } from "affolternet-vue3-library";
 import { useRoute, useRouter } from "vue-router";
 import { docstore } from "@/stores/docstore";
+import { api } from "@/services/api";
 
 const route = useRoute();
 const router = useRouter();
@@ -145,9 +146,9 @@ const getData = async () => {
   let doc = docstore.getDoc(folder.value);
   if (doc === null) {
     try {
-      const doc = await (await fetch(`/api/getDocument?folder=${folder.value}`)).json();
+      const doc = await api.get<Doc>(`/api/getDocument?folder=${folder.value}`);
       docstore.addDoc(folder.value, doc);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.log(e);
     }
   }
@@ -177,11 +178,8 @@ const getData = async () => {
 
 const getPage = async (nr: number): Promise<Page | null> => {
   try {
-    const page = await (
-      await fetch(`/api/getPage?folder=${folder.value}&file=${nr}`)
-    ).json();
-    return page as Page;
-  } catch (e: any) {
+    return await api.get<Page>(`/api/getPage?folder=${folder.value}&file=${nr}`);
+  } catch (e: unknown) {
     console.log(e);
     return null;
   }

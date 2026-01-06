@@ -19,6 +19,7 @@ import { loaderService } from "affolternet-vue3-library";
 import type { ListDoc } from "@/types/listdoc";
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
+import { api } from "@/services/api";
 
 const hasDocs = ref<boolean>(true)
 const docs = ref<ListDoc[]>([]);
@@ -27,7 +28,7 @@ const router = useRouter();
 onMounted(async () => {
   loaderService.showLoader();
   try {
-    const doclist = await (await fetch(`/api/listDocuments`)).json();
+    const doclist = await api.get<ListDoc[]>('/api/listDocuments');
     doclist.sort(function (a: ListDoc, b: ListDoc) {
       return new Date(b.created).getTime() - new Date(a.created).getTime();
     });
@@ -56,7 +57,7 @@ const openDoc = (doc: string) => {
 const deleteDoc = async (folder: string) => {
   loaderService.showLoader();
   try {
-    await fetch(`/api/deleteDocument/${folder}`, { method: "DELETE" });
+    await api.delete(`/api/deleteDocument/${folder}`);
     docs.value = docs.value.filter((d) => d.foldername !== folder);
   } finally {
     loaderService.hideLoader();
