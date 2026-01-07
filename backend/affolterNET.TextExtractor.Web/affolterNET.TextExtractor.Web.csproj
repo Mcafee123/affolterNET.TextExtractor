@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <!-- affolterNET.Web BFF package -->
-    <PackageReference Include="affolterNET.Web.Bff" Version="0.3.13" />
+    <PackageReference Include="affolterNET.Web.Bff" Version="0.3.19" />
 
     <!-- Logging and monitoring -->
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
