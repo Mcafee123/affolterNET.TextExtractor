@@ -19,6 +19,10 @@ const uploadFile = ($event: Event) => {
     return
   }
   const pdf = target.files[0]
+  if (!pdf) {
+    console.error(`no file selected`)
+    return
+  }
   if (!pdf.name.endsWith('.pdf')) {
     console.error(`"${pdf.name}" is not a pdf file`)
     return

@@ -173,7 +173,7 @@ const getData = async () => {
   if (filteredPage.length === 0) {
     throw Error(`page ${pageNumber} could not be loaded`);
   }
-  page.value = filteredPage[0];
+  page.value = filteredPage[0] ?? null;
 };
 
 const getPage = async (nr: number): Promise<Page | null> => {
@@ -194,18 +194,20 @@ const refreshView = () => {
 const getFootnoteWords = (): number[] => {
   const footnoteWords: number[] = [];
   if (pdfdata.value) {
-    for (let fn = 0; fn < pdfdata.value.footnotes.length; fn++) {
-      const footnote = pdfdata.value.footnotes[fn];
-      for (let bcw = 0; bcw < footnote.bottomContentsCaption?.words?.length || 0; bcw++) {
-        footnoteWords.push(footnote.bottomContentsCaption.words[bcw].id);
+    for (const footnote of pdfdata.value.footnotes) {
+      if (!footnote) continue;
+      if (footnote.bottomContentsCaption?.words) {
+        for (const word of footnote.bottomContentsCaption.words) {
+          if (word) footnoteWords.push(word.id);
+        }
       }
-      for (let iw = 0; iw < footnote.inlineWords.length; iw++) {
-        footnoteWords.push(footnote.inlineWords[iw].id);
+      for (const inlineWord of footnote.inlineWords) {
+        if (inlineWord) footnoteWords.push(inlineWord.id);
       }
-      for (let bl = 0; bl < footnote.bottomContents.lines.length; bl++) {
-        const line = footnote.bottomContents.lines[bl];
-        for (let w = 0; w < line.words.length; w++) {
-          footnoteWords.push(line.words[w].id);
+      for (const line of footnote.bottomContents.lines) {
+        if (!line) continue;
+        for (const word of line.words) {
+          if (word) footnoteWords.push(word.id);
         }
       }
     }

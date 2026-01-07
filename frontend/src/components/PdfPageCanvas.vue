@@ -236,8 +236,8 @@ const renderPage = (boxesOnly: boolean = false) => {
   if (!letterCanvas.value || !boxesCanvas.value || !letterCtx.value || !boxesCtx.value) {
     return
   }
-  for (let b = 0; b < props.page.blocks.length; b++) {
-    const block = props.page.blocks[b]
+  for (const block of props.page.blocks) {
+    if (!block) continue
     if (!showPageNumbers.value && props.page.pageNumberBlockId === block.id) {
       continue
     }
@@ -245,8 +245,8 @@ const renderPage = (boxesOnly: boolean = false) => {
         continue
     }
     let drawBlock = false
-    for (let w = 0; w < block.words.length; w++) {
-      const word = block.words[w]
+    for (const word of block.words) {
+      if (!word) continue
       if (!showFootnotes.value && props.footnoteWordIds.indexOf(word.id) > -1) {
         continue
       }
@@ -257,8 +257,8 @@ const renderPage = (boxesOnly: boolean = false) => {
       if (showWordBorders.value) {
         drawBox(boxesCtx.value, word.boundingBox, 'green', 0.6)
       }
-      for (let le = 0; le < word.letters.length; le++) {
-        const letter = word.letters[le]
+      for (const letter of word.letters) {
+        if (!letter) continue
         boxesCtx.value.beginPath()
         boxesCtx.value.lineWidth = 0.3
         boxesCtx.value.strokeStyle = 'violet'
@@ -274,8 +274,8 @@ const renderPage = (boxesOnly: boolean = false) => {
         }
       }
     }
-    for (let l = 0; l < block.lines.length; l++) {
-      const line = block.lines[l]
+    for (const line of block.lines) {
+      if (!line) continue
       // let drawLine = false
       // box around each line
       if (showLineBorders.value) { //} && drawLine) {
@@ -288,8 +288,8 @@ const renderPage = (boxesOnly: boolean = false) => {
     }
   }
   // images
-  for (let ib = 0; ib < props.page.imageBlocks.length; ib++) {
-    const img = props.page.imageBlocks[ib]
+  for (const img of props.page.imageBlocks) {
+    if (!img) continue
     const imgObj = new Image()
     imgObj.addEventListener(
       "load",
@@ -321,12 +321,12 @@ const highlight = ($event: MouseEvent) => {
 
   // loop through objects
   ctx.clearRect(0, 0, cvs.width, cvs.height)
-  for (let b = 0; b < props.page.blocks.length; b++) {
-    const block = props.page.blocks[b]
-    for (let l = 0; l < block.lines.length; l++) {
-      const line = block.lines[l]
-      for (let w = 0; w < line.words.length; w++) {
-        const word = line.words[w]
+  for (const block of props.page.blocks) {
+    if (!block) continue
+    for (const line of block.lines) {
+      if (!line) continue
+      for (const word of line.words) {
+        if (!word) continue
         if (!showFootnotes.value && props.footnoteWordIds.indexOf(word.id) > -1) {
           continue;
         }
@@ -358,24 +358,24 @@ const select = ($event: MouseEvent) => {
   const x = $event.clientX - rect.left
   const y = $event.clientY - rect.top
 
-  for (let b = 0; b < props.page.blocks.length; b++) {
-    const block = props.page.blocks[b]
-    for (let l = 0; l < block.lines.length; l++) {
-      const line = block.lines[l]
-      for (let w = 0; w < line.words.length; w++) {
-        const word = line.words[w]
+  for (const block of props.page.blocks) {
+    if (!block) continue
+    for (const line of block.lines) {
+      if (!line) continue
+      for (const word of line.words) {
+        if (!word) continue
         if (!showFootnotes.value && props.footnoteWordIds.indexOf(word.id) > -1) {
           continue;
         }
-        for (let le = 0; le < word.letters.length; le++) {
-          const letter = word.letters[le]
+        for (const letter of word.letters) {
+          if (!letter) continue
           ctx.beginPath()
           makeLetterRect(ctx, letter)
           if (ctx.isPointInPath(x, y)) {
             letterJson.value = { fontSize: letter.fontSize, orientation: letter.orientation, text: letter.text, startBaseLine: letter.startBaseLine }
             wordJson.value = { boundingBox: word.boundingBox, baseLineY: word.baseLineY, text: word.text, fontName: word.fontName, orientation: word.orientation }
-            lineJson.value = { boundingBox: line.boundingBox, baseLineY: line.baseLineY, topDistance: line.topDistance, fontSizeAvg: line.fontSizeAvg, text: line.words.map(w => w.text).join('') }
-            blockJson.value = { boundingBox: block.boundingBox, text: block.lines.map(l => l.words.map(w => w.text).join('')).join('') }
+            lineJson.value = { boundingBox: line.boundingBox, baseLineY: line.baseLineY, topDistance: line.topDistance, fontSizeAvg: line.fontSizeAvg, text: line.words.map(w => w?.text ?? '').join('') }
+            blockJson.value = { boundingBox: block.boundingBox, text: block.lines.map(l => l?.words?.map(w => w?.text ?? '').join('') ?? '').join('') }
 
             // make selection Rectangle
             ctx.clearRect(0, 0, cvs.width, cvs.height)
