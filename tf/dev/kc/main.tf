@@ -14,13 +14,22 @@ module "kc" {
 
 module "kc_setup" {
   source = "git@github.com:Mcafee123/affolterNET-Cloud-Keycloak.git//kc_setup?ref=kc_26_5_3"
-  keyvault = {
-    name    = var.platform.keyvault_name
-    rg_name = var.platform.state_rg
-  }
 
-  realm = {
-    name = module.kc.terraform_client.realm
-  }
-  clients = var.clients
+  realm_id = module.kc.terraform_client.realm
+  clients  = var.clients
+}
+
+# ===== AZURE KEYVAULT SECRETS =====
+
+data "azurerm_key_vault" "kv" {
+  name                = var.platform.keyvault_name
+  resource_group_name = var.platform.state_rg
+}
+
+resource "azurerm_key_vault_secret" "client_secrets" {
+  for_each = var.clients
+
+  name         = "${each.value.client_id}-client-secret"
+  value        = module.kc_setup.clients[each.key].client_secret
+  key_vault_id = data.azurerm_key_vault.kv.id
 }
