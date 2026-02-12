@@ -25,7 +25,7 @@ locals {
 }
 
 module "statefiles_generator" {
-  source = "git@github.com:Mcafee123/affolterNET-Cloud-HelperModules.git//statefiles-generator?ref=main"
+  source = "git@github.com:affolterNET/affolterNET-Cloud-HelperModules.git//statefiles-generator?ref=main"
   basics = {
     subscription_id = "93a208c4-9c58-4f97-b35f-9beb52df1041"
     tenant_id       = "9c0f6304-c41a-4891-8379-ed3cbfc54535"

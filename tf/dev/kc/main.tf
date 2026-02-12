@@ -1,5 +1,5 @@
 module "kc" {
-  source = "git@github.com:Mcafee123/affolterNET-Cloud-Keycloak.git//keycloak-tf-client?ref=kc_26_5_3"
+  source = "git@github.com:affolterNET/affolterNET-Cloud-Keycloak.git//keycloak-tf-client?ref=kc_26_5_3"
   state = {
     state_rg        = var.platform.state_rg
     state_storage   = var.platform.state_storage
@@ -13,7 +13,7 @@ module "kc" {
 # All users in the realm will have access to the clients
 
 module "kc_setup" {
-  source = "git@github.com:Mcafee123/affolterNET-Cloud-Keycloak.git//kc_setup?ref=kc_26_5_3"
+  source = "git@github.com:affolterNET/affolterNET-Cloud-Keycloak.git//kc_setup?ref=kc_26_5_3"
 
   realm_id = module.kc.terraform_client.realm
   clients  = var.clients

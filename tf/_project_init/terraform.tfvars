@@ -4,7 +4,7 @@ settings = {
   scripts_folder = "../../scripts"
   variable_name  = "platform"
   base_name      = "text-e"
-  github_owner   = "Mcafee123"
+  github_owner   = "affolterNET"
   github_repo    = "affolterNET.TextExtractor"
   modules = [
     {

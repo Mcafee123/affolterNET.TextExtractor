@@ -30,7 +30,7 @@ instance="https://login.microsoftonline.com/"
 
 application_url="ext.affolter.net"
 branch_name="main"
-github_user="Mcafee123"
+github_user="affolterNET"
 github_repo="affolterNET.TextExtractor"
 static_site_repo="https://github.com/$github_user/$github_repo"
 
