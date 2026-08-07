@@ -227,3 +227,41 @@ Current test setup:
 - Custom models wrap PdfPig types (see Models/Interfaces/)
 - Spatial analysis uses custom quadtree implementation
 - Text extraction considers font sizes, spacing, and positioning
+
+## TODO (offen seit 2026-08-07): Logging auf die Bibliothek umstellen
+
+**Warum es hier nicht schon gemacht wurde:** Beim Umstellen aller Anwendungen unter `~/Source`
+lag in diesem Repo unversionierte Arbeit — fremde Baustelle, nicht angefasst.
+
+**Was zu tun ist**, drei kleine Schritte:
+
+1. Paket `affolterNET.Web.Bff` auf **0.9.5** (oder neuer) heben.
+2. In `Program.cs` den handgebauten Logger (`new LoggerConfiguration()…`) durch **eine** Zeile
+   ersetzen: `builder.UseAffolterNetSerilog();` — dazu `using affolterNET.Web.Core.Extensions;`.
+   Ein allfälliges `builder.Host.UseSerilog();` fällt weg.
+3. Den `Serilog`-Abschnitt in `appsettings.json` prüfen — hier ist das Paket noch auf **0.7.6**, der Sprung auf 0.9.5
+   ist also grösser als eine Zahl; Änderungen der Bibliothek dazwischen prüfen.
+
+**Warum das nötig ist:** Solange der Logger im Code gebaut wird, lassen sich Log-Stufen nur mit
+einem Rebuild und einem Deployment ändern — also nie dann, wenn man sie braucht. Nach der
+Umstellung steuert man alles über Umgebungsvariablen, ohne Deployment:
+
+```
+Serilog__MinimumLevel__Default=Debug
+Serilog__MinimumLevel__Override__Microsoft=Information    # Framework-Zeilen zurückholen
+```
+
+Die Bibliothek ersetzt ausserdem die vier Framework-Zeilen pro Aufruf durch **eine**
+Zusammenfassung mit Dauer, Statuscode und Antwortgrösse. Gesunde Gesundheitsprüfungen sind
+still, scheiternde erscheinen als Error. 0.9.5 bringt zusätzlich Antwortkompression
+(brotli/gzip, standardmässig an, auch für `application/json`).
+
+**Vorbild:** `~/Source/affolterNET.Memo` (Commit «fix(logging): Log-Stufen stehen in der
+Konfiguration statt fest im Code») zeigt den Fall ohne vorhandenen Abschnitt,
+`~/Source/affolterNET.Bexio` den mit. Das Muster für neue Projekte steht in
+`affolterNET.Web/examples/ExampleBff`.
+
+**Achtung beim Umstellen:** Schrieb der handgebaute Logger in der Entwicklung zusätzlich in eine
+Datei (`WriteTo.File("logs/app-.txt")`), geht dieser Sink verloren — er gehört dann in
+`appsettings.Development.json`. Der Konsolen-Eintrag muss dort wiederholt werden, weil
+Konfigurations-Arrays pro Index überschrieben und nicht zusammengeführt werden.
